@@ -1,0 +1,134 @@
+{
+  "project_info": {
+    "project_number": "817595942719",
+    "project_id": "foodin-93814",
+    "storage_bucket": "foodin-93814.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:817595942719:android:9997001d93326fd96e358a",
+        "android_client_info": {
+          "package_name": "com.example.foodinz"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "817595942719-663u7pcmhotregkpnd3k9i2e9of08d4j.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.foodinz",
+            "certificate_hash": "9a370fcb9fcd05b8ca61e9381864b360cfffa720"
+          }
+        },
+        {
+          "client_id": "817595942719-emkg8hj36u0aip3sgqa2eil81bdvcuvo.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyApIWF9UdhrVJZirlgh_WP5_Fk-J36qM7Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "817595942719-emkg8hj36u0aip3sgqa2eil81bdvcuvo.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "817595942719-3dapdogdqoi6ne07cpoo0q8c37kn099c.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.merchants"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:817595942719:android:76862a730b979c606e358a",
+        "android_client_info": {
+          "package_name": "com.example.merchants"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "817595942719-6l5hp5ul7iio9gcq9cpdcnija3cd6be5.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.merchants",
+            "certificate_hash": "9a370fcb9fcd05b8ca61e9381864b360cfffa720"
+          }
+        },
+        {
+          "client_id": "817595942719-emkg8hj36u0aip3sgqa2eil81bdvcuvo.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyApIWF9UdhrVJZirlgh_WP5_Fk-J36qM7Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "817595942719-emkg8hj36u0aip3sgqa2eil81bdvcuvo.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "817595942719-3dapdogdqoi6ne07cpoo0q8c37kn099c.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.merchants"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:817595942719:android:e39fec510e84d5b36e358a",
+        "android_client_info": {
+          "package_name": "online.foodincity.foodin_merchant"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "817595942719-emkg8hj36u0aip3sgqa2eil81bdvcuvo.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyApIWF9UdhrVJZirlgh_WP5_Fk-J36qM7Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "817595942719-emkg8hj36u0aip3sgqa2eil81bdvcuvo.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "817595942719-3dapdogdqoi6ne07cpoo0q8c37kn099c.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.merchants"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

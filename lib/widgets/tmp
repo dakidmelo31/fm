@@ -1,0 +1,156 @@
+{
+                              Map<String, dynamic> data =
+                                  document.data()! as Map<String, dynamic>;
+                              String documentID = document.id;
+                              debugPrint(data["name"]);
+                              var accessories = data["accessories"];
+                              var categories = data["categories"];
+                              var gallery = data["gallery"];
+
+                              Food food = Food(
+                                  name: data["name"],
+                                  available: data["available"],
+                                  image: data['img'],
+                                  averageRating:
+                                      0, //int.parse(data['averageRating'])
+                                  price: 3.3, //double.parse(data['price'])
+                                  restaurantId: data['restaurantId'],
+                                  gallery: List<String>.from(gallery),
+                                  accessories: List<String>.from(accessories),
+                                  duration: data['duration'],
+                                  categories: List<String>.from(accessories));
+
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 8.0, horizontal: 8),
+                                child: Card(
+                                  color: food.available
+                                      ? Colors.white
+                                      : Color.fromARGB(255, 240, 240, 240),
+                                  shadowColor: food.available
+                                      ? Colors.grey.withOpacity(.15)
+                                      : Colors.grey.withOpacity(.08),
+                                  elevation: food.available ? 10 : 0,
+                                  child: SizedBox(
+                                    width: size.width,
+                                    height: 160,
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.max,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceEvenly,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: [
+                                        ClipRRect(
+                                          borderRadius:
+                                              BorderRadius.circular(6),
+                                          child: OpenContainer(
+                                            openBuilder: (context, _) =>
+                                                MealDetails(foodId: documentID),
+                                            closedBuilder:
+                                                (context, openContainer) =>
+                                                    InkWell(
+                                              onTap: openContainer,
+                                              child: CachedNetworkImage(
+                                                imageUrl: food.image,
+                                                fit: BoxFit.cover,
+                                                                                                                    errorWidget: (_, __, ___) => Lottie.asset("assets/no-connection.json"),
+                                                                    placeholder: (
+                                                                      _,
+                                                                      __,
+                                                                    ) =>
+                                                                        Lottie.asset("assets/loading7.json"),
+                                                                    fadeInCurve: Curves.fastLinearToSlowEaseIn,
+                                                alignment: Alignment.center,
+                                                width: size.width / 2.8,
+                                                height: double.infinity,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        Expanded(
+                                          flex: 1,
+                                          child: Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 8),
+                                            child: Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.spaceEvenly,
+                                              mainAxisSize: MainAxisSize.max,
+                                              children: [
+                                                FittedBox(
+                                                  child: SelectableText(
+                                                    food.name,
+                                                    scrollPhysics:
+                                                        const NeverScrollableScrollPhysics(),
+                                                    style: heading,
+                                                    maxLines: 2,
+                                                  ),
+                                                ),
+                                                SwitchListTile.adaptive(
+                                                  value: food.available,
+                                                  onChanged: (update) {
+                                                    //change status
+                                                    firestore
+                                                        .collection("meals")
+                                                        .doc(documentID)
+                                                        .update({
+                                                      "available": update
+                                                    });
+                                                  },
+                                                  title: Text(
+                                                    food.available
+                                                        ? "Available"
+                                                        : "Unavailable",
+                                                    style: TextStyle(
+                                                        color: food.available
+                                                            ? Colors.green
+                                                            : Colors.pink),
+                                                  ),
+                                                  contentPadding:
+                                                      EdgeInsets.zero,
+                                                  dense: true,
+                                                ),
+                                                Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment
+                                                          .spaceEvenly,
+                                                  children: [
+                                                    const FaIcon(
+                                                      FontAwesomeIcons
+                                                          .solidHeart,
+                                                      color: Colors.pink,
+                                                      size: 18,
+                                                    ),
+                                                    const Text("19k"),
+                                                    const FaIcon(
+                                                      FontAwesomeIcons.comment,
+                                                      color: Colors.orange,
+                                                      size: 18,
+                                                    ),
+                                                    const Text("19k",
+                                                        style: TextStyle(
+                                                            color:
+                                                                Colors.grey)),
+                                                    const FaIcon(
+                                                      FontAwesomeIcons.share,
+                                                      color: Colors.blue,
+                                                      size: 18,
+                                                    ),
+                                                    const Text("19k",
+                                                        style: TextStyle(
+                                                            color:
+                                                                Colors.grey)),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        )
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }).toList());
+                          }
