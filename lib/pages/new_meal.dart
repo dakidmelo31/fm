@@ -17,6 +17,7 @@ import 'package:timezone/data/latest.dart' as tz;
 import 'package:uuid/uuid.dart';
 
 import '../providers/notification_service.dart';
+import '../themes/light_theme.dart';
 import '../widgets/create_service.dart';
 
 CollectionReference users =
@@ -48,6 +49,7 @@ class _NewMealState extends State<NewMeal> with TickerProviderStateMixin {
     "Home Delivery",
     "Vegetarian",
     "Casual",
+    "Daily",
     "Classic"
   ];
   File? _img;
@@ -95,6 +97,7 @@ class _NewMealState extends State<NewMeal> with TickerProviderStateMixin {
   }
 
   _selectGallery() async {
+    HapticFeedback.heavyImpact();
     List<XFile?>? myGallery = await picker.pickMultiImage(
         imageQuality: 95, maxHeight: 500, maxWidth: 360);
     for (var item in myGallery!) {
@@ -106,6 +109,9 @@ class _NewMealState extends State<NewMeal> with TickerProviderStateMixin {
         debugPrint("total gallery pictures: ${gallery.length}");
       });
     }
+    Fluttertoast.showToast(
+        msg: "${gallery.length} images selected",
+        backgroundColor: Colors.lightGreen);
   }
 
   _uploadGallery() async {
@@ -230,71 +236,114 @@ class _NewMealState extends State<NewMeal> with TickerProviderStateMixin {
     Size size = MediaQuery.of(context).size;
     mealDetails = Provider.of<MealsData>(context, listen: false);
 
-    Widget productForm = InkWell(
-      onTap: () {
-        FocusManager.instance.primaryFocus!.unfocus();
-      },
-      child: CustomScrollView(
-        physics: const BouncingScrollPhysics(
-            parent: AlwaysScrollableScrollPhysics()),
-        slivers: [
-          SliverList(
-            delegate: SliverChildListDelegate([
-              InkWell(
-                onTap: nextPage,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Padding(
-                      padding: EdgeInsets.only(left: 20.0),
-                      child: const Padding(
-                        padding: EdgeInsets.all(12.0),
-                        child: const Text(
-                          "Create Meal",
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
+    Widget productForm = SafeArea(
+      child: InkWell(
+        onTap: () {
+          FocusManager.instance.primaryFocus!.unfocus();
+        },
+        child: CustomScrollView(
+          physics: const BouncingScrollPhysics(
+              parent: AlwaysScrollableScrollPhysics()),
+          slivers: [
+            SliverList(
+              delegate: SliverChildListDelegate([
+                Container(
+                  height: kToolbarHeight,
+                  child: Align(
+                    alignment: Alignment.center,
+                    child: Text(
+                      "Create Meal",
+                      style: Primary.bigHeading,
                     ),
-                    Row(
-                      children: [
-                        Text("Service"),
-                        Icon(
-                          Icons.chevron_right_rounded,
-                        ),
-                      ],
-                    ),
-                  ],
+                  ),
                 ),
-              ),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(25),
-                child: Container(
-                  color: Colors.white,
-                  width: size.width - 70.0,
-                  height: 220.0,
-                  child: InkWell(
-                    onTap: _selectImg,
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(25),
+                  child: Container(
+                    color: Colors.white,
+                    width: size.width - 70.0,
+                    height: 220.0,
                     child: AnimatedSwitcher(
                         duration: Duration(
                           milliseconds: 700,
                         ),
                         child: _img == null
-                            ? Lottie.asset(
-                                "assets/add-image1.json",
-                                fit: BoxFit.contain,
-                                alignment: Alignment.center,
-                                width: double.infinity,
-                                height: double.infinity,
+                            ? Card(
+                                margin: EdgeInsets.symmetric(
+                                    horizontal: 15.0, vertical: 10.0),
+                                color: Colors.grey.withOpacity(.07),
+                                elevation: 0,
+                                child: InkWell(
+                                  onTap: _selectImg,
+                                  child: Row(
+                                    children: [
+                                      Lottie.asset(
+                                        "assets/add-image1.json",
+                                        fit: BoxFit.contain,
+                                        alignment: Alignment.center,
+                                        width: size.width * .4,
+                                        height: size.width * .4,
+                                      ),
+                                      Text("Tap to pick Image",
+                                          style: Primary.bigHeading)
+                                    ],
+                                  ),
+                                ),
                               )
-                            : Image.file(
-                                File(_img!.path),
-                                fit: BoxFit.cover,
-                                alignment: Alignment.center,
-                                width: double.infinity,
-                                height: double.infinity,
+                            : Stack(
+                                alignment: Alignment.topCenter,
+                                children: [
+                                  Padding(
+                                    padding: EdgeInsets.only(bottom: 25.0),
+                                    child: Material(
+                                      elevation: 10.0,
+                                      shadowColor: Colors.black.withOpacity(.5),
+                                      child: ClipRRect(
+                                        borderRadius:
+                                            BorderRadius.circular(6.0),
+                                        child: Image.file(
+                                          File(_img!.path),
+                                          fit: BoxFit.cover,
+                                          alignment: Alignment.center,
+                                          width: size.width * .9,
+                                          height: size.width * .6,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  Align(
+                                    alignment: Alignment.topRight,
+                                    child: Padding(
+                                      padding: const EdgeInsets.only(
+                                          right: 30.0, top: 10.0),
+                                      child: Container(
+                                        width: 30.0,
+                                        height: 30.0,
+                                        alignment: Alignment.center,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: Colors.white,
+                                        ),
+                                        child: IconButton(
+                                          onPressed: () {
+                                            HapticFeedback.heavyImpact();
+                                            Fluttertoast.cancel();
+                                            Fluttertoast.showToast(
+                                              msg: "New meal must have a photo",
+                                              toastLength: Toast.LENGTH_SHORT,
+                                              backgroundColor: Colors.pink,
+                                            );
+                                            setState(() {
+                                              _img = null;
+                                            });
+                                          },
+                                          icon: Icon(Icons.close_rounded,
+                                              size: 16.0, color: Colors.black),
+                                        ),
+                                      ),
+                                    ),
+                                  )
+                                ],
                               ),
                         switchInCurve: Curves.fastLinearToSlowEaseIn,
                         reverseDuration: Duration(milliseconds: 300),
@@ -312,465 +361,511 @@ class _NewMealState extends State<NewMeal> with TickerProviderStateMixin {
                         }),
                   ),
                 ),
-              ),
-              Container(
-                width: size.width,
-                color: Colors.white,
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 15),
-                  child: Column(
-                    children: [
-                      Form(
-                        key: _mealKey,
-                        child: Column(
-                          children: [
-                            Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 12.0),
-                              child: TextFormField(
-                                controller: _productName,
-                                validator: (val) {
-                                  if (val!.isEmpty || val.length < 5) {
-                                    return "Enter valid name";
-                                  }
-                                  return null;
-                                },
-                                textInputAction: TextInputAction.next,
-                                decoration: const InputDecoration(
-                                  label: Text("Name of Meal"),
-                                  hintText: "Name of your food",
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.all(
-                                      Radius.circular(6),
-                                    ),
-                                  ),
-                                ),
-                                maxLength: 35,
-                                autofocus: false,
-                              ),
-                            ),
-                            Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 12.0),
-                              child: TextFormField(
-                                controller: _productPrice,
-                                validator: (val) {
-                                  if (val!.isEmpty || val.length < 5) {
-                                    return "Enter valid price";
-                                  }
-                                  return null;
-                                },
-                                textInputAction: TextInputAction.next,
-                                keyboardType: TextInputType.number,
-                                decoration: const InputDecoration(
-                                  label: const Text("Price"),
-                                  hintText: "Selling Price",
-                                  prefix: const Text("CFA",
-                                      style: TextStyle(
-                                          fontSize: 12, color: Colors.green)),
-                                  border: const OutlineInputBorder(
-                                    borderRadius: const BorderRadius.all(
-                                      Radius.circular(6),
-                                    ),
-                                  ),
-                                ),
-                                maxLength: 7,
-                                autofocus: false,
-                              ),
-                            ),
-                            Card(
-                              elevation: 10,
-                              shadowColor: Colors.black.withOpacity(.7),
-                              child: Padding(
+                Container(
+                  width: size.width,
+                  color: Colors.white,
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(horizontal: 15),
+                    child: Column(
+                      children: [
+                        Form(
+                          key: _mealKey,
+                          child: Column(
+                            children: [
+                              Padding(
                                 padding:
                                     const EdgeInsets.symmetric(vertical: 12.0),
                                 child: TextFormField(
-                                  minLines: 3,
-                                  maxLines: 5,
-                                  maxLength: 100,
-                                  controller: _descriptionController,
-                                  style: TextStyle(
-                                      color: Colors.black.withOpacity(.7)),
+                                  controller: _productName,
+                                  validator: (val) {
+                                    if (val!.isEmpty || val.length < 5) {
+                                      return "Enter valid name";
+                                    }
+                                    return null;
+                                  },
                                   textInputAction: TextInputAction.next,
-                                  decoration: InputDecoration(
-                                    border: UnderlineInputBorder(
+                                  decoration: const InputDecoration(
+                                    label: Text("Name of Meal"),
+                                    hintText: "Name of your food",
+                                    border: OutlineInputBorder(
                                       borderRadius: BorderRadius.all(
-                                        Radius.circular(8),
+                                        Radius.circular(6),
                                       ),
                                     ),
-                                    filled: true,
-                                    fillColor: Colors.white,
-                                    label: Text("Add meal description"),
+                                  ),
+                                  maxLength: 35,
+                                  autofocus: false,
+                                ),
+                              ),
+                              Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 12.0),
+                                child: TextFormField(
+                                  controller: _productPrice,
+                                  validator: (val) {
+                                    if (val!.isEmpty || val.length < 5) {
+                                      return "Enter valid price";
+                                    }
+                                    return null;
+                                  },
+                                  textInputAction: TextInputAction.next,
+                                  keyboardType: TextInputType.number,
+                                  decoration: const InputDecoration(
+                                    label: const Text("Price"),
+                                    hintText: "Selling Price",
+                                    prefix: const Text("CFA",
+                                        style: TextStyle(
+                                            fontSize: 12, color: Colors.green)),
+                                    border: const OutlineInputBorder(
+                                      borderRadius: const BorderRadius.all(
+                                        Radius.circular(6),
+                                      ),
+                                    ),
+                                  ),
+                                  maxLength: 7,
+                                  autofocus: false,
+                                ),
+                              ),
+                              Card(
+                                elevation: 10,
+                                shadowColor: Colors.black.withOpacity(.7),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 12.0),
+                                  child: TextFormField(
+                                    minLines: 3,
+                                    maxLines: 5,
+                                    maxLength: 100,
+                                    controller: _descriptionController,
+                                    style: TextStyle(
+                                        color: Colors.black.withOpacity(.7)),
+                                    textInputAction: TextInputAction.next,
+                                    decoration: InputDecoration(
+                                      border: UnderlineInputBorder(
+                                        borderRadius: BorderRadius.all(
+                                          Radius.circular(8),
+                                        ),
+                                      ),
+                                      filled: true,
+                                      fillColor: Colors.white,
+                                      label: Text("Add meal description"),
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
-                            SizedBox(
-                              height: 40.0,
-                            ),
-                            Align(
-                              alignment: Alignment.centerLeft,
-                              child: Padding(
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: 10.0, vertical: 10.0),
-                                child: Text(
-                                  "Category(s)",
-                                  style: TextStyle(fontWeight: FontWeight.w700),
+                              SizedBox(
+                                height: 40.0,
+                              ),
+                              Align(
+                                alignment: Alignment.centerLeft,
+                                child: Padding(
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: 10.0, vertical: 10.0),
+                                  child: Text(
+                                      "Tap to select Categories that apply",
+                                      style: Primary.bigHeading),
                                 ),
                               ),
-                            ),
-                            Wrap(
-                              children: [
-                                for (String cat in _categories)
-                                  AnimatedScale(
-                                    duration: Duration(milliseconds: 500),
-                                    curve: Curves.fastOutSlowIn,
-                                    filterQuality: FilterQuality.high,
-                                    alignment: Alignment.centerLeft,
-                                    scale: _selectedCategories.contains(cat)
-                                        ? 1.0
-                                        : 0.8,
-                                    child: InkWell(
-                                      onTap: () {
-                                        if (_selectedCategories.contains(cat)) {
-                                          setState(() {
-                                            _selectedCategories.remove(cat);
-                                          });
-                                        } else {
-                                          setState(() {
-                                            _selectedCategories.add(cat);
-                                          });
-                                        }
-                                        HapticFeedback.heavyImpact();
-                                        debugPrint(_selectedCategories.length
-                                            .toString());
-                                      },
-                                      child: AnimatedOpacity(
-                                        duration: Duration(milliseconds: 300),
-                                        opacity:
-                                            _selectedCategories.contains(cat)
-                                                ? 1.0
-                                                : 0.3,
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(8.0),
-                                          child: Chip(
-                                            backgroundColor: Colors.white,
-                                            label: Text(cat),
-                                            avatar: Icon(
-                                                Icons.food_bank_rounded,
-                                                color: Colors
-                                                    .primaries[_categories
-                                                            .indexOf(cat) >
-                                                        Colors.primaries
-                                                                .length -
-                                                            1
-                                                    ? _categories.indexOf(cat) -
-                                                        Colors.primaries.length
-                                                    : _categories
-                                                        .indexOf(cat)]),
-                                            labelPadding: EdgeInsets.symmetric(
-                                                vertical: 5.0, horizontal: 8.0),
-                                            elevation: 12.0,
-                                            shadowColor:
-                                                Colors.black.withOpacity(.4),
+                              Wrap(
+                                children: [
+                                  for (String cat in _categories)
+                                    AnimatedScale(
+                                      duration: Duration(milliseconds: 500),
+                                      curve: Curves.fastOutSlowIn,
+                                      filterQuality: FilterQuality.high,
+                                      alignment: Alignment.centerLeft,
+                                      scale: _selectedCategories.contains(cat)
+                                          ? 1.0
+                                          : 0.8,
+                                      child: InkWell(
+                                        onTap: () {
+                                          if (_selectedCategories
+                                              .contains(cat)) {
+                                            setState(() {
+                                              _selectedCategories.remove(cat);
+                                            });
+                                          } else {
+                                            if (_selectedCategories.length >
+                                                5) {
+                                              Fluttertoast.cancel();
+                                              Fluttertoast.showToast(
+                                                msg:
+                                                    "Select categories Maximum",
+                                                backgroundColor: Colors.pink,
+                                                gravity: ToastGravity.SNACKBAR,
+                                                toastLength: Toast.LENGTH_SHORT,
+                                                webShowClose: true,
+                                              );
+                                            } else {
+                                              setState(() {
+                                                _selectedCategories.add(cat);
+                                              });
+                                            }
+                                          }
+                                          HapticFeedback.heavyImpact();
+                                          debugPrint(_selectedCategories.length
+                                              .toString());
+                                        },
+                                        child: AnimatedOpacity(
+                                          duration: Duration(milliseconds: 300),
+                                          opacity:
+                                              _selectedCategories.contains(cat)
+                                                  ? 1.0
+                                                  : 0.3,
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Chip(
+                                              backgroundColor: Colors.white,
+                                              label: Text(cat),
+                                              avatar: Icon(
+                                                  Icons.food_bank_rounded,
+                                                  color:
+                                                      Colors.primaries[_categories
+                                                                  .indexOf(
+                                                                      cat) >
+                                                              Colors.primaries
+                                                                      .length -
+                                                                  1
+                                                          ? _categories.indexOf(
+                                                                  cat) -
+                                                              Colors.primaries
+                                                                  .length
+                                                          : _categories
+                                                              .indexOf(cat)]),
+                                              labelPadding:
+                                                  EdgeInsets.symmetric(
+                                                      vertical: 5.0,
+                                                      horizontal: 8.0),
+                                              elevation: 12.0,
+                                              shadowColor:
+                                                  Colors.black.withOpacity(.4),
+                                            ),
                                           ),
                                         ),
                                       ),
-                                    ),
-                                  )
-                              ],
-                            ),
-                            SizedBox(
-                              height: 40.0,
-                            ),
-                            Align(
-                              alignment: Alignment.centerLeft,
-                              child: Padding(
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: 10.0, vertical: 10.0),
-                                child: Text(
-                                  "Things to eat With",
-                                  style: TextStyle(fontWeight: FontWeight.w700),
-                                ),
+                                    )
+                                ],
                               ),
-                            ),
-                            Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 12.0),
-                              child: TextFormField(
-                                controller: _productAccesories,
-                                validator: (val) {
-                                  if (val!.isEmpty) {
-                                    return "You can't add nothing";
-                                  }
-                                  return null;
-                                },
-                                textInputAction: TextInputAction.next,
-                                decoration: InputDecoration(
-                                    hintText:
-                                        "Dodo, chips, Irish Potatoes, etc.",
-                                    border: const OutlineInputBorder(
-                                      borderRadius: const BorderRadius.all(
-                                        const Radius.circular(6),
-                                      ),
-                                    ),
-                                    label: const Text("On the side"),
-                                    suffixIcon: IconButton(
-                                        icon: const Icon(Icons.add,
-                                            color: Colors.pink),
-                                        onPressed: () {
-                                          if (accessories.contains(
-                                              _productAccesories.text)) {
-                                            debugPrint(
-                                                "already has compliment");
-                                          } else {
-                                            debugPrint(
-                                                "${_productAccesories.text} category added");
-                                            setState(() {
-                                              accessories
-                                                  .add(_productAccesories.text);
-                                            });
-                                            _productAccesories.text = "";
-                                          }
-                                        })),
-                                maxLength: 30,
-                                autofocus: false,
+                              SizedBox(
+                                height: 40.0,
                               ),
-                            ),
-                            AnimatedContainer(
-                              duration: Duration(milliseconds: 700),
-                              curve: Curves.fastOutSlowIn,
-                              width: double.infinity,
-                              height: accessories.isEmpty ? 0.0 : 60.0,
-                              child: ListView.builder(
-                                physics: const BouncingScrollPhysics(
-                                    parent: AlwaysScrollableScrollPhysics()),
-                                scrollDirection: Axis.horizontal,
-                                itemCount: accessories.length,
-                                itemBuilder: (_, index) {
-                                  return Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Chip(
-                                      deleteButtonTooltipMessage: "remove",
-                                      visualDensity: VisualDensity.comfortable,
-                                      label: Text(
-                                        accessories[index],
-                                        style: TextStyle(color: Colors.white),
-                                      ),
-                                      avatar: const Icon(
-                                          Icons.fastfood_outlined,
-                                          color: Colors.white,
-                                          size: 16),
-                                      backgroundColor: Colors.lightGreen,
-                                      deleteIcon: const Icon(
-                                          Icons.close_outlined,
-                                          color: Colors.amber),
-                                      elevation: 8,
-                                      shadowColor:
-                                          Colors.black.withOpacity(.11),
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 8, vertical: 10),
-                                      deleteIconColor: Colors.pink,
-                                      onDeleted: () {
-                                        setState(() {
-                                          accessories
-                                              .remove(accessories[index]);
-                                        });
-                                        debugPrint("remove item from list");
-                                      },
-                                    ),
-                                  );
-                                },
-                              ),
-                            ),
-                            ListTile(
-                              title: const Text("Time to get Ready"),
-                              subtitle: const Text(
-                                  "How long will it take to get ready?"),
-                              leading: const Icon(Icons.timer),
-                              trailing: Text(
-                                  duration != null
-                                      ? "${duration!.inMinutes} Mins"
-                                      : "0 minutes",
-                                  style: const TextStyle(color: Colors.blue)),
-                              onTap: () async {
-                                duration = await showDurationPicker(
-                                    context: context,
-                                    showHead: true,
-                                    confirmText: "Select",
-                                    cancelText: "Cancel",
-                                    durationPickerMode:
-                                        DurationPickerMode.Minute,
-                                    initialDuration: const Duration(
-                                        hours: 0,
-                                        minutes: 15,
-                                        seconds: 0,
-                                        milliseconds: 0,
-                                        microseconds: 0));
-                                setState(() {});
-                              },
-                            ),
-                            Card(
-                              elevation: 10,
-                              shadowColor: Colors.black.withOpacity(.3),
-                              child: InkWell(
-                                onTap: () {
-                                  setState(() {
-                                    _available = !_available;
-                                  });
-                                },
-                                child: SizedBox(
-                                  width: double.infinity,
-                                  height: 70,
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      const Text("Meal currently Available"),
-                                      CupertinoSwitch(
-                                          value: _available,
-                                          onChanged: (onChanged) {
-                                            setState(() {
-                                              _available = onChanged;
-                                            });
-                                          }),
-                                    ],
+                              Align(
+                                alignment: Alignment.centerLeft,
+                                child: Padding(
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: 10.0, vertical: 10.0),
+                                  child: Text(
+                                    "Things to eat With",
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.w700),
                                   ),
                                 ),
                               ),
-                            ),
-                            const SizedBox(height: 30),
-                            ListTile(
-                              title: const Text("Pick Gallery Images"),
-                              subtitle: const Text(
-                                  "Pick multiple photos of this meal to showcase"),
-                              onTap: _selectGallery,
-                              trailing: const Icon(Icons.chevron_right),
-                            ),
-                            GridView.builder(
-                                shrinkWrap: true,
-                                physics: const NeverScrollableScrollPhysics(),
-                                gridDelegate:
-                                    const SliverGridDelegateWithFixedCrossAxisCount(
-                                        mainAxisSpacing: 20,
-                                        crossAxisSpacing: 20,
-                                        crossAxisCount: 2),
-                                itemCount: gallery.length,
-                                itemBuilder: (_, index) {
-                                  return InkWell(
-                                    onLongPress: () {
-                                      HapticFeedback.mediumImpact();
-                                      setState(() {
-                                        gallery.remove(gallery[index]);
-                                      });
-                                    },
-                                    child: Material(
-                                      shadowColor: Colors.black.withOpacity(.2),
-                                      elevation: 10,
-                                      child: ClipRRect(
+                              Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 12.0),
+                                child: TextFormField(
+                                  controller: _productAccesories,
+                                  validator: (val) {
+                                    if (val!.isEmpty) {
+                                      return "You can't add nothing";
+                                    }
+                                    return null;
+                                  },
+                                  textInputAction: TextInputAction.next,
+                                  decoration: InputDecoration(
+                                      hintText:
+                                          "Dodo, chips, Irish Potatoes, etc.",
+                                      border: const OutlineInputBorder(
                                         borderRadius: const BorderRadius.all(
-                                          Radius.circular(8),
-                                        ),
-                                        child: Image.file(
-                                          File(gallery[index]!.path),
-                                          fit: BoxFit.cover,
-                                          alignment: Alignment.center,
-                                          width: 100,
-                                          height: 122,
+                                          const Radius.circular(6),
                                         ),
                                       ),
-                                    ),
-                                  );
-                                }),
-                            if (!changed)
+                                      label: const Text(
+                                          "E.g Dodo, Irish, Bobolo, etc."),
+                                      suffixIcon: IconButton(
+                                          icon: const Icon(Icons.add,
+                                              color: Colors.pink),
+                                          onPressed: () {
+                                            if (accessories.contains(
+                                                _productAccesories.text)) {
+                                              debugPrint(
+                                                  "already has compliment");
+                                            } else {
+                                              debugPrint(
+                                                  "${_productAccesories.text} category added");
+                                              setState(() {
+                                                accessories.add(
+                                                    _productAccesories.text);
+                                              });
+                                              _productAccesories.text = "";
+                                            }
+                                          })),
+                                  maxLength: 30,
+                                  autofocus: false,
+                                ),
+                              ),
+                              AnimatedContainer(
+                                duration: Duration(milliseconds: 700),
+                                curve: Curves.fastOutSlowIn,
+                                width: double.infinity,
+                                height: accessories.isEmpty ? 0.0 : 60.0,
+                                child: ListView.builder(
+                                  physics: const BouncingScrollPhysics(
+                                      parent: AlwaysScrollableScrollPhysics()),
+                                  scrollDirection: Axis.horizontal,
+                                  itemCount: accessories.length,
+                                  itemBuilder: (_, index) {
+                                    return Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Chip(
+                                        deleteButtonTooltipMessage: "remove",
+                                        visualDensity:
+                                            VisualDensity.comfortable,
+                                        label: Text(
+                                          accessories[index],
+                                          style: TextStyle(color: Colors.white),
+                                        ),
+                                        avatar: const Icon(
+                                            Icons.fastfood_outlined,
+                                            color: Colors.white,
+                                            size: 16),
+                                        backgroundColor: Colors.lightGreen,
+                                        deleteIcon: const Icon(
+                                            Icons.close_outlined,
+                                            color: Colors.amber),
+                                        elevation: 8,
+                                        shadowColor:
+                                            Colors.black.withOpacity(.11),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 8, vertical: 10),
+                                        deleteIconColor: Colors.pink,
+                                        onDeleted: () {
+                                          setState(() {
+                                            accessories
+                                                .remove(accessories[index]);
+                                          });
+                                          debugPrint("remove item from list");
+                                        },
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                              ListTile(
+                                title: const Text("Time to get Ready"),
+                                subtitle: const Text(
+                                    "How long will it take to get ready?"),
+                                leading: const Icon(Icons.timer),
+                                trailing: Text(
+                                    duration != null
+                                        ? "${duration!.inMinutes} Mins"
+                                        : "0 minutes",
+                                    style: const TextStyle(color: Colors.blue)),
+                                onTap: () async {
+                                  duration = await showDurationPicker(
+                                      context: context,
+                                      showHead: true,
+                                      confirmText: "Select",
+                                      cancelText: "Cancel",
+                                      durationPickerMode:
+                                          DurationPickerMode.Minute,
+                                      initialDuration: const Duration(
+                                          hours: 0,
+                                          minutes: 15,
+                                          seconds: 0,
+                                          milliseconds: 0,
+                                          microseconds: 0));
+                                  setState(() {});
+                                },
+                              ),
                               Card(
-                                margin: EdgeInsets.symmetric(
-                                    horizontal: 5.0, vertical: 35.0),
-                                elevation: 15.0,
-                                color: Theme.of(context).primaryColor,
+                                elevation: 10,
+                                shadowColor: Colors.black.withOpacity(.3),
                                 child: InkWell(
                                   onTap: () {
-                                    if (gallery.isNotEmpty &&
-                                        _img != null &&
-                                        _productName.text.length > 1) {
-                                      setState(() {
-                                        changed = true;
-                                      });
-
-                                      _uploadProduct(mealDetails, context);
-                                    }
-
-                                    HapticFeedback.mediumImpact();
-                                    debugPrint("save meal");
+                                    setState(() {
+                                      _available = !_available;
+                                    });
                                   },
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 40.0, vertical: 12.0),
+                                  child: SizedBox(
+                                    width: double.infinity,
+                                    height: 70,
                                     child: Row(
                                       mainAxisAlignment:
-                                          MainAxisAlignment.spaceEvenly,
-                                      mainAxisSize: MainAxisSize.min,
+                                          MainAxisAlignment.spaceBetween,
                                       children: [
-                                        Icon(
-                                          Icons.upload_rounded,
-                                          color: Colors.white,
-                                          size: 20.0,
-                                        ),
-                                        Text(
-                                          "Publish Meal",
-                                          style: TextStyle(
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.w700),
-                                        ),
+                                        const Text("Meal currently Available"),
+                                        CupertinoSwitch(
+                                            value: _available,
+                                            onChanged: (onChanged) {
+                                              setState(() {
+                                                _available = onChanged;
+                                              });
+                                            }),
                                       ],
                                     ),
                                   ),
                                 ),
                               ),
-                            CupertinoButton(
-                                child: const Text(
-                                  "Cancel Product",
-                                  style: const TextStyle(color: Colors.pink),
+                              const SizedBox(height: 30),
+                              AnimatedSwitcher(
+                                duration: Duration(
+                                  milliseconds: 800,
                                 ),
-                                onPressed: () {
-                                  Navigator.of(context).pop();
-                                })
-                          ],
+                                reverseDuration: Duration(milliseconds: 600),
+                                transitionBuilder: (child, animation) {
+                                  animation = CurvedAnimation(
+                                      parent: animation,
+                                      curve: Curves.fastLinearToSlowEaseIn,
+                                      reverseCurve: Curves.decelerate);
+                                  return SizeTransition(
+                                    sizeFactor: animation,
+                                    axis: Axis.horizontal,
+                                    axisAlignment: 0.0,
+                                    child: child,
+                                  );
+                                },
+                                child: gallery.isEmpty
+                                    ? Card(
+                                        color: Colors.white,
+                                        elevation: 0,
+                                        shadowColor:
+                                            Colors.grey.withOpacity(.19),
+                                        child: InkWell(
+                                          onTap: _selectGallery,
+                                          child: SizedBox(
+                                            width: size.width * .9,
+                                            height: size.width * .3,
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.spaceEvenly,
+                                              children: [
+                                                FittedBox(
+                                                  child: Lottie.asset(
+                                                    "assets/gallery1.json",
+                                                    fit: BoxFit.contain,
+                                                  ),
+                                                ),
+                                                Text(
+                                                  "Tap to add gallery",
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      )
+                                    : SizedBox(
+                                        width: size.width,
+                                        height: size.width * .6,
+                                        child: ListView.builder(
+                                            shrinkWrap: true,
+                                            physics:
+                                                const NeverScrollableScrollPhysics(),
+                                            itemCount: gallery.length,
+                                            itemBuilder: (_, index) {
+                                              return InkWell(
+                                                onLongPress: () {
+                                                  HapticFeedback.mediumImpact();
+                                                  setState(() {
+                                                    gallery
+                                                        .remove(gallery[index]);
+                                                  });
+                                                },
+                                                child: Material(
+                                                  shadowColor: Colors.black
+                                                      .withOpacity(.2),
+                                                  elevation: 10,
+                                                  child: ClipRRect(
+                                                    borderRadius:
+                                                        const BorderRadius.all(
+                                                      Radius.circular(8),
+                                                    ),
+                                                    child: Image.file(
+                                                      File(
+                                                          gallery[index]!.path),
+                                                      fit: BoxFit.cover,
+                                                      alignment:
+                                                          Alignment.center,
+                                                      width: 100,
+                                                      height: 122,
+                                                    ),
+                                                  ),
+                                                ),
+                                              );
+                                            }),
+                                      ),
+                              ),
+                              if (!changed)
+                                Card(
+                                  margin: EdgeInsets.symmetric(
+                                      horizontal: 5.0, vertical: 35.0),
+                                  elevation: 15.0,
+                                  color: Theme.of(context).primaryColor,
+                                  child: InkWell(
+                                    onTap: () {
+                                      if (gallery.isNotEmpty &&
+                                          _img != null &&
+                                          _productName.text.length > 1) {
+                                        setState(() {
+                                          changed = true;
+                                        });
+
+                                        _uploadProduct(mealDetails, context);
+                                      }
+
+                                      HapticFeedback.mediumImpact();
+                                      debugPrint("save meal");
+                                    },
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 40.0, vertical: 12.0),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceEvenly,
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(
+                                            Icons.upload_rounded,
+                                            color: Colors.white,
+                                            size: 20.0,
+                                          ),
+                                          Text(
+                                            "Publish Meal",
+                                            style: TextStyle(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.w700),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              CupertinoButton(
+                                  child: const Text(
+                                    "Cancel Product",
+                                    style: const TextStyle(color: Colors.pink),
+                                  ),
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                  })
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ]),
-          )
-        ],
+              ]),
+            )
+          ],
+        ),
       ),
     );
 
     return SafeArea(
-      child: PageView(
-        controller: _pageController,
-        physics: NeverScrollableScrollPhysics(),
-        children: [
-          Scaffold(
-            body: AnimatedSwitcher(
-              transitionBuilder: (child, animation) {
-                return ScaleTransition(scale: animation, child: child);
-              },
-              duration: const Duration(milliseconds: 400),
-              switchInCurve: Curves.bounceInOut,
-              child: changed
-                  ? currentScreenWidget
-                  : AnimatedOpacity(
-                      duration: Duration(milliseconds: 350),
-                      opacity: changed ? 0 : 1.0,
-                      child: productForm,
-                    ),
-            ),
-          ),
-          CreateService()
-        ],
+      child: Scaffold(
+        body: productForm,
       ),
     );
   }

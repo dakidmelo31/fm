@@ -287,20 +287,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                                       horizontal:
                                                                           15.0,
                                                                       vertical:
-                                                                          18.0),
+                                                                          8.0),
                                                               child: Row(
                                                                 mainAxisAlignment:
                                                                     MainAxisAlignment
                                                                         .center,
                                                                 children: [
-                                                                  Padding(
-                                                                    padding:
-                                                                        const EdgeInsets.all(
-                                                                            8.0),
-                                                                    child: Icon(
-                                                                      Icons
-                                                                          .restaurant_rounded,
-                                                                    ),
+                                                                  Icon(
+                                                                    Icons
+                                                                        .restaurant_rounded,
                                                                   ),
                                                                   Text(
                                                                     "New Meal",
@@ -343,22 +338,17 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                                       horizontal:
                                                                           15.0,
                                                                       vertical:
-                                                                          18.0),
+                                                                          8.0),
                                                               child: Row(
                                                                 mainAxisAlignment:
                                                                     MainAxisAlignment
                                                                         .center,
                                                                 children: [
-                                                                  Padding(
-                                                                    padding:
-                                                                        const EdgeInsets.all(
-                                                                            8.0),
-                                                                    child: Icon(
-                                                                      Icons
-                                                                          .miscellaneous_services,
-                                                                      color: Colors
-                                                                          .white,
-                                                                    ),
+                                                                  Icon(
+                                                                    Icons
+                                                                        .food_bank_rounded,
+                                                                    color: Colors
+                                                                        .white,
                                                                   ),
                                                                   Text(
                                                                       "New Service",
