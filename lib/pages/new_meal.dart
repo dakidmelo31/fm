@@ -12,13 +12,14 @@ import 'package:image_picker/image_picker.dart';
 import 'package:lottie/lottie.dart';
 import 'package:merchants/models/food_model.dart';
 import 'package:merchants/providers/restaurant_provider.dart';
+import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:provider/provider.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:uuid/uuid.dart';
 
 import '../providers/notification_service.dart';
 import '../themes/light_theme.dart';
-import '../widgets/create_service.dart';
 
 CollectionReference users =
     FirebaseFirestore.instance.collection("restaurants");
@@ -60,6 +61,7 @@ class _NewMealState extends State<NewMeal> with TickerProviderStateMixin {
       _selectedCategories = [];
   bool changed = false;
   ImagePicker picker = ImagePicker();
+  ScrollController _scrollController = ScrollController();
 
   Widget currentScreenWidget = Container(
     alignment: Alignment.center,
@@ -75,6 +77,7 @@ class _NewMealState extends State<NewMeal> with TickerProviderStateMixin {
       ],
     ),
   );
+  bool uploading = false;
   @override
   void initState() {
     auth.currentUser != null
@@ -92,11 +95,13 @@ class _NewMealState extends State<NewMeal> with TickerProviderStateMixin {
         maxHeight: 500,
         maxWidth: 360);
     setState(() {
-      _img = File(image!.path);
+      if (image != null) _img = File(image.path);
     });
   }
 
+  double postSize = 0.0;
   _selectGallery() async {
+    postSize = 0.0;
     HapticFeedback.heavyImpact();
     List<XFile?>? myGallery = await picker.pickMultiImage(
         imageQuality: 95, maxHeight: 500, maxWidth: 360);
@@ -112,6 +117,10 @@ class _NewMealState extends State<NewMeal> with TickerProviderStateMixin {
     Fluttertoast.showToast(
         msg: "${gallery.length} images selected",
         backgroundColor: Colors.lightGreen);
+
+    // if (_img != null) postSize += await _img!.length() / 1000000;
+
+    debugPrint("total gallery size is: $postSize Mb");
   }
 
   _uploadGallery() async {
@@ -136,8 +145,18 @@ class _NewMealState extends State<NewMeal> with TickerProviderStateMixin {
   }
 
   _uploadProduct(MealsData mealDetails, BuildContext context) async {
+    setState(() {
+      uploading = true;
+    });
     const uuid = Uuid();
+    HapticFeedback.heavyImpact();
     if (_img == null) {
+      debugPrint("no image selected");
+      Fluttertoast.showToast(
+        msg: "Please select Photo",
+        backgroundColor: Colors.pink,
+        toastLength: Toast.LENGTH_LONG,
+      );
       return;
     }
     NotificationService().showNotification(0, "title", "body", 10);
@@ -152,14 +171,13 @@ class _NewMealState extends State<NewMeal> with TickerProviderStateMixin {
     await uploadTask.then((event) {
       event.ref.getDownloadURL().then((value) async {
         debugPrint("current URL: $value");
-
         Food food = Food(
             foodId: "",
             ingredients: [],
             available: _available,
             description: _descriptionController.text,
             likes: 0,
-            comments: 32,
+            comments: 0,
             image: value,
             name: _productName.text,
             price: double.parse(_productPrice.text),
@@ -180,7 +198,7 @@ class _NewMealState extends State<NewMeal> with TickerProviderStateMixin {
             "price": food.price,
             "duration":
                 "${duration?.inMinutes == null ? 0 : duration!.inMinutes} Mins",
-            "categories": categories,
+            "categories": _selectedCategories,
             "restaurantId": food.restaurantId,
             "image": food.image,
             "description": food.description,
@@ -242,8 +260,9 @@ class _NewMealState extends State<NewMeal> with TickerProviderStateMixin {
           FocusManager.instance.primaryFocus!.unfocus();
         },
         child: CustomScrollView(
-          physics: const BouncingScrollPhysics(
-              parent: AlwaysScrollableScrollPhysics()),
+          scrollDirection: Axis.vertical,
+          controller: _scrollController,
+          physics: const BouncingScrollPhysics(),
           slivers: [
             SliverList(
               delegate: SliverChildListDelegate([
@@ -485,12 +504,12 @@ class _NewMealState extends State<NewMeal> with TickerProviderStateMixin {
                                               _selectedCategories.remove(cat);
                                             });
                                           } else {
-                                            if (_selectedCategories.length >
+                                            if (_selectedCategories.length >=
                                                 5) {
                                               Fluttertoast.cancel();
                                               Fluttertoast.showToast(
                                                 msg:
-                                                    "Select categories Maximum",
+                                                    "Select 5 categories Maximum",
                                                 backgroundColor: Colors.pink,
                                                 gravity: ToastGravity.SNACKBAR,
                                                 toastLength: Toast.LENGTH_SHORT,
@@ -605,53 +624,42 @@ class _NewMealState extends State<NewMeal> with TickerProviderStateMixin {
                                   autofocus: false,
                                 ),
                               ),
-                              AnimatedContainer(
-                                duration: Duration(milliseconds: 700),
-                                curve: Curves.fastOutSlowIn,
-                                width: double.infinity,
-                                height: accessories.isEmpty ? 0.0 : 60.0,
-                                child: ListView.builder(
-                                  physics: const BouncingScrollPhysics(
-                                      parent: AlwaysScrollableScrollPhysics()),
-                                  scrollDirection: Axis.horizontal,
-                                  itemCount: accessories.length,
-                                  itemBuilder: (_, index) {
-                                    return Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: Chip(
-                                        deleteButtonTooltipMessage: "remove",
-                                        visualDensity:
-                                            VisualDensity.comfortable,
-                                        label: Text(
-                                          accessories[index],
-                                          style: TextStyle(color: Colors.white),
-                                        ),
-                                        avatar: const Icon(
-                                            Icons.fastfood_outlined,
-                                            color: Colors.white,
-                                            size: 16),
-                                        backgroundColor: Colors.lightGreen,
-                                        deleteIcon: const Icon(
-                                            Icons.close_outlined,
-                                            color: Colors.amber),
-                                        elevation: 8,
-                                        shadowColor:
-                                            Colors.black.withOpacity(.11),
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 8, vertical: 10),
-                                        deleteIconColor: Colors.pink,
-                                        onDeleted: () {
-                                          setState(() {
-                                            accessories
-                                                .remove(accessories[index]);
-                                          });
-                                          debugPrint("remove item from list");
-                                        },
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ),
+                              SizedBox(
+                                  height: 70.0,
+                                  width: size.width,
+                                  child: accessories.length == 0
+                                      ? Text("Compliments show up here",
+                                          style: TextStyle(color: Colors.grey))
+                                      : ListView.builder(
+                                          scrollDirection: Axis.horizontal,
+                                          itemCount: accessories.length,
+                                          physics: BouncingScrollPhysics(),
+                                          itemBuilder: (_, index) {
+                                            final item = accessories[index];
+                                            return Padding(
+                                              padding:
+                                                  const EdgeInsets.all(8.0),
+                                              child: InkWell(
+                                                  onTap: () {
+                                                    accessories.removeAt(index);
+                                                    setState(() {
+                                                      _productAccesories.text =
+                                                          item;
+                                                    });
+                                                  },
+                                                  child: Chip(
+                                                      backgroundColor:
+                                                          Colors.white,
+                                                      elevation: 10.0,
+                                                      shadowColor: Colors.black
+                                                          .withOpacity(.14),
+                                                      labelStyle: TextStyle(
+                                                          color: Colors
+                                                              .lightGreen),
+                                                      label: Text(item))),
+                                            );
+                                          },
+                                        )),
                               ListTile(
                                 title: const Text("Time to get Ready"),
                                 subtitle: const Text(
@@ -741,11 +749,9 @@ class _NewMealState extends State<NewMeal> with TickerProviderStateMixin {
                                               mainAxisAlignment:
                                                   MainAxisAlignment.spaceEvenly,
                                               children: [
-                                                FittedBox(
-                                                  child: Lottie.asset(
-                                                    "assets/gallery1.json",
-                                                    fit: BoxFit.contain,
-                                                  ),
+                                                Lottie.asset(
+                                                  "assets/gallery1.json",
+                                                  fit: BoxFit.contain,
                                                 ),
                                                 Text(
                                                   "Tap to add gallery",
@@ -757,45 +763,491 @@ class _NewMealState extends State<NewMeal> with TickerProviderStateMixin {
                                       )
                                     : SizedBox(
                                         width: size.width,
-                                        height: size.width * .6,
+                                        height: 170.0,
                                         child: ListView.builder(
-                                            shrinkWrap: true,
-                                            physics:
-                                                const NeverScrollableScrollPhysics(),
+                                            scrollDirection: Axis.horizontal,
+                                            physics: const BouncingScrollPhysics(
+                                                parent:
+                                                    AlwaysScrollableScrollPhysics()),
                                             itemCount: gallery.length,
                                             itemBuilder: (_, index) {
-                                              return InkWell(
-                                                onLongPress: () {
-                                                  HapticFeedback.mediumImpact();
-                                                  setState(() {
-                                                    gallery
-                                                        .remove(gallery[index]);
-                                                  });
-                                                },
-                                                child: Material(
-                                                  shadowColor: Colors.black
-                                                      .withOpacity(.2),
-                                                  elevation: 10,
-                                                  child: ClipRRect(
-                                                    borderRadius:
-                                                        const BorderRadius.all(
-                                                      Radius.circular(8),
-                                                    ),
-                                                    child: Image.file(
-                                                      File(
-                                                          gallery[index]!.path),
-                                                      fit: BoxFit.cover,
-                                                      alignment:
-                                                          Alignment.center,
-                                                      width: 100,
-                                                      height: 122,
-                                                    ),
-                                                  ),
-                                                ),
-                                              );
+                                              return gallery.length - 1 != index
+                                                  ? Stack(
+                                                      children: [
+                                                        Padding(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .all(8.0),
+                                                          child: Material(
+                                                            shadowColor: Colors
+                                                                .black
+                                                                .withOpacity(
+                                                                    .2),
+                                                            elevation: 10,
+                                                            child: ClipRRect(
+                                                              borderRadius:
+                                                                  const BorderRadius
+                                                                      .all(
+                                                                Radius.circular(
+                                                                    8),
+                                                              ),
+                                                              child: InkWell(
+                                                                onTap: () {
+                                                                  Navigator.push(
+                                                                      context,
+                                                                      PageRouteBuilder(
+                                                                        transitionDuration:
+                                                                            Duration(milliseconds: 1200),
+                                                                        reverseTransitionDuration:
+                                                                            Duration(milliseconds: 300),
+                                                                        transitionsBuilder: (_,
+                                                                            animation,
+                                                                            anotherAnimation,
+                                                                            child) {
+                                                                          animation = CurvedAnimation(
+                                                                              parent: animation,
+                                                                              curve: Curves.fastLinearToSlowEaseIn);
+                                                                          return SizeTransition(
+                                                                            sizeFactor:
+                                                                                animation,
+                                                                            axis:
+                                                                                Axis.horizontal,
+                                                                            axisAlignment:
+                                                                                0.0,
+                                                                            child:
+                                                                                child,
+                                                                          );
+                                                                        },
+                                                                        opaque:
+                                                                            false,
+                                                                        barrierColor: Colors
+                                                                            .black
+                                                                            .withOpacity(.8),
+                                                                        pageBuilder: (context,
+                                                                            animation,
+                                                                            secondaryAnimation) {
+                                                                          animation = CurvedAnimation(
+                                                                              parent: animation,
+                                                                              curve: Curves.fastLinearToSlowEaseIn);
+                                                                          return SizeTransition(
+                                                                            sizeFactor:
+                                                                                animation,
+                                                                            axis:
+                                                                                Axis.horizontal,
+                                                                            axisAlignment:
+                                                                                0.0,
+                                                                            child:
+                                                                                Scaffold(
+                                                                              backgroundColor: Colors.black.withOpacity(.8),
+                                                                              body: SizedBox(
+                                                                                width: size.width,
+                                                                                height: size.height,
+                                                                                child: Column(
+                                                                                  mainAxisSize: MainAxisSize.max,
+                                                                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                                                  children: [
+                                                                                    Spacer(),
+                                                                                    Align(
+                                                                                      alignment: Alignment.center,
+                                                                                      child: Hero(
+                                                                                        tag: gallery[index]!.path.toUpperCase(),
+                                                                                        child: ClipRRect(
+                                                                                          borderRadius: BorderRadius.circular(
+                                                                                            6,
+                                                                                          ),
+                                                                                          child: Image.file(
+                                                                                            File(gallery[index]!.path),
+                                                                                            fit: BoxFit.cover,
+                                                                                            alignment: Alignment.center,
+                                                                                            width: size.width * .9,
+                                                                                            height: size.width,
+                                                                                          ),
+                                                                                        ),
+                                                                                      ),
+                                                                                    ),
+                                                                                    Spacer(),
+                                                                                    Align(
+                                                                                      alignment: Alignment.bottomCenter,
+                                                                                      child: Padding(
+                                                                                        padding: const EdgeInsets.only(bottom: 28.0),
+                                                                                        child: Row(
+                                                                                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                                                                          children: [
+                                                                                            IconButton(
+                                                                                              onPressed: () {
+                                                                                                Navigator.pop(context);
+                                                                                              },
+                                                                                              icon: Icon(
+                                                                                                Icons.arrow_back_rounded,
+                                                                                                color: Colors.white,
+                                                                                                size: 30.0,
+                                                                                              ),
+                                                                                            ),
+                                                                                            Card(
+                                                                                                elevation: 10,
+                                                                                                color: Colors.white,
+                                                                                                child: InkWell(
+                                                                                                  onTap: () {
+                                                                                                    final tmp = _img;
+                                                                                                    setState(() {
+                                                                                                      _img = gallery[index];
+                                                                                                      if (_img != null) gallery[index] = _img;
+                                                                                                    });
+                                                                                                    Navigator.pop(context);
+                                                                                                  },
+                                                                                                  child: Padding(
+                                                                                                    padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
+                                                                                                    child: Text("Make This Main Picture"),
+                                                                                                  ),
+                                                                                                ))
+                                                                                          ],
+                                                                                        ),
+                                                                                      ),
+                                                                                    )
+                                                                                  ],
+                                                                                ),
+                                                                              ),
+                                                                            ),
+                                                                          );
+                                                                        },
+                                                                      ));
+                                                                },
+                                                                child: Hero(
+                                                                  tag: gallery[
+                                                                          index]!
+                                                                      .path
+                                                                      .toUpperCase(),
+                                                                  child:
+                                                                      ClipOval(
+                                                                    child:
+                                                                        Container(
+                                                                      width:
+                                                                          100.0,
+                                                                      height:
+                                                                          100.0,
+                                                                      alignment:
+                                                                          Alignment
+                                                                              .center,
+                                                                      child: Image
+                                                                          .file(
+                                                                        File(gallery[index]!
+                                                                            .path),
+                                                                        fit: BoxFit
+                                                                            .cover,
+                                                                        alignment:
+                                                                            Alignment.center,
+                                                                        width:
+                                                                            100,
+                                                                        height:
+                                                                            100,
+                                                                      ),
+                                                                    ),
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        Align(
+                                                          alignment: Alignment
+                                                              .topRight,
+                                                          child: ClipRRect(
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        8.0),
+                                                            child: Material(
+                                                              color:
+                                                                  Colors.white,
+                                                              child: InkWell(
+                                                                onTap: () {
+                                                                  HapticFeedback
+                                                                      .heavyImpact();
+                                                                  setState(() {
+                                                                    gallery.remove(
+                                                                        gallery[
+                                                                            index]);
+                                                                  });
+                                                                },
+                                                                child: Padding(
+                                                                  padding:
+                                                                      EdgeInsets
+                                                                          .all(
+                                                                              5.0),
+                                                                  child: Icon(
+                                                                    Icons
+                                                                        .delete,
+                                                                    color: Colors
+                                                                        .pink,
+                                                                    size: 30.0,
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    )
+                                                  : Row(
+                                                      children: [
+                                                        Stack(
+                                                          children: [
+                                                            Padding(
+                                                              padding:
+                                                                  const EdgeInsets
+                                                                      .all(8.0),
+                                                              child: Material(
+                                                                shadowColor: Colors
+                                                                    .black
+                                                                    .withOpacity(
+                                                                        .2),
+                                                                elevation: 10,
+                                                                child:
+                                                                    ClipRRect(
+                                                                  borderRadius:
+                                                                      const BorderRadius
+                                                                          .all(
+                                                                    Radius
+                                                                        .circular(
+                                                                            8),
+                                                                  ),
+                                                                  child:
+                                                                      InkWell(
+                                                                    onTap: () {
+                                                                      Navigator.push(
+                                                                          context,
+                                                                          PageRouteBuilder(
+                                                                            transitionDuration:
+                                                                                Duration(milliseconds: 1200),
+                                                                            reverseTransitionDuration:
+                                                                                Duration(milliseconds: 300),
+                                                                            transitionsBuilder: (_,
+                                                                                animation,
+                                                                                anotherAnimation,
+                                                                                child) {
+                                                                              animation = CurvedAnimation(parent: animation, curve: Curves.fastLinearToSlowEaseIn);
+                                                                              return SizeTransition(
+                                                                                sizeFactor: animation,
+                                                                                axis: Axis.horizontal,
+                                                                                axisAlignment: 0.0,
+                                                                                child: child,
+                                                                              );
+                                                                            },
+                                                                            opaque:
+                                                                                false,
+                                                                            barrierColor:
+                                                                                Colors.black.withOpacity(.8),
+                                                                            pageBuilder: (context,
+                                                                                animation,
+                                                                                secondaryAnimation) {
+                                                                              animation = CurvedAnimation(parent: animation, curve: Curves.fastLinearToSlowEaseIn);
+                                                                              return SizeTransition(
+                                                                                sizeFactor: animation,
+                                                                                axis: Axis.horizontal,
+                                                                                axisAlignment: 0.0,
+                                                                                child: Scaffold(
+                                                                                  backgroundColor: Colors.black.withOpacity(.8),
+                                                                                  body: SizedBox(
+                                                                                    width: size.width,
+                                                                                    height: size.height,
+                                                                                    child: Column(
+                                                                                      mainAxisSize: MainAxisSize.max,
+                                                                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                                                      children: [
+                                                                                        Spacer(),
+                                                                                        Align(
+                                                                                          alignment: Alignment.center,
+                                                                                          child: Hero(
+                                                                                            tag: gallery[index]!.path.toUpperCase(),
+                                                                                            child: ClipRRect(
+                                                                                              borderRadius: BorderRadius.circular(
+                                                                                                6,
+                                                                                              ),
+                                                                                              child: Image.file(
+                                                                                                File(gallery[index]!.path),
+                                                                                                fit: BoxFit.cover,
+                                                                                                alignment: Alignment.center,
+                                                                                                width: size.width * .9,
+                                                                                                height: size.width,
+                                                                                              ),
+                                                                                            ),
+                                                                                          ),
+                                                                                        ),
+                                                                                        Spacer(),
+                                                                                        Align(
+                                                                                          alignment: Alignment.bottomCenter,
+                                                                                          child: Padding(
+                                                                                            padding: const EdgeInsets.only(bottom: 28.0),
+                                                                                            child: Row(
+                                                                                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                                                                              children: [
+                                                                                                IconButton(
+                                                                                                  onPressed: () {
+                                                                                                    Navigator.pop(context);
+                                                                                                  },
+                                                                                                  icon: Icon(
+                                                                                                    Icons.arrow_back_rounded,
+                                                                                                    color: Colors.white,
+                                                                                                    size: 30.0,
+                                                                                                  ),
+                                                                                                ),
+                                                                                                Card(
+                                                                                                    elevation: 10,
+                                                                                                    color: Colors.white,
+                                                                                                    child: InkWell(
+                                                                                                      onTap: () {
+                                                                                                        final tmp = _img;
+                                                                                                        setState(() {
+                                                                                                          _img = gallery[index];
+                                                                                                          if (_img != null) gallery[index] = _img;
+                                                                                                        });
+                                                                                                        Navigator.pop(context);
+                                                                                                      },
+                                                                                                      child: Padding(
+                                                                                                        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
+                                                                                                        child: Text("Make This Main Picture"),
+                                                                                                      ),
+                                                                                                    ))
+                                                                                              ],
+                                                                                            ),
+                                                                                          ),
+                                                                                        )
+                                                                                      ],
+                                                                                    ),
+                                                                                  ),
+                                                                                ),
+                                                                              );
+                                                                            },
+                                                                          ));
+                                                                    },
+                                                                    child: Hero(
+                                                                      tag: gallery[
+                                                                              index]!
+                                                                          .path
+                                                                          .toUpperCase(),
+                                                                      child:
+                                                                          ClipOval(
+                                                                        child:
+                                                                            Container(
+                                                                          width:
+                                                                              100.0,
+                                                                          height:
+                                                                              100.0,
+                                                                          alignment:
+                                                                              Alignment.center,
+                                                                          child:
+                                                                              Image.file(
+                                                                            File(gallery[index]!.path),
+                                                                            fit:
+                                                                                BoxFit.cover,
+                                                                            alignment:
+                                                                                Alignment.center,
+                                                                            width:
+                                                                                100,
+                                                                            height:
+                                                                                100,
+                                                                          ),
+                                                                        ),
+                                                                      ),
+                                                                    ),
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            ),
+                                                            Align(
+                                                              alignment:
+                                                                  Alignment
+                                                                      .topRight,
+                                                              child: ClipRRect(
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            8.0),
+                                                                child: Material(
+                                                                  color: Colors
+                                                                      .white,
+                                                                  child:
+                                                                      InkWell(
+                                                                    onTap: () {
+                                                                      HapticFeedback
+                                                                          .heavyImpact();
+                                                                      setState(
+                                                                          () {
+                                                                        gallery.remove(
+                                                                            gallery[index]);
+                                                                      });
+                                                                    },
+                                                                    child:
+                                                                        Padding(
+                                                                      padding:
+                                                                          EdgeInsets.all(
+                                                                              5.0),
+                                                                      child:
+                                                                          Icon(
+                                                                        Icons
+                                                                            .delete,
+                                                                        color: Colors
+                                                                            .pink,
+                                                                        size:
+                                                                            30.0,
+                                                                      ),
+                                                                    ),
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                        Column(
+                                                          children: [
+                                                            IconButton(
+                                                              onPressed: () {
+                                                                setState(() {
+                                                                  gallery
+                                                                      .clear();
+                                                                });
+                                                              },
+                                                              icon: Icon(
+                                                                Icons.clear_all,
+                                                              ),
+                                                            ),
+                                                            IconButton(
+                                                              onPressed:
+                                                                  _selectGallery,
+                                                              icon: Icon(
+                                                                Icons
+                                                                    .add_a_photo,
+                                                                color: Colors
+                                                                    .lightGreen,
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        )
+                                                      ],
+                                                    );
                                             }),
                                       ),
                               ),
+                              if (postSize < .6 && false)
+                                Text(
+                                  "${gallery.length} Images selected: ${postSize * 1000} Kb (Good)",
+                                  style: TextStyle(
+                                      color: Colors.lightGreen,
+                                      fontWeight: FontWeight.w700),
+                                ),
+                              if (postSize >= .6 && postSize < 2.0 && false)
+                                Text(
+                                    "${gallery.length} Images selected: ${postSize.toStringAsFixed(2)} Mb (Okay)",
+                                    maxLines: 2,
+                                    style: TextStyle(
+                                        color: Colors.orange,
+                                        fontWeight: FontWeight.w700)),
+                              if (postSize >= 2.0 && false)
+                                Text(
+                                    "${gallery.length} Images selected: ${postSize.toStringAsFixed(2)} Mb (reduce image sizes)",
+                                    style: TextStyle(
+                                        color: Colors.pink,
+                                        fontWeight: FontWeight.w700)),
                               if (!changed)
                                 Card(
                                   margin: EdgeInsets.symmetric(
@@ -811,11 +1263,26 @@ class _NewMealState extends State<NewMeal> with TickerProviderStateMixin {
                                           changed = true;
                                         });
 
+                                        debugPrint("save meal");
                                         _uploadProduct(mealDetails, context);
                                       }
 
+                                      HapticFeedback.heavyImpact();
+                                      if (_img == null) {
+                                        _scrollController.animateTo(0.0,
+                                            curve: Curves.decelerate,
+                                            duration:
+                                                Duration(milliseconds: 800));
+                                        debugPrint("no image selected");
+                                        Fluttertoast.showToast(
+                                          msg: "Please select Photo",
+                                          backgroundColor: Colors.pink,
+                                          toastLength: Toast.LENGTH_LONG,
+                                        );
+                                        return;
+                                      }
+
                                       HapticFeedback.mediumImpact();
-                                      debugPrint("save meal");
                                     },
                                     child: Padding(
                                       padding: const EdgeInsets.symmetric(
@@ -841,14 +1308,6 @@ class _NewMealState extends State<NewMeal> with TickerProviderStateMixin {
                                     ),
                                   ),
                                 ),
-                              CupertinoButton(
-                                  child: const Text(
-                                    "Cancel Product",
-                                    style: const TextStyle(color: Colors.pink),
-                                  ),
-                                  onPressed: () {
-                                    Navigator.of(context).pop();
-                                  })
                             ],
                           ),
                         ),
@@ -864,8 +1323,120 @@ class _NewMealState extends State<NewMeal> with TickerProviderStateMixin {
     );
 
     return SafeArea(
-      child: Scaffold(
-        body: productForm,
+      child: Stack(
+        children: [
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            top: 0,
+            child: Scaffold(
+              body: AnimatedSwitcher(
+                duration: Duration(milliseconds: 800),
+                transitionBuilder: (child, animation) {
+                  animation = CurvedAnimation(
+                      parent: animation,
+                      curve: Curves.fastLinearToSlowEaseIn,
+                      reverseCurve: Curves.fastOutSlowIn);
+
+                  return ScaleTransition(
+                    scale: animation,
+                    alignment: Alignment.bottomCenter,
+                    filterQuality: FilterQuality.high,
+                    child: child,
+                  );
+                },
+                child: uploading
+                    ? Align(
+                        alignment: Alignment.center,
+                        child: Column(
+                          children: [
+                            Lottie.asset("assets/uploading-animation1.json"),
+                            Shimmer(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    Colors.grey.withOpacity(.3),
+                                    Colors.white,
+                                    Colors.grey
+                                  ],
+                                  begin: Alignment.centerLeft,
+                                  end: Alignment.centerRight,
+                                ),
+                                enabled: true,
+                                child: Text("Uploading Product Now")),
+                          ],
+                        ))
+                    : productForm,
+              ),
+            ),
+          ),
+          if (!uploading)
+            Align(
+              alignment: Alignment.topLeft,
+              child: Material(
+                color: Colors.transparent,
+                child: Padding(
+                  padding: const EdgeInsets.all(18.0),
+                  child: IconButton(
+                    icon: Icon(
+                      Icons.close_rounded,
+                      color: Colors.pink,
+                      size: 30,
+                    ),
+                    onPressed: () async {
+                      bool? outcome = await showCupertinoModalBottomSheet(
+                          context: context,
+                          backgroundColor: Colors.transparent,
+                          barrierColor: Colors.black.withOpacity(.7),
+                          duration: Duration(milliseconds: 800),
+                          isDismissible: true,
+                          builder: (builder) {
+                            return Material(
+                              color: Colors.transparent,
+                              child: Card(
+                                child: SizedBox(
+                                  width: size.width * .7,
+                                  height: 180.0,
+                                  child: Column(
+                                    children: [
+                                      Spacer(),
+                                      Text("Are you sure?",
+                                          style: Primary.bigHeading),
+                                      Spacer(),
+                                      Row(
+                                        children: [
+                                          Spacer(),
+                                          TextButton(
+                                              onPressed: () {
+                                                Navigator.pop(context, true);
+                                              },
+                                              child: Text("Yes")),
+                                          Spacer(),
+                                          TextButton(
+                                              onPressed: () {
+                                                Navigator.pop(context, false);
+                                              },
+                                              child: Text("Cancel")),
+                                          Spacer(),
+                                        ],
+                                      ),
+                                      Spacer(),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            );
+                          });
+
+                      if (outcome == true) {
+                        Navigator.pop(context);
+                      }
+                    },
+                  ),
+                ),
+              ),
+            )
+        ],
       ),
     );
   }

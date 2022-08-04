@@ -8,6 +8,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
@@ -1012,7 +1013,20 @@ class _MealDetailsState extends State<MealDetails> {
                                   });
                                 } else {
                                   setState(() {
-                                    _selectedCategories.add(cat);
+                                    if (_selectedCategories.length >= 5) {
+                                      Fluttertoast.cancel();
+                                      Fluttertoast.showToast(
+                                        msg: "Select 5 categories Maximum",
+                                        backgroundColor: Colors.pink,
+                                        gravity: ToastGravity.SNACKBAR,
+                                        toastLength: Toast.LENGTH_SHORT,
+                                        webShowClose: true,
+                                      );
+                                    } else {
+                                      setState(() {
+                                        _selectedCategories.add(cat);
+                                      });
+                                    }
                                   });
                                 }
                                 HapticFeedback.heavyImpact();
