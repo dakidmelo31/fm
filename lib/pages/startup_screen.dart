@@ -1,18 +1,49 @@
 import 'dart:async';
+import 'dart:convert';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:merchants/models/overview.dart';
+import 'package:merchants/pages/all_messages.dart';
 import 'package:merchants/pages/complete_signup.dart';
+import 'package:merchants/pages/order_details.dart';
 import 'package:merchants/providers/auth_provider.dart';
+import 'package:merchants/providers/orders_data.dart';
 import 'package:merchants/widgets/choose_option.dart';
 import 'package:merchants/widgets/login_form.dart';
 import 'package:merchants/widgets/top_info.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../main.dart';
+import '../models/customer.dart';
+import '../models/restaurants.dart';
 import 'home_screen.dart';
 
 FirebaseAuth tmpAuth = FirebaseAuth.instance;
+// Crude counter to make messages unique
+int _messageCount = 0;
+
+/// The API endpoint here accepts a raw FCM payload for demonstration purposes.
+String constructFCMPayload(String? token) {
+  _messageCount++;
+  return jsonEncode({
+    'token': token,
+    'data': {
+      'via': 'FlutterFire Cloud Messaging!!!',
+      'count': _messageCount.toString(),
+    },
+    'notification': {
+      'title': 'Hello FlutterFire!',
+      'body': 'This notification (#$_messageCount) was created via FCM!',
+    },
+  });
+}
 
 class StartupScreen extends StatefulWidget {
   static const routeName = "/";
@@ -30,26 +61,30 @@ class _StartupScreenState extends State<StartupScreen>
   late Animation<double> _mainAnimation, _switchAnimation, _completedAnimation;
   late AnimationController _animationController,
       _switchController,
-      _onlineController,
       _completedController;
-
+  bool? pushNotif;
   _checkUser() async {
-    if (auth.currentUser != null) {
-      debugPrint("current user is not null");
-      final prefs = await SharedPreferences.getInstance();
+    // FirebaseMessaging.instance.getInitialMessage().then((value) {});
+    final prefs = await SharedPreferences.getInstance();
 
-      if (prefs.containsKey("phone")) {
-        Future.delayed(Duration.zero, () {
-          Navigator.pushReplacementNamed(context, Home.routeName);
-        });
+    Future.delayed(Duration.zero, () {
+      if (auth.currentUser != null || pushNotif == null) {
+        debugPrint(pushNotif.toString());
+        debugPrint("current user is not null");
+
+        if (prefs.containsKey("phone")) {
+          Future.delayed(Duration.zero, () {
+            Navigator.pushReplacementNamed(context, Home.routeName);
+          });
+        } else {
+          auth.signOut();
+          prefs.clear();
+          Navigator.pushReplacementNamed(context, StartupScreen.routeName);
+        }
       } else {
-        auth.signOut();
-        prefs.clear();
-        Navigator.pushReplacementNamed(context, StartupScreen.routeName);
+        debugPrint("user is not logged in");
       }
-    } else {
-      debugPrint("user is not logged in");
-    }
+    });
   }
 
   @override
@@ -63,30 +98,12 @@ class _StartupScreenState extends State<StartupScreen>
 
   @override
   void initState() {
-    _checkUser();
-
     _animationController = AnimationController(
       vsync: this,
       duration: Duration(
         seconds: 2,
       ),
     );
-    _onlineController = AnimationController(
-      vsync: this,
-      duration: Duration(
-        milliseconds: 600,
-      ),
-    );
-
-    _onlineController.addListener(() {
-      debugPrint(_onlineController.value.toString());
-      if (_onlineController.isCompleted) {
-        debugPrint("completed animation");
-        Future.delayed(Duration(seconds: 5), () {
-          _onlineController.reverse();
-        });
-      }
-    });
 
     _switchController = AnimationController(
       vsync: this,
@@ -113,17 +130,140 @@ class _StartupScreenState extends State<StartupScreen>
       parent: _completedController,
       curve: Curves.fastLinearToSlowEaseIn,
     );
-    _connectivityStream = Connectivity().onConnectivityChanged;
     super.initState();
-  }
 
-  late Stream<ConnectivityResult> _connectivityStream;
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      FirebaseMessaging.instance.getInitialMessage().then((value) {
+        if (value != null) {
+          pushNotif = true;
+          debugPrint("Push Notification from terminated app");
+          debugPrint(value.data.toString());
+          String userId = value.data["userId"];
+
+          debugPrint("Chat Message recieved");
+          Navigator.push(
+            context,
+            PageRouteBuilder(
+              pageBuilder: ((context, animation, secondaryAnimation) {
+                animation = CurvedAnimation(
+                  parent: animation,
+                  curve: Curves.fastLinearToSlowEaseIn,
+                );
+                return ScaleTransition(
+                    scale: animation,
+                    child: AllMessages(
+                        fromPush: true,
+                        customerId: value.data["userId"].toString(),
+                        chatsStream: FirebaseFirestore.instance
+                            .collection("messages")
+                            .where("userId", isEqualTo: userId)
+                            .where("restaurantId",
+                                isEqualTo:
+                                    FirebaseAuth.instance.currentUser!.uid)
+                            .orderBy("lastMessageTime", descending: false)
+                            .snapshots(),
+                        ordersStream: FirebaseFirestore.instance
+                            .collection("orders")
+                            .where("userId", isEqualTo: userId)
+                            .where("restaurantId",
+                                isEqualTo:
+                                    FirebaseAuth.instance.currentUser!.uid)
+                            .orderBy("time", descending: true)
+                            .snapshots()));
+              }),
+            ),
+          );
+        } else {
+          _checkUser();
+          debugPrint("App opened normally");
+        }
+        // From Terminated App
+
+        FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+          RemoteNotification? notification = message.notification;
+          AndroidNotification? android = message.notification?.android;
+          if (notification != null && android != null && !kIsWeb) {
+            flutterLocalNotificationsPlugin.show(
+              notification.hashCode,
+              notification.title,
+              notification.body,
+              NotificationDetails(
+                android: AndroidNotificationDetails(
+                  channel.id,
+                  channel.name,
+                  channelDescription: channel.description,
+                  icon: 'ic_launcher',
+                ),
+              ),
+            );
+          }
+        });
+        FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+          print('A new onMessageOpenedApp event was published!');
+          pushNotif = true;
+
+          debugPrint("Push Message recieved");
+          var data = message.data;
+          debugPrint(data.toString());
+          String userId = message.data["userId"];
+
+          if (value != null) {
+            pushNotif = true;
+            debugPrint("Push Notification from terminated app");
+            debugPrint(value.data.toString());
+            String userId = value.data["userId"];
+
+            debugPrint("Chat Message recieved");
+            Navigator.push(
+              context,
+              PageRouteBuilder(
+                pageBuilder: ((context, animation, secondaryAnimation) {
+                  animation = CurvedAnimation(
+                    parent: animation,
+                    curve: Curves.fastLinearToSlowEaseIn,
+                  );
+                  return ScaleTransition(
+                      scale: animation,
+                      child: AllMessages(
+                          fromPush: true,
+                          customerId: value.data["userId"].toString(),
+                          chatsStream: FirebaseFirestore.instance
+                              .collection("messages")
+                              .where("userId", isEqualTo: userId)
+                              .where("restaurantId",
+                                  isEqualTo:
+                                      FirebaseAuth.instance.currentUser!.uid)
+                              .orderBy("lastMessageTime", descending: false)
+                              .snapshots(),
+                          ordersStream: FirebaseFirestore.instance
+                              .collection("orders")
+                              .where("userId", isEqualTo: userId)
+                              .where("restaurantId",
+                                  isEqualTo:
+                                      FirebaseAuth.instance.currentUser!.uid)
+                              .orderBy("time", descending: true)
+                              .snapshots()));
+                }),
+              ),
+            );
+          } else {
+            _checkUser();
+            debugPrint("App opened normally");
+          }
+
+          debugPrint(message.data.toString());
+
+          debugPrint("Push Notification from terminated app");
+          debugPrint(message.notification.toString());
+        });
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     debugPrint(_formType.toString());
 
-    final _userData = Provider.of<Auth>(context);
     Size size = MediaQuery.of(context).size;
     _animationController.forward();
     return SafeArea(
@@ -131,7 +271,7 @@ class _StartupScreenState extends State<StartupScreen>
         decoration: BoxDecoration(
           image: DecorationImage(
             image: AssetImage(
-              "assets/splash_bg.png",
+              "assets/logo/splash_bg.png",
             ),
             filterQuality: FilterQuality.high,
             fit: BoxFit.cover,
@@ -139,9 +279,11 @@ class _StartupScreenState extends State<StartupScreen>
           ),
           gradient: LinearGradient(
             colors: [
-              Colors.black,
-              Colors.black.withOpacity(.83),
-              Colors.black.withOpacity(.47),
+              Colors.transparent,
+              Colors.transparent,
+              // Colors.black,
+              // Colors.black.withOpacity(.83),
+              // Colors.black.withOpacity(.47),
             ],
             begin: Alignment.bottomRight,
             end: Alignment.topLeft,
@@ -210,101 +352,6 @@ class _StartupScreenState extends State<StartupScreen>
                       reverseAnimation: () {
                         _completedController.reverse();
                       }),
-                StreamBuilder<ConnectivityResult>(
-                    stream: _connectivityStream,
-                    builder:
-                        (context, AsyncSnapshot<ConnectivityResult> snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return SizedBox.shrink();
-                      }
-                      if (snapshot.requireData == ConnectivityResult.mobile) {
-                        double value = 20.0;
-                        _onlineController.forward();
-                        return AnimatedBuilder(
-                            animation: _onlineController,
-                            builder: (context, child) {
-                              Animation<double> animation = CurvedAnimation(
-                                  parent: _onlineController,
-                                  curve: Curves.fastLinearToSlowEaseIn);
-                              return Align(
-                                alignment: Alignment.topCenter,
-                                child: AnimatedContainer(
-                                  duration: Duration(milliseconds: 1000),
-                                  curve: Curves.fastLinearToSlowEaseIn,
-                                  color: Colors.green,
-                                  child: Center(
-                                      child: Text(
-                                    "Online",
-                                    style: TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.w700),
-                                  )),
-                                  height: value * animation.value,
-                                  width: size.width,
-                                ),
-                              );
-                            });
-                      }
-
-                      if (snapshot.requireData == ConnectivityResult.wifi) {
-                        double value = 20.0;
-                        _onlineController.forward();
-                        return AnimatedBuilder(
-                            animation: _onlineController,
-                            builder: (context, child) {
-                              Animation<double> animation = CurvedAnimation(
-                                  parent: _onlineController,
-                                  curve: Curves.fastLinearToSlowEaseIn);
-                              return Align(
-                                alignment: Alignment.topCenter,
-                                child: AnimatedContainer(
-                                  duration: Duration(milliseconds: 1000),
-                                  curve: Curves.fastLinearToSlowEaseIn,
-                                  color: Colors.blue,
-                                  child: Center(
-                                      child: Text(
-                                    "Using Wifi",
-                                    style: TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.w700),
-                                  )),
-                                  height: value * animation.value,
-                                  width: size.width,
-                                ),
-                              );
-                            });
-                      }
-
-                      if (snapshot.requireData == ConnectivityResult.none) {
-                        double value = 20.0;
-                        return AnimatedBuilder(
-                            animation: _onlineController,
-                            builder: (context, child) {
-                              Animation<double> animation = CurvedAnimation(
-                                  parent: _onlineController,
-                                  curve: Curves.fastLinearToSlowEaseIn);
-                              return Align(
-                                alignment: Alignment.topCenter,
-                                child: AnimatedContainer(
-                                  duration: Duration(milliseconds: 1000),
-                                  curve: Curves.fastLinearToSlowEaseIn,
-                                  color: Colors.red,
-                                  child: Center(
-                                      child: Text(
-                                    "Offline",
-                                    style: TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.w700),
-                                  )),
-                                  height: value,
-                                  width: size.width,
-                                ),
-                              );
-                            });
-                      }
-
-                      return SizedBox.shrink();
-                    })
               ],
             ),
           ),

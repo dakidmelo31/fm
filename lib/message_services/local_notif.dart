@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 class CloudMsgService {
@@ -62,6 +63,7 @@ class CloudMsgService {
       "FoodinCityChannel",
       "Main Foodin News",
       description: "every food you need is right here for you.",
+      groupId: 'chats',
       importance: Importance.max,
     );
 
@@ -76,6 +78,7 @@ class CloudMsgService {
   ) async {
     RemoteMessage? initialMessage = await _messaging.getInitialMessage();
     if (initialMessage?.data != null) {
+      debugPrint(initialMessage.toString());
       onSelectNotification(jsonEncode(initialMessage!.data));
     }
   }

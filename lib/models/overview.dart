@@ -5,7 +5,7 @@ class Overview {
   String name;
   String messageId;
   String message;
-  String photo;
+  String photo, deviceId;
   DateTime time;
   bool unreadCount;
   bool you;
@@ -13,6 +13,7 @@ class Overview {
   Overview({
     required this.name,
     required this.you,
+    required this.deviceId,
     required this.messageId,
     required this.message,
     required this.photo,
@@ -44,6 +45,7 @@ class Overview {
       you: map['you'] as bool,
       messageId: map['messageId'] as String,
       message: map['message'] as String,
+      deviceId: map['userToken'] as String,
       photo: map['photo'] as String,
       time: DateTime.fromMillisecondsSinceEpoch(map['time'] as int),
       unreadCount: map['unreadCount'] as bool,
@@ -65,6 +67,7 @@ class Overview {
         other.messageId == messageId &&
         other.message == message &&
         other.photo == photo &&
+        other.deviceId == deviceId &&
         other.time == time &&
         other.unreadCount == unreadCount &&
         other.userId == userId;

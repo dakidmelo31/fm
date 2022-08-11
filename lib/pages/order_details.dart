@@ -30,17 +30,21 @@ import '../models/customer.dart';
 import '../models/order_model.dart';
 
 class OrderDetails extends StatefulWidget {
-  final int total;
-  Order order;
-  final Color color;
+  int? total;
+  Order? order;
+  Color? color;
   OrderDetails({
     Key? key,
-    required this.total,
-    required this.restaurant,
-    required this.order,
-    required this.color,
+    this.total,
+    this.userId,
+    this.fromPush,
+    this.restaurant,
+    this.order,
+    this.color,
   }) : super(key: key);
-  final Restaurant restaurant;
+  Restaurant? restaurant;
+  String? userId;
+  bool? fromPush;
 
   @override
   State<OrderDetails> createState() => _OrderDetailsState();
@@ -93,7 +97,7 @@ class _OrderDetailsState extends State<OrderDetails>
         .collection("overviews")
         .doc(auth.currentUser!.uid)
         .collection("chats")
-        .where("userId", isEqualTo: widget.order.userId)
+        .where("userId", isEqualTo: widget.order!.userId)
         .get();
   }
 
@@ -137,8 +141,8 @@ class _OrderDetailsState extends State<OrderDetails>
   late Order order;
   @override
   void initState() {
-    _color = widget.color;
-    order = widget.order;
+    _color = widget.color!;
+    order = widget.order!;
     _animationController = AnimationController(
         vsync: this,
         duration: Duration(
@@ -273,7 +277,7 @@ class _OrderDetailsState extends State<OrderDetails>
                                       CustomScaleTransition(
                                         alignment: Alignment.bottomCenter,
                                         child: SeeLocation(
-                                          restaurant: widget.restaurant,
+                                          restaurant: widget.restaurant!,
                                           customer: customer!,
                                         ),
                                       ),
@@ -542,6 +546,9 @@ class _OrderDetailsState extends State<OrderDetails>
                                                                 chatsStream:
                                                                     chatStream,
                                                                 customer: Overview(
+                                                                    deviceId:
+                                                                        customer!
+                                                                            .deviceId,
                                                                     name: customer!
                                                                         .name,
                                                                     you: false,

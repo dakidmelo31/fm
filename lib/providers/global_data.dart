@@ -1,5 +1,10 @@
+import 'dart:convert';
+import 'dart:math';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
+import 'package:merchants/models/restaurants.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import '../global.dart';
@@ -252,19 +257,102 @@ deleteChatOverview({required String restaurantId}) async {
   }).then((value) => debugPrint("done deleting chat"));
 }
 
-sendMessage({required Chat chat}) async {
+sendMessage(
+    {required Chat chat,
+    required String userToken,
+    required Restaurant restaurant}) async {
   DBManager.instance.addChat(chat: chat);
   updateMessage(
       message: chat.lastmessage,
       newTime: chat.lastMessageTime,
       resturantId: chat.restaurantId);
-  firestore
-      .collection("messages")
-      .add(chat.toMap())
-      .then((value) => debugPrint("done adding message"))
-      .catchError((onError) {
+  firestore.collection("messages").add(chat.toMap()).then((value) async {
+    int rand = Random().nextInt(5000);
+    debugPrint("Send Notification");
+    final data = {
+      "click_action": "FLUTTER_NOTIFICATION_CLICK",
+      "id": "$rand",
+      "restaurantId": auth.currentUser!.uid,
+      "message": chat.lastmessage,
+    };
+    try {
+      debugPrint("Token is: $userToken");
+      http.Response response =
+          await http.post(Uri.parse("https://fcm.googleapis.com/fcm/send"),
+              headers: <String, String>{
+                'Content-Type': 'application/json',
+                'Authorization':
+                    'key=AAAAvlyEBz8:APA91bHiJP23KhUWPvJVvMH0iSgzLh37KQoG2id7-Yuk46_CCV5QTRRz7kU-wXo2g3vWoM5rkQlOTtERlk7vAGAKrZ9HKNLelRAd9yXlYkKN0ETklaYSRXHI9LVCgRh0AKT878i2zXAc',
+              },
+              body: jsonEncode(<String, dynamic>{
+                'notification': <String, dynamic>{
+                  'title': restaurant.companyName,
+                  'body': '${chat.lastmessage}',
+                  'image': restaurant.businessPhoto,
+                  'color': "#f68d2e"
+                },
+                'priority': 'high',
+                'data': data,
+                'collapse-key': 'message',
+                'to': userToken
+              }));
+
+      if (response.statusCode == 200) {
+        debugPrint("Notification Sent");
+      } else {
+        debugPrint("error found ${response.body}");
+      }
+    } catch (e) {
+      throw Exception("Error sending personal notification");
+    }
+  }).catchError((onError) {
     debugPrint("error found: $onError");
   });
+}
+
+sendOrderNotification(
+    {required String deviceId,
+    required String message,
+    required String title,
+    restaurant}) async {
+  int rand = Random().nextInt(5000);
+  debugPrint("Send Notification");
+  final data = {
+    "click_action": "FLUTTER_NOTIFICATION_CLICK",
+    "id": "$rand",
+    "restaurantId": auth.currentUser!.uid,
+    "message": message,
+  };
+  try {
+    debugPrint("Token is: $deviceId");
+    http.Response response =
+        await http.post(Uri.parse("https://fcm.googleapis.com/fcm/send"),
+            headers: <String, String>{
+              'Content-Type': 'application/json',
+              'Authorization':
+                  'key=AAAAvlyEBz8:APA91bHiJP23KhUWPvJVvMH0iSgzLh37KQoG2id7-Yuk46_CCV5QTRRz7kU-wXo2g3vWoM5rkQlOTtERlk7vAGAKrZ9HKNLelRAd9yXlYkKN0ETklaYSRXHI9LVCgRh0AKT878i2zXAc',
+            },
+            body: jsonEncode(<String, dynamic>{
+              'notification': <String, dynamic>{
+                'title': restaurant.companyName,
+                'body': message,
+                'image': restaurant.businessPhoto,
+                'color': "#dcedc2"
+              },
+              'priority': 'high',
+              'data': data,
+              'collapse-key': 'message',
+              'to': deviceId
+            }));
+
+    if (response.statusCode == 200) {
+      debugPrint("Notification Sent");
+    } else {
+      debugPrint("error found ${response.body}");
+    }
+  } catch (e) {
+    throw Exception("Error sending personal notification");
+  }
 }
 
 updateMessage(

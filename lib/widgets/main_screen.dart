@@ -271,7 +271,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                             .symmetric(
                                                                 horizontal:
                                                                     15.0,
-                                                                vertical: 5.0),
+                                                                vertical: 2.0),
                                                         child: InkWell(
                                                           onTap: () {
                                                             Navigator.pushReplacement(
@@ -287,7 +287,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                                       horizontal:
                                                                           15.0,
                                                                       vertical:
-                                                                          8.0),
+                                                                          12.0),
                                                               child: Row(
                                                                 mainAxisAlignment:
                                                                     MainAxisAlignment
@@ -319,7 +319,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                             .symmetric(
                                                                 horizontal:
                                                                     15.0,
-                                                                vertical: 5.0),
+                                                                vertical: 2.0),
                                                         child: InkWell(
                                                           onTap: () {
                                                             Navigator
@@ -338,7 +338,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                                       horizontal:
                                                                           15.0,
                                                                       vertical:
-                                                                          8.0),
+                                                                          12.0),
                                                               child: Row(
                                                                 mainAxisAlignment:
                                                                     MainAxisAlignment

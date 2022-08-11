@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
@@ -8,6 +9,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:lottie/lottie.dart';
+import 'package:merchants/global.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../animations/slideup_tween.dart';
@@ -143,7 +145,7 @@ class _CompleteProfileState extends State<CompleteProfile> {
         debugPrint("now about to add users.");
 
         String? phoneNumber;
-        var token = await FirebaseMessaging.instance.getToken();
+        var token = await getFirebaseToken();
         String deviceToken = token.toString();
         final prefs = await SharedPreferences.getInstance();
         if (prefs.containsKey("tmpNumber")) {
@@ -156,9 +158,9 @@ class _CompleteProfileState extends State<CompleteProfile> {
 
         prefs.setBool("account_created", true);
 
-        await firestore
+        await FirebaseFirestore.instance
             .collection("restaurants")
-            .doc(auth.currentUser!.uid)
+            .doc(FirebaseAuth.instance.currentUser!.uid)
             .set({
               "name": _nameController.text,
               "username": _usernameController.text,
@@ -168,8 +170,7 @@ class _CompleteProfileState extends State<CompleteProfile> {
               "lat": lat,
               "long": lng,
               "totalOrders": 0,
-              "totalMeals": 0,
-              "followers": 0,
+              "blockList": [],
               "companyName": _companyNameController.text,
               "categories": _selectedCategories,
               "gallery": [],
@@ -189,6 +190,8 @@ class _CompleteProfileState extends State<CompleteProfile> {
               "comments": 0,
               "verified": false,
               "likes": 0,
+              "totalMeals": 0,
+              "followers": 0,
               "deviceToken": deviceToken,
               "created_at": FieldValue.serverTimestamp()
             }, SetOptions(merge: true))

@@ -21,14 +21,16 @@ class NotificationStream extends StatelessWidget {
             String notificationId = doc.id;
             CloudNotification notification =
                 CloudNotification.fromMap(doc.data() as Map<String, dynamic>);
-
-            debugPrint("got notifications for $notificationId");
-            sendNotif(
-                    description: notification.description,
-                    title: notification.title,
-                    payload: notification.payload)
-                .then((value) =>
-                    deleteCloudNotification(notificationId: notificationId));
+            var data = doc.data() as Map<String, dynamic>;
+            // debugPrint(data.toString());
+            // debugPrint("got notifications for $notificationId");
+            // debugPrint("And the ID is: ${data['message']}");
+            // sendNotif(
+            //         description: notification.description,
+            //         title: notification.title,
+            //         payload: notification.payload)
+            //     .then((value) =>
+            //         deleteCloudNotification(notificationId: notificationId));
 //delete the notification
           }
         }

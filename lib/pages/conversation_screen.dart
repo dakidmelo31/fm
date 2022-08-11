@@ -136,11 +136,12 @@ class _ChatHomeState extends State<ChatHome> with TickerProviderStateMixin {
                             .collection("chats")
                             .doc(item.id)
                             .update({"newMessage": false}).then(
-                                (value) => debugPrint("now opened"));
+                                (value) => null); //debugPrint("now opened")
                       Timestamp? time = item['time'];
                       DateTime date =
                           time == null ? DateTime.now() : time.toDate();
                       Overview chat = Overview(
+                          deviceId: item["deviceId"],
                           name: item["name"],
                           you: item["sentByMe"],
                           messageId: item.id,
@@ -161,8 +162,6 @@ class _ChatHomeState extends State<ChatHome> with TickerProviderStateMixin {
                           parent: BouncingScrollPhysics()),
                       itemBuilder: (_, index) {
                         final Overview item = overviews[index];
-                        debugPrint("Overviews now has length of: " +
-                            overviews.length.toString());
                         String time = DateTime.now().day - item.time.day > 0
                             ? item.time.day.toString() +
                                 "/" +

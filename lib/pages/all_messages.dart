@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
 import 'package:merchants/models/overview.dart';
+import 'package:merchants/pages/home_screen.dart';
+import 'package:merchants/transitions/transitions.dart';
 import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeAgo;
 import '../models/chats_model.dart';
@@ -16,19 +18,23 @@ import '../providers/global_data.dart';
 import 'order_details.dart';
 
 class AllMessages extends StatefulWidget {
-  const AllMessages(
+  AllMessages(
       {Key? key,
       this.callUpdate,
-      required this.customer,
-      required this.restaurant,
+      this.fromPush,
+      this.customerId,
+      this.customer,
+      this.restaurant,
       required this.chatsStream,
       required this.ordersStream})
       : super(key: key);
-  final Overview customer;
-  final bool? callUpdate;
+  Overview? customer;
+  bool? callUpdate;
+  bool? fromPush;
+  String? customerId;
   final chatsStream;
   final ordersStream;
-  final Restaurant restaurant;
+  Restaurant? restaurant;
 
   @override
   State<AllMessages> createState() => _AllMessagesState();
@@ -50,26 +56,84 @@ class _AllMessagesState extends State<AllMessages> {
     return answer;
   }
 
-  late Overview customer;
+  late Overview? customer;
+
+  deliveredBy() async {
+    if (widget.customerId != null) {
+      await firestore
+          .collection("overviews")
+          .doc(FirebaseAuth.instance.currentUser!.uid)
+          .collection("chats")
+          .doc(widget.customerId)
+          .get()
+          .then((DocumentSnapshot item) {
+        debugPrint("Customer Loading");
+
+        Timestamp? time = item['time'];
+        DateTime date = time == null ? DateTime.now() : time.toDate();
+        Overview chat = Overview(
+            name: item["name"],
+            deviceId: item["deviceId"],
+            you: item["sentByMe"],
+            messageId: item.id,
+            message: item['lastMessage'],
+            photo: item['photo'],
+            time: date,
+            unreadCount: item['newMessage'],
+            userId: item.id);
+        chat.messageId = item.id;
+        widget.customer = chat;
+        debugPrint("total information is: " + chat.toString());
+        return chat;
+      }).then((value) {
+        setState(() {
+          debugPrint("Customer Created");
+          customer = value;
+        });
+      });
+    } else {
+      debugPrint("Nothing to load");
+    }
+  }
+
   @override
   void initState() {
+    deliveredBy();
     customer = widget.customer;
     timeAgo.setDefaultLocale("en");
     super.initState();
-    _chatStream = firestore
-        .collection("messages")
-        .where("userId", isEqualTo: customer.userId)
-        .where("restaurantId",
-            isEqualTo: FirebaseAuth.instance.currentUser!.uid)
-        .orderBy("lastMessageTime", descending: false)
-        .snapshots();
-    _orderStream = firestore
-        .collection("orders")
-        .where("userId", isEqualTo: customer.userId)
-        .where("restaurantId",
-            isEqualTo: FirebaseAuth.instance.currentUser!.uid)
-        .orderBy("time", descending: true)
-        .snapshots();
+    if (customer != null) {
+      _chatStream = firestore
+          .collection("messages")
+          .where("userId", isEqualTo: customer!.userId)
+          .where("restaurantId",
+              isEqualTo: FirebaseAuth.instance.currentUser!.uid)
+          .orderBy("lastMessageTime", descending: false)
+          .snapshots();
+      _orderStream = firestore
+          .collection("orders")
+          .where("userId", isEqualTo: customer!.userId)
+          .where("restaurantId",
+              isEqualTo: FirebaseAuth.instance.currentUser!.uid)
+          .orderBy("time", descending: true)
+          .snapshots();
+    } else {
+      debugPrint("from push notification");
+      _chatStream = firestore
+          .collection("messages")
+          .where("userId", isEqualTo: widget.customerId!)
+          .where("restaurantId",
+              isEqualTo: FirebaseAuth.instance.currentUser!.uid)
+          .orderBy("lastMessageTime", descending: false)
+          .snapshots();
+      _orderStream = firestore
+          .collection("orders")
+          .where("userId", isEqualTo: widget.customerId!)
+          .where("restaurantId",
+              isEqualTo: FirebaseAuth.instance.currentUser!.uid)
+          .orderBy("time", descending: true)
+          .snapshots();
+    }
   }
 
   String lastMessage = "";
@@ -78,11 +142,18 @@ class _AllMessagesState extends State<AllMessages> {
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
+
     return WillPopScope(
       onWillPop: () async {
+        if (widget.customerId != null) {
+          Navigator.pushReplacement(
+              context, HorizontalSizeTransition(child: Home()));
+        }
         if (lastMessage.isNotEmpty) {
           updateOverview(
-              id: widget.customer.userId, message: lastMessage, sentByMe: true);
+              id: widget.customer!.userId,
+              message: lastMessage,
+              sentByMe: true);
           debugPrint("updating overview: $lastMessage");
         } else
           debugPrint("Nothing to update overview with");
@@ -90,569 +161,627 @@ class _AllMessagesState extends State<AllMessages> {
       },
       child: Stack(
         children: [
-          Image.asset("assets/background/bg.jpg",
+          Image.asset("assets/merchant.png",
               width: size.width,
               height: size.height,
               alignment: Alignment.center,
-              fit: BoxFit.cover),
+              fit: BoxFit.contain),
           SafeArea(
             child: Scaffold(
               backgroundColor: Colors.transparent,
-              body: GestureDetector(
-                onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
-                child: Column(
-                  children: [
-                    StreamBuilder<QuerySnapshot>(
-                        stream: _orderStream,
-                        builder: (context, AsyncSnapshot ordersnaps) {
-                          if (ordersnaps.hasError) {
-                            return Center(
-                              child: Text("please log back in"),
-                            );
-                          }
+              body: customer == null
+                  ? Container(
+                      alignment: Alignment.center,
+                      width: size.width,
+                      height: size.height,
+                      child: Lottie.asset(
+                        "assets/loading5.json",
+                        fit: BoxFit.cover,
+                        alignment: Alignment.center,
+                        reverse: true,
+                      ),
+                    )
+                  : GestureDetector(
+                      onTap: () =>
+                          FocusManager.instance.primaryFocus?.unfocus(),
+                      child: Column(
+                        children: [
+                          StreamBuilder<QuerySnapshot>(
+                              stream: _orderStream,
+                              builder: (context, AsyncSnapshot ordersnaps) {
+                                if (ordersnaps.hasError) {
+                                  return Center(
+                                    child: Text("please log back in"),
+                                  );
+                                }
 
-                          if (ordersnaps.connectionState ==
-                              ConnectionState.waiting) {
-                            return Lottie.asset("assets/loading7.json",
-                                width: size.width,
-                                height: 80,
-                                fit: BoxFit.contain,
-                                alignment: Alignment.center);
-                          }
+                                if (ordersnaps.connectionState ==
+                                    ConnectionState.waiting) {
+                                  return Lottie.asset("assets/loading7.json",
+                                      width: size.width,
+                                      height: 80,
+                                      fit: BoxFit.contain,
+                                      alignment: Alignment.center);
+                                }
 
-                          debugPrint(" total orders: " +
-                              ordersnaps.data!.docs.length.toString());
-                          for (var doc in ordersnaps.data!.docs) {
-                            String documentId = doc.id;
+                                debugPrint(" total orders: " +
+                                    ordersnaps.data!.docs.length.toString());
+                                for (var doc in ordersnaps.data!.docs) {
+                                  String documentId = doc.id;
 
-                            // debugPrint(documentId);
+                                  // debugPrint(documentId);
 
-                            if (!checkId(orderId: documentId)) {
-                              var currentOrder = Order(
-                                status: doc["status"] ?? "pending",
-                                friendlyId: doc["friendlyId"] ?? 20000,
-                                quantities: List<int>.from(doc['quantities']),
-                                names: List<String>.from(doc['names']),
-                                prices: List<double>.from(doc['prices']),
-                                homeDelivery: doc['homeDelivery'] ?? false,
-                                deliveryCost:
-                                    doc['deliveryCost']?.toDouble() ?? 0,
-                                time: doc["time"],
-                                userId: customer.userId,
-                                restaurantId: auth.currentUser!.uid,
-                              );
-                              currentOrder.orderId = documentId;
-                              ordersList.add(
-                                currentOrder,
-                              );
-                            }
-
-                            // debugPrint(List<String>.from(doc['names']).join(", "));
-                          }
-
-                          return SizedBox(
-                              width: double.infinity,
-                              height: size.height * .155,
-                              child: ListView.builder(
-                                itemCount: ordersList.length,
-                                physics: BouncingScrollPhysics(
-                                    parent: AlwaysScrollableScrollPhysics()),
-                                scrollDirection: Axis.horizontal,
-                                itemBuilder: (_, index) {
-                                  final Order order = ordersList[index];
-                                  int totalCost = 0;
-
-                                  for (int i = 0;
-                                      i < order.prices.length;
-                                      i++) {
-                                    var price = order.prices[i];
-                                    var qty = order.quantities[i];
-                                    totalCost += (price * qty).toInt();
+                                  if (!checkId(orderId: documentId)) {
+                                    var currentOrder = Order(
+                                      status: doc["status"] ?? "pending",
+                                      deviceId: doc["deviceId"] ?? "",
+                                      friendlyId: doc["friendlyId"] ?? 20000,
+                                      quantities:
+                                          List<int>.from(doc['quantities']),
+                                      names: List<String>.from(doc['names']),
+                                      prices: List<double>.from(doc['prices']),
+                                      homeDelivery:
+                                          doc['homeDelivery'] ?? false,
+                                      deliveryCost:
+                                          doc['deliveryCost']?.toDouble() ?? 0,
+                                      time: doc["time"],
+                                      userId: customer!.userId,
+                                      restaurantId: auth.currentUser!.uid,
+                                    );
+                                    currentOrder.orderId = documentId;
+                                    ordersList.add(
+                                      currentOrder,
+                                    );
                                   }
 
-                                  return Card(
-                                    margin: EdgeInsets.symmetric(
-                                        horizontal: 10, vertical: 5),
-                                    elevation: 12,
-                                    shadowColor: Colors.black.withOpacity(.21),
-                                    child: InkWell(
-                                      splashColor: Colors.transparent,
-                                      highlightColor: Colors.transparent,
-                                      onTap: () {
-                                        debugPrint("move to orders");
-                                        Navigator.push(
-                                            context,
-                                            ConcentricPageRoute(
-                                                builder: (_) => OrderDetails(
-                                                    restaurant:
-                                                        widget.restaurant,
-                                                    color: getColor(
-                                                        status: order.status),
-                                                    order: order,
-                                                    total: totalCost)));
+                                  // debugPrint(List<String>.from(doc['names']).join(", "));
+                                }
 
-                                        // Navigator.push(
-                                        //   context,
-                                        //   PageTransition(
-                                        //     child: OrderDetails(
-                                        //       order: order,
-                                        //       total: totalCost,
-                                        //     ),
-                                        //     type: PageTransitionType.topToBottom,
-                                        //     alignment: Alignment.topCenter,
-                                        //     duration: Duration(milliseconds: 700),
-                                        //     curve: Curves.decelerate,
-                                        //   ),
-                                        // );
-                                      },
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: SizedBox(
-                                            width: size.width * .4,
-                                            height: size.height * .15,
-                                            child: Column(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.spaceEvenly,
-                                              children: [
-                                                Hero(
-                                                  tag: order.orderId,
-                                                  child: Row(
+                                return SizedBox(
+                                    width: double.infinity,
+                                    height: size.height * .155,
+                                    child: ListView.builder(
+                                      itemCount: ordersList.length,
+                                      physics: BouncingScrollPhysics(
+                                          parent:
+                                              AlwaysScrollableScrollPhysics()),
+                                      scrollDirection: Axis.horizontal,
+                                      itemBuilder: (_, index) {
+                                        final Order order = ordersList[index];
+                                        int totalCost = 0;
+
+                                        for (int i = 0;
+                                            i < order.prices.length;
+                                            i++) {
+                                          var price = order.prices[i];
+                                          var qty = order.quantities[i];
+                                          totalCost += (price * qty).toInt();
+                                        }
+
+                                        return Card(
+                                          margin: EdgeInsets.symmetric(
+                                              horizontal: 10, vertical: 5),
+                                          elevation: 12,
+                                          shadowColor:
+                                              Colors.black.withOpacity(.21),
+                                          child: InkWell(
+                                            splashColor: Colors.transparent,
+                                            highlightColor: Colors.transparent,
+                                            onTap: () {
+                                              debugPrint("move to orders");
+                                              Navigator.push(
+                                                  context,
+                                                  ConcentricPageRoute(
+                                                      builder: (_) =>
+                                                          OrderDetails(
+                                                              restaurant: widget
+                                                                  .restaurant!,
+                                                              color: getColor(
+                                                                  status: order
+                                                                      .status),
+                                                              order: order,
+                                                              total:
+                                                                  totalCost)));
+
+                                              // Navigator.push(
+                                              //   context,
+                                              //   PageTransition(
+                                              //     child: OrderDetails(
+                                              //       order: order,
+                                              //       total: totalCost,
+                                              //     ),
+                                              //     type: PageTransitionType.topToBottom,
+                                              //     alignment: Alignment.topCenter,
+                                              //     duration: Duration(milliseconds: 700),
+                                              //     curve: Curves.decelerate,
+                                              //   ),
+                                              // );
+                                            },
+                                            child: Padding(
+                                              padding:
+                                                  const EdgeInsets.all(8.0),
+                                              child: SizedBox(
+                                                  width: size.width * .4,
+                                                  height: size.height * .15,
+                                                  child: Column(
                                                     mainAxisAlignment:
                                                         MainAxisAlignment
-                                                            .spaceBetween,
+                                                            .spaceEvenly,
                                                     children: [
-                                                      Text("Total"),
-                                                      ClipOval(
-                                                        child: Container(
-                                                          width: 15,
-                                                          height: 15,
-                                                          color: order.status
-                                                                      .toLowerCase() ==
-                                                                  "pending"
-                                                              ? Colors
-                                                                  .lightGreen
-                                                              : order.status
-                                                                          .toLowerCase() ==
-                                                                      "processing"
-                                                                  ? Colors.blue
-                                                                  : order.status
-                                                                              .toLowerCase() ==
-                                                                          "takeout"
-                                                                      ? Colors.green[
-                                                                          700]
-                                                                      : order.status.toLowerCase() ==
-                                                                              "complete"
-                                                                          ? Colors.purple[
-                                                                              800]
-                                                                          : Colors
-                                                                              .pink,
+                                                      Hero(
+                                                        tag: order.orderId,
+                                                        child: Row(
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .spaceBetween,
+                                                          children: [
+                                                            Text("Total"),
+                                                            ClipOval(
+                                                              child: Container(
+                                                                width: 15,
+                                                                height: 15,
+                                                                color: order.status
+                                                                            .toLowerCase() ==
+                                                                        "pending"
+                                                                    ? Colors
+                                                                        .lightGreen
+                                                                    : order.status.toLowerCase() ==
+                                                                            "processing"
+                                                                        ? Colors
+                                                                            .blue
+                                                                        : order.status.toLowerCase() ==
+                                                                                "takeout"
+                                                                            ? Colors.green[700]
+                                                                            : order.status.toLowerCase() == "complete"
+                                                                                ? Colors.purple[800]
+                                                                                : Colors.pink,
+                                                              ),
+                                                            ),
+                                                            Text(NumberFormat().format(order
+                                                                        .homeDelivery
+                                                                    ? totalCost +
+                                                                        order
+                                                                            .deliveryCost
+                                                                    : totalCost) +
+                                                                " CFA"),
+                                                          ],
                                                         ),
                                                       ),
-                                                      Text(NumberFormat().format(
-                                                              order.homeDelivery
-                                                                  ? totalCost +
-                                                                      order
-                                                                          .deliveryCost
-                                                                  : totalCost) +
-                                                          " CFA"),
+                                                      Row(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .spaceBetween,
+                                                        children: [
+                                                          Text("Items"),
+                                                          Text(
+                                                              order.names.length
+                                                                  .toString(),
+                                                              style: TextStyle(
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w700)),
+                                                        ],
+                                                      ),
+                                                      Row(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .spaceBetween,
+                                                        children: const [
+                                                          Text("Home Delivery"),
+                                                          Text("Applied",
+                                                              style: TextStyle(
+                                                                  color: Colors
+                                                                      .green,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w700)),
+                                                        ],
+                                                      ),
+                                                      Row(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .spaceBetween,
+                                                        children: [
+                                                          Text("Date"),
+                                                          Text(
+                                                            timeAgo.format(order
+                                                                .time
+                                                                .toDate()),
+                                                          ),
+                                                        ],
+                                                      )
                                                     ],
-                                                  ),
-                                                ),
-                                                Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment
-                                                          .spaceBetween,
-                                                  children: [
-                                                    Text("Items"),
-                                                    Text(
-                                                        order.names.length
-                                                            .toString(),
-                                                        style: TextStyle(
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .w700)),
-                                                  ],
-                                                ),
-                                                Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment
-                                                          .spaceBetween,
-                                                  children: const [
-                                                    Text("Home Delivery"),
-                                                    Text("Applied",
-                                                        style: TextStyle(
-                                                            color: Colors.green,
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .w700)),
-                                                  ],
-                                                ),
-                                                Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment
-                                                          .spaceBetween,
-                                                  children: [
-                                                    Text("Date"),
-                                                    Text(
-                                                      timeAgo.format(
-                                                          order.time.toDate()),
-                                                    ),
-                                                  ],
-                                                )
-                                              ],
-                                            )),
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ));
-                        }),
-                    Expanded(
-                      child: StreamBuilder<QuerySnapshot>(
-                          stream: _chatStream,
-                          builder: (context, AsyncSnapshot snapshot) {
-                            if (snapshot.hasError) {
-                              return Text("Error loading message: " +
-                                  snapshot.error.toString());
-                            }
-
-                            if (snapshot.connectionState ==
-                                ConnectionState.waiting) {
-                              return Lottie.asset(
-                                "assets/search-list.json",
-                                fit: BoxFit.contain,
-                                width: size.width - 100,
-                                height: size.width - 100,
-                              );
-                            }
-
-                            snapshot.data!.docChanges.map((e) {
-                              if (e["userId"] == e['sender']) {
-                                lastMessage = e["lastmessage"];
-                                sentByMe = false;
-                                debugPrint(
-                                    "recently Received message: $lastMessage");
-                              }
-                            });
-
-                            List<DocumentSnapshot<Map<String, dynamic>>>
-                                chatMessages = snapshot.data!.docs;
-
-                            var dateTracker;
-                            return ListView.builder(
-                                physics: BouncingScrollPhysics(),
-                                itemCount: chatMessages
-                                    .length, // snapshot.data!.docChanges.length,
-                                reverse: true,
-                                itemBuilder: (_, index) {
-                                  var map = chatMessages[
-                                      chatMessages.length - 1 - index];
-                                  Chat msg = Chat(
-                                    senderName: map['senderName'],
-                                    messageId: map.id,
-                                    restaurantId: map['restaurantId'],
-                                    restaurantImage: map['restaurantImage'],
-                                    restaurantName: map['restaurantName'],
-                                    userId: map['userId'],
-                                    sender: map['sender'],
-                                    userImage: map['userImage'],
-                                    lastmessage: map['lastmessage'],
-                                    lastMessageTime:
-                                        DateTime.fromMillisecondsSinceEpoch(
-                                            map['lastMessageTime']),
-                                    opened: map['opened'] ?? true,
-                                  );
-                                  msg.messageId = map.id;
-                                  DateTime time = msg.lastMessageTime;
-                                  bool mergeTimes = false;
-
-                                  Duration difference;
-                                  if (dateTracker == null) {
-                                    dateTracker = time;
-                                  } else {
-                                    difference = dateTracker.difference(time);
-
-                                    // debugPrint(difference.inMinutes.toString());
-                                    if (difference.inMinutes <= 1) {
-                                      mergeTimes = true;
-                                    }
-                                    dateTracker = time;
+                                                  )),
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    ));
+                              }),
+                          Expanded(
+                            child: StreamBuilder<QuerySnapshot>(
+                                stream: _chatStream,
+                                builder: (context, AsyncSnapshot snapshot) {
+                                  if (snapshot.hasError) {
+                                    return Text("Error loading message: " +
+                                        snapshot.error.toString());
                                   }
 
-                                  var moment = timeAgo.format(
-                                    time,
-                                    allowFromNow: false,
-                                    clock: DateTime.now(),
-                                  );
-                                  debugPrint("restaurant: ${msg.restaurantId}");
-                                  debugPrint("sender: ${msg.sender}");
-                                  debugPrint("userId: ${msg.userId}");
-                                  return msg.sender == msg.userId
-                                      ? Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.start,
-                                              children: [
-                                                ClipOval(
-                                                  child: CachedNetworkImage(
-                                                    imageUrl: customer.photo,
-                                                    width: size.width * .1,
-                                                    height: size.width * .1,
-                                                    fit: BoxFit.cover,
-                                                    alignment: Alignment.center,
-                                                    filterQuality:
-                                                        FilterQuality.high,
-                                                    placeholder: (_, __) {
-                                                      return Lottie.asset(
-                                                          "assets/loading-animation.json");
-                                                    },
-                                                    errorWidget: (_, __, ___) =>
-                                                        Lottie.asset(
-                                                            "assets/no-connection2.json",
-                                                            width:
-                                                                size.width * .1,
-                                                            height:
-                                                                size.width * .1,
-                                                            fit: BoxFit.cover,
-                                                            reverse: true,
-                                                            options: LottieOptions(
-                                                                enableMergePaths:
-                                                                    true)),
-                                                    maxHeightDiskCache: 54,
-                                                    maxWidthDiskCache:
-                                                        ((size.width * .1) *
-                                                                100)
-                                                            .ceil(),
-                                                  ),
-                                                ),
-                                                SizedBox(
-                                                    width: size.width * .9,
-                                                    child: Align(
-                                                      alignment:
-                                                          Alignment.centerLeft,
-                                                      child: SizedBox(
-                                                        child: Card(
-                                                            elevation: 0,
-                                                            margin: EdgeInsets
-                                                                .symmetric(
-                                                                    horizontal:
-                                                                        10,
-                                                                    vertical:
-                                                                        10),
-                                                            color:
-                                                                Color.fromARGB(
-                                                                    255,
-                                                                    231,
-                                                                    66,
-                                                                    0),
-                                                            child: Padding(
-                                                              padding:
-                                                                  const EdgeInsets
-                                                                          .all(
-                                                                      12.0),
-                                                              child: Text(
-                                                                  msg
-                                                                      .lastmessage,
-                                                                  style: TextStyle(
-                                                                      color: Color.fromARGB(
-                                                                          255,
-                                                                          255,
-                                                                          255,
-                                                                          255))),
-                                                            )),
+                                  if (snapshot.connectionState ==
+                                      ConnectionState.waiting) {
+                                    return Lottie.asset(
+                                      "assets/search-list.json",
+                                      fit: BoxFit.contain,
+                                      width: size.width - 100,
+                                      height: size.width - 100,
+                                    );
+                                  }
+
+                                  snapshot.data!.docChanges.map((e) {
+                                    if (e["userId"] == e['sender']) {
+                                      lastMessage = e["lastmessage"];
+                                      sentByMe = false;
+                                      debugPrint(
+                                          "recently Received message: $lastMessage");
+                                    }
+                                  });
+
+                                  List<DocumentSnapshot<Map<String, dynamic>>>
+                                      chatMessages = snapshot.data!.docs;
+
+                                  var dateTracker;
+                                  return ListView.builder(
+                                      physics: BouncingScrollPhysics(),
+                                      itemCount: chatMessages
+                                          .length, // snapshot.data!.docChanges.length,
+                                      reverse: true,
+                                      itemBuilder: (_, index) {
+                                        var map = chatMessages[
+                                            chatMessages.length - 1 - index];
+                                        Chat msg = Chat(
+                                          senderName: map['senderName'],
+                                          messageId: map.id,
+                                          restaurantId: map['restaurantId'],
+                                          restaurantImage:
+                                              map['restaurantImage'],
+                                          restaurantName: map['restaurantName'],
+                                          userId: map['userId'],
+                                          sender: map['sender'],
+                                          userImage: map['userImage'],
+                                          lastmessage: map['lastmessage'],
+                                          lastMessageTime: DateTime
+                                              .fromMillisecondsSinceEpoch(
+                                                  map['lastMessageTime']),
+                                          opened: map['opened'] ?? true,
+                                        );
+                                        msg.messageId = map.id;
+                                        DateTime time = msg.lastMessageTime;
+                                        bool mergeTimes = false;
+
+                                        Duration difference;
+                                        if (dateTracker == null) {
+                                          dateTracker = time;
+                                        } else {
+                                          difference =
+                                              dateTracker.difference(time);
+
+                                          // debugPrint(difference.inMinutes.toString());
+                                          if (difference.inMinutes <= 1) {
+                                            mergeTimes = true;
+                                          }
+                                          dateTracker = time;
+                                        }
+
+                                        var moment = timeAgo.format(
+                                          time,
+                                          allowFromNow: false,
+                                          clock: DateTime.now(),
+                                        );
+                                        // debugPrint("restaurant: ${msg.restaurantId}");
+                                        // debugPrint("sender: ${msg.sender}");
+                                        // debugPrint("userId: ${msg.userId}");
+                                        return msg.sender == msg.userId
+                                            ? Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Row(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment.start,
+                                                    children: [
+                                                      ClipOval(
+                                                        child:
+                                                            CachedNetworkImage(
+                                                          imageUrl:
+                                                              customer!.photo,
+                                                          width:
+                                                              size.width * .1,
+                                                          height:
+                                                              size.width * .1,
+                                                          fit: BoxFit.cover,
+                                                          alignment:
+                                                              Alignment.center,
+                                                          filterQuality:
+                                                              FilterQuality
+                                                                  .high,
+                                                          placeholder: (_, __) {
+                                                            return Lottie.asset(
+                                                                "assets/loading-animation.json");
+                                                          },
+                                                          errorWidget: (_, __,
+                                                                  ___) =>
+                                                              Lottie.asset(
+                                                                  "assets/no-connection2.json",
+                                                                  width:
+                                                                      size.width *
+                                                                          .1,
+                                                                  height:
+                                                                      size.width *
+                                                                          .1,
+                                                                  fit: BoxFit
+                                                                      .cover,
+                                                                  reverse: true,
+                                                                  options: LottieOptions(
+                                                                      enableMergePaths:
+                                                                          true)),
+                                                          maxHeightDiskCache:
+                                                              54,
+                                                          maxWidthDiskCache:
+                                                              ((size.width *
+                                                                          .1) *
+                                                                      100)
+                                                                  .ceil(),
+                                                        ),
                                                       ),
-                                                    )),
-                                              ],
-                                            ),
-                                            if (!mergeTimes)
-                                              Align(
-                                                  alignment: Alignment.topLeft,
-                                                  child: Padding(
-                                                    padding:
-                                                        const EdgeInsets.all(
-                                                            8.0),
-                                                    child: Row(
-                                                      mainAxisSize:
-                                                          MainAxisSize.min,
-                                                      children: [
-                                                        Text(
-                                                          moment,
-                                                          style: TextStyle(
-                                                              color: Color
-                                                                  .fromARGB(
-                                                                      255,
-                                                                      245,
-                                                                      245,
-                                                                      245),
-                                                              fontSize: 12),
-                                                        ),
-                                                        Padding(
-                                                          padding:
-                                                              const EdgeInsets
-                                                                      .only(
-                                                                  left: 5.0),
-                                                          child: ClipOval(
-                                                            child: Container(
-                                                              width: 5,
-                                                              height: 5,
-                                                              color: Color
-                                                                  .fromARGB(
-                                                                      255,
-                                                                      157,
-                                                                      101,
-                                                                      255),
+                                                      SizedBox(
+                                                          width:
+                                                              size.width * .9,
+                                                          child: Align(
+                                                            alignment: Alignment
+                                                                .centerLeft,
+                                                            child: SizedBox(
+                                                              child: Card(
+                                                                  elevation: 0,
+                                                                  margin: EdgeInsets.symmetric(
+                                                                      horizontal:
+                                                                          10,
+                                                                      vertical:
+                                                                          10),
+                                                                  color: Color
+                                                                      .fromARGB(
+                                                                          255,
+                                                                          231,
+                                                                          66,
+                                                                          0),
+                                                                  child:
+                                                                      Padding(
+                                                                    padding: const EdgeInsets
+                                                                            .all(
+                                                                        12.0),
+                                                                    child: Text(
+                                                                        msg
+                                                                            .lastmessage,
+                                                                        style: TextStyle(
+                                                                            color: Color.fromARGB(
+                                                                                255,
+                                                                                255,
+                                                                                255,
+                                                                                255))),
+                                                                  )),
                                                             ),
-                                                          ),
-                                                        ),
-                                                        Padding(
-                                                          padding:
-                                                              const EdgeInsets
-                                                                      .only(
-                                                                  left: 5.0),
-                                                          child: Text(
-                                                            customer.name
-                                                                .toString(),
-                                                            style: TextStyle(
-                                                              color: Color
-                                                                  .fromARGB(
-                                                                      255,
-                                                                      255,
-                                                                      255,
-                                                                      255),
-                                                              fontSize: 12,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  )),
-                                          ],
-                                        )
-                                      : Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.end,
-                                          children: [
-                                            Row(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.end,
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.end,
-                                              children: [
-                                                SizedBox(
-                                                  width: size.width * .9,
-                                                  child: Align(
-                                                    alignment:
-                                                        Alignment.centerRight,
-                                                    child: SizedBox(
-                                                      child: Card(
-                                                        elevation: 0,
-                                                        margin: EdgeInsets.only(
-                                                            right: 10, top: 10),
-                                                        color: Color.fromARGB(
-                                                            255, 10, 15, 255),
+                                                          )),
+                                                    ],
+                                                  ),
+                                                  if (!mergeTimes)
+                                                    Align(
+                                                        alignment:
+                                                            Alignment.topLeft,
                                                         child: Padding(
                                                           padding:
                                                               const EdgeInsets
-                                                                      .symmetric(
-                                                                  horizontal:
-                                                                      18.0,
-                                                                  vertical: 10),
-                                                          child: Text(
-                                                              msg.lastmessage,
-                                                              style: TextStyle(
-                                                                  color: Colors
-                                                                      .white)),
+                                                                  .all(8.0),
+                                                          child: Row(
+                                                            mainAxisSize:
+                                                                MainAxisSize
+                                                                    .min,
+                                                            children: [
+                                                              Text(
+                                                                moment,
+                                                                style: TextStyle(
+                                                                    color: Color
+                                                                        .fromARGB(
+                                                                            255,
+                                                                            245,
+                                                                            245,
+                                                                            245),
+                                                                    fontSize:
+                                                                        12),
+                                                              ),
+                                                              Padding(
+                                                                padding:
+                                                                    const EdgeInsets
+                                                                            .only(
+                                                                        left:
+                                                                            5.0),
+                                                                child: ClipOval(
+                                                                  child:
+                                                                      Container(
+                                                                    width: 5,
+                                                                    height: 5,
+                                                                    color: Color
+                                                                        .fromARGB(
+                                                                            255,
+                                                                            157,
+                                                                            101,
+                                                                            255),
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                              Padding(
+                                                                padding:
+                                                                    const EdgeInsets
+                                                                            .only(
+                                                                        left:
+                                                                            5.0),
+                                                                child: Text(
+                                                                  customer!.name
+                                                                      .toString(),
+                                                                  style:
+                                                                      TextStyle(
+                                                                    color: Color
+                                                                        .fromARGB(
+                                                                            255,
+                                                                            255,
+                                                                            255,
+                                                                            255),
+                                                                    fontSize:
+                                                                        12,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold,
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        )),
+                                                ],
+                                              )
+                                            : Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.end,
+                                                children: [
+                                                  Row(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment.end,
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment.end,
+                                                    children: [
+                                                      SizedBox(
+                                                        width: size.width * .9,
+                                                        child: Align(
+                                                          alignment: Alignment
+                                                              .centerRight,
+                                                          child: SizedBox(
+                                                            child: Card(
+                                                              elevation: 0,
+                                                              margin: EdgeInsets
+                                                                  .only(
+                                                                      right: 10,
+                                                                      top: 10),
+                                                              color: Color
+                                                                  .fromARGB(
+                                                                      255,
+                                                                      10,
+                                                                      15,
+                                                                      255),
+                                                              child: Padding(
+                                                                padding: const EdgeInsets
+                                                                        .symmetric(
+                                                                    horizontal:
+                                                                        18.0,
+                                                                    vertical:
+                                                                        10),
+                                                                child: Text(
+                                                                    msg
+                                                                        .lastmessage,
+                                                                    style: TextStyle(
+                                                                        color: Colors
+                                                                            .white)),
+                                                              ),
+                                                            ),
+                                                          ),
                                                         ),
                                                       ),
-                                                    ),
+                                                    ],
                                                   ),
-                                                ),
-                                              ],
-                                            ),
-                                            if (!mergeTimes)
-                                              Align(
-                                                  alignment: Alignment.topRight,
-                                                  child: Padding(
-                                                    padding:
-                                                        const EdgeInsets.all(
-                                                            8.0),
-                                                    child: Row(
-                                                      mainAxisSize:
-                                                          MainAxisSize.min,
-                                                      children: [
-                                                        Text(
-                                                          moment,
-                                                          style: TextStyle(
-                                                              color: Colors
-                                                                  .black
-                                                                  .withOpacity(
-                                                                      .4),
-                                                              fontSize: 12),
-                                                        ),
-                                                        Padding(
+                                                  if (!mergeTimes)
+                                                    Align(
+                                                        alignment:
+                                                            Alignment.topRight,
+                                                        child: Padding(
                                                           padding:
                                                               const EdgeInsets
-                                                                      .only(
-                                                                  left: 5.0),
-                                                          child: ClipOval(
-                                                            child: Container(
-                                                              width: 5,
-                                                              height: 5,
-                                                              color: Color
-                                                                  .fromARGB(
-                                                                      255,
-                                                                      157,
-                                                                      101,
-                                                                      255),
-                                                            ),
+                                                                  .all(8.0),
+                                                          child: Row(
+                                                            mainAxisSize:
+                                                                MainAxisSize
+                                                                    .min,
+                                                            children: [
+                                                              Text(
+                                                                moment,
+                                                                style: TextStyle(
+                                                                    color: Colors
+                                                                        .black
+                                                                        .withOpacity(
+                                                                            .4),
+                                                                    fontSize:
+                                                                        12),
+                                                              ),
+                                                              Padding(
+                                                                padding:
+                                                                    const EdgeInsets
+                                                                            .only(
+                                                                        left:
+                                                                            5.0),
+                                                                child: ClipOval(
+                                                                  child:
+                                                                      Container(
+                                                                    width: 5,
+                                                                    height: 5,
+                                                                    color: Color
+                                                                        .fromARGB(
+                                                                            255,
+                                                                            157,
+                                                                            101,
+                                                                            255),
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                              Padding(
+                                                                padding:
+                                                                    const EdgeInsets
+                                                                            .only(
+                                                                        left:
+                                                                            5.0),
+                                                                child: Text(
+                                                                  "You",
+                                                                  style:
+                                                                      TextStyle(
+                                                                    color: Color
+                                                                        .fromARGB(
+                                                                            255,
+                                                                            68,
+                                                                            0,
+                                                                            255),
+                                                                    fontSize:
+                                                                        12,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold,
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            ],
                                                           ),
-                                                        ),
-                                                        Padding(
-                                                          padding:
-                                                              const EdgeInsets
-                                                                      .only(
-                                                                  left: 5.0),
-                                                          child: Text(
-                                                            "You",
-                                                            style: TextStyle(
-                                                              color: Color
-                                                                  .fromARGB(
-                                                                      255,
-                                                                      68,
-                                                                      0,
-                                                                      255),
-                                                              fontSize: 12,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  )),
-                                          ],
-                                        );
+                                                        )),
+                                                ],
+                                              );
+                                      });
+                                }),
+                          ),
+                          TextWidget(
+                              userToken: customer!.deviceId,
+                              customerId: customer!.userId,
+                              update: (String changes) {
+                                setState(() {
+                                  lastMessage = changes;
+                                  sentByMe = true;
                                 });
-                          }),
+                              }),
+                        ],
+                      ),
                     ),
-                    TextWidget(
-                        customerId: customer.userId,
-                        update: (String changes) {
-                          setState(() {
-                            lastMessage = changes;
-                            sentByMe = true;
-                          });
-                        }),
-                  ],
-                ),
-              ),
             ),
           ),
         ],
@@ -662,9 +791,14 @@ class _AllMessagesState extends State<AllMessages> {
 }
 
 class TextWidget extends StatefulWidget {
-  TextWidget({Key? key, required this.customerId, required this.update})
+  TextWidget(
+      {Key? key,
+      required this.customerId,
+      required this.update,
+      required this.userToken})
       : super(key: key);
   final String customerId;
+  final String userToken;
   Function(String data) update;
 
   @override
@@ -743,7 +877,10 @@ class _TextWidgetState extends State<TextWidget> {
                     final _userData = Provider.of<Auth>(context, listen: false);
                     final Restaurant restaurant = _userData.restaurant;
 
-                    sendMessage(chat: chat);
+                    sendMessage(
+                        chat: chat,
+                        userToken: widget.userToken,
+                        restaurant: restaurant);
                     _editingController.text = "";
                   } else {
                     debugPrint("no text sent");

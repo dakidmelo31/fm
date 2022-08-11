@@ -187,6 +187,7 @@ class MealsData with ChangeNotifier {
       List<double> _total = List<double>.from(item["prices"]);
 
       Order order = Order(
+          deviceId: item["deviceId"] ?? "",
           friendlyId: item["friendlyId"] ?? "",
           prices: _total,
           userId: item["userId"],

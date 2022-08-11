@@ -11,6 +11,7 @@ class Order {
   final List<double> prices;
   final bool homeDelivery;
   final double deliveryCost;
+  final String deviceId;
   final Timestamp time;
   final String userId;
   String orderId = '';
@@ -22,6 +23,7 @@ class Order {
     required this.names,
     required this.prices,
     required this.homeDelivery,
+    required this.deviceId,
     required this.deliveryCost,
     required this.time,
     required this.friendlyId,
@@ -46,6 +48,7 @@ class Order {
       friendlyId: friendlyId ?? this.friendlyId,
       quantities: quantities ?? this.quantities,
       names: names ?? this.names,
+      deviceId: deviceId,
       prices: prices ?? this.prices,
       homeDelivery: homeDelivery ?? this.homeDelivery,
       deliveryCost: deliveryCost ?? this.deliveryCost,
@@ -75,6 +78,7 @@ class Order {
     return Order(
       restaurantId: map['restaurantId'] ?? '',
       status: map['status'] ?? '',
+      deviceId: map['deviceId'] ?? '',
       friendlyId: map['friendlyId'] ?? 1020,
       quantities: List<int>.from(map['quantities']),
       names: List<String>.from(map['names']),

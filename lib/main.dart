@@ -1,11 +1,13 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:in_app_notification/in_app_notification.dart';
 import 'package:merchants/firebase_options.dart';
+import 'package:merchants/pages/SimplePage.dart';
 import 'package:merchants/pages/home_screen.dart';
 import 'package:merchants/pages/signup_screen.dart';
 import 'package:merchants/pages/startup_screen.dart';
@@ -19,7 +21,7 @@ import 'package:merchants/providers/reviews.dart';
 import 'package:merchants/providers/services.dart';
 import 'package:provider/provider.dart';
 
-const AndroidNotificationChannel channel = AndroidNotificationChannel(
+late AndroidNotificationChannel channel = AndroidNotificationChannel(
     'high_importance_channel', // id
     'High Importance Notifications', // title
     description:
@@ -28,18 +30,57 @@ const AndroidNotificationChannel channel = AndroidNotificationChannel(
     playSound: true);
 
 // flutter local notification
-final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+late FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
 
-// firebase background message handler
+/// Define a top-level named handler which background/terminated messages will
+/// call.
+///
+/// To verify things are working, check out the native platform logs.
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  await Firebase.initializeApp();
-  print('A Background message just showed up :  ${message.messageId}');
+  // If you're going to use other Firebase services in the background, such as Firestore,
+  // make sure you call `initializeApp` before using other Firebase services.
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  print('Handling a background message ${message.messageId}');
 }
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  // Set the background messaging handler early on, as a named top-level function
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
+  if (!kIsWeb) {
+    channel = const AndroidNotificationChannel(
+      'high_importance_channel', // id
+      'High Importance Notifications', // title
+      description:
+          'This channel is used for important notifications.', // description
+      importance: Importance.high,
+    );
+
+    flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+
+    /// Create an Android Notification Channel.
+    ///
+    /// We use this channel in the `AndroidManifest.xml` file to override the
+    /// default FCM channel to enable heads up notifications.
+    await flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>()
+        ?.createNotificationChannel(channel);
+
+    /// Update the iOS foreground notification presentation options to allow
+    /// heads up notifications.
+    await FirebaseMessaging.instance
+        .setForegroundNotificationPresentationOptions(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
+  }
+
   // SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
 
@@ -90,6 +131,7 @@ class AppHome extends StatelessWidget {
         ),
         routes: {
           StartupScreen.routeName: (context) => const StartupScreen(),
+          SimplePage.routeName: (context) => const SimplePage(),
           CreateAccount.routeName: (context) => CreateAccount(),
           Home.routeName: (context) => Home(),
         },

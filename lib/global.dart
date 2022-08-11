@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -62,9 +63,14 @@ deleteCloudNotification({required String notificationId}) {
   });
 }
 
-Future<String?> getToken() async {
-  final fcmToken = await FirebaseMessaging.instance.getToken();
-  return fcmToken;
+Future<String?> getFirebaseToken() async {
+  if (defaultTargetPlatform == TargetPlatform.android) {
+    final fcmToken = await FirebaseMessaging.instance.getToken();
+    return fcmToken;
+  } else if (defaultTargetPlatform == TargetPlatform.iOS) {
+    final fcmToken = await FirebaseMessaging.instance.getAPNSToken();
+    return fcmToken;
+  }
 }
 
 getCount({required String collection, required String field}) async {

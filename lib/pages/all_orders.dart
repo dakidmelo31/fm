@@ -176,19 +176,29 @@ class _AllOrdersState extends State<AllOrders> with TickerProviderStateMixin {
                                           order: order));
 
                                   // order.status = "processing";
+                                  late String title;
+                                  late String message;
 
                                   switch (order.status) {
                                     case "pending":
                                       debugPrint(
                                           "Pending changed to Processing");
                                       ordersData.pendingOrders.remove(order);
+
                                       order.status = "cancelled";
+                                      title = "Order got cancelled";
+                                      message =
+                                          "${widget.restaurant.companyName} cancelled ❌ your order. try talking to them if their reason is unclear.";
+
                                       ordersData.cancelledOrders.add(order);
                                       setState(() {});
                                       break;
                                     case "processing":
                                       debugPrint(
                                           "Pending changed to Processing");
+                                      title = "Your rder status updated";
+                                      message =
+                                          "${widget.restaurant.companyName} changed your back to PENDING🚨🚨🚨. try talking to them if their reason is unclear.";
                                       ordersData.processingOrders.remove(order);
                                       order.status = "pending";
                                       ordersData.pendingOrders.add(order);
@@ -196,6 +206,12 @@ class _AllOrdersState extends State<AllOrders> with TickerProviderStateMixin {
                                       break;
 
                                     case "takeout":
+
+                                      title = "Your rder status updated";
+                                      String home = order.homeDelivery? "We advise you to delay your visit to pickup your meal or call ahead to know what's up": "This means your meal is likely not ready yet. Try calling them for more information.";
+                                      message =
+                                          "${widget.restaurant.companyName} changed your back to Processing🚨🚨🚨. That means you should try and contact them if it's .";
+
                                       ordersData.takeoutOrders.remove(order);
                                       order.status = "processing";
                                       ordersData.processingOrders.add(order);
@@ -218,7 +234,6 @@ class _AllOrdersState extends State<AllOrders> with TickerProviderStateMixin {
                                       setState(() {});
                                       break;
                                   }
-
                                   FirebaseFirestore.instance
                                       .collection("orders")
                                       .doc(order.orderId)

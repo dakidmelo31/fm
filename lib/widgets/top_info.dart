@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:merchants/animations/opacity_tween.dart';
 
-import '../theme/main_theme.dart';
-
 class TopInfo extends StatelessWidget {
   const TopInfo({Key? key, required this.mainAnimation}) : super(key: key);
   final Animation<double> mainAnimation;
@@ -35,7 +33,7 @@ class TopInfo extends StatelessWidget {
                       ),
                     );
                   },
-                  child: Image.asset("assets/ic_launcher.png",
+                  child: Image.asset("assets/logo.png",
                       alignment: Alignment.center, width: 60, height: 60),
                 ),
                 Positioned(
@@ -79,7 +77,7 @@ class TopInfo extends StatelessWidget {
                                         .curve)
                             .curve,
                         child: Text(
-                          "Welcome to Foodin ",
+                          "Welcome to Foodin",
                           style: TextStyle(
                               fontWeight: FontWeight.bold, color: Colors.white),
                         ),
