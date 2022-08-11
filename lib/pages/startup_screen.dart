@@ -1,28 +1,19 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:merchants/models/overview.dart';
 import 'package:merchants/pages/all_messages.dart';
 import 'package:merchants/pages/complete_signup.dart';
-import 'package:merchants/pages/order_details.dart';
-import 'package:merchants/providers/auth_provider.dart';
-import 'package:merchants/providers/orders_data.dart';
 import 'package:merchants/widgets/choose_option.dart';
 import 'package:merchants/widgets/login_form.dart';
 import 'package:merchants/widgets/top_info.dart';
-import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../main.dart';
-import '../models/customer.dart';
-import '../models/restaurants.dart';
 import 'home_screen.dart';
 
 FirebaseAuth tmpAuth = FirebaseAuth.instance;

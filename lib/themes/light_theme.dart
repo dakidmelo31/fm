@@ -32,9 +32,7 @@ class Primary {
   static const TextStyle shawarmaHeading = TextStyle(
       color: Colors.black, fontWeight: FontWeight.bold, fontSize: 16.0);
   static ThemeData primaryTheme = ThemeData(
-      primarySwatch: Colors.orange,
       backgroundColor: Colors.white,
-      accentColor: Colors.black,
       snackBarTheme: SnackBarThemeData(
         backgroundColor: Colors.white,
         elevation: 10,
@@ -52,5 +50,5 @@ class Primary {
         backgroundColor: primaryColor,
         elevation: 10,
         enableFeedback: true,
-      ));
+      ), colorScheme: ColorScheme.fromSwatch(primarySwatch: Colors.orange).copyWith(secondary: Colors.black));
 }

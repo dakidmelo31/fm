@@ -2,18 +2,14 @@ import 'package:animations/animations.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/src/foundation/key.dart';
-import 'package:flutter/src/widgets/framework.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:lottie/lottie.dart';
-import 'package:merchants/models/service.dart';
 import 'package:merchants/pages/service_details.dart';
 import 'package:merchants/providers/meals.dart';
 import 'package:merchants/providers/services.dart';
 import 'package:provider/provider.dart';
 
 import '../global.dart';
-import '../models/food_model.dart';
 import '../models/restaurants.dart';
 import '../pages/product_details.dart';
 import '../theme/main_theme.dart';

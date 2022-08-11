@@ -1,12 +1,10 @@
 import 'package:animations/animations.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:merchants/global.dart';
 import 'package:merchants/models/food_model.dart';
 import 'package:merchants/pages/product_details.dart';
-import 'package:page_transition/page_transition.dart';
 import 'package:provider/provider.dart';
 
 import '../pages/review_screen.dart';

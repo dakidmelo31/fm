@@ -273,7 +273,9 @@ sendMessage(
       "click_action": "FLUTTER_NOTIFICATION_CLICK",
       "id": "$rand",
       "restaurantId": auth.currentUser!.uid,
+      'color': '#dcedc2',
       "message": chat.lastmessage,
+      "foodin": "yes"
     };
     try {
       debugPrint("Token is: $userToken");
@@ -289,7 +291,7 @@ sendMessage(
                   'title': restaurant.companyName,
                   'body': '${chat.lastmessage}',
                   'image': restaurant.businessPhoto,
-                  'color': "#f68d2e"
+                  'color': '#dcedc2'
                 },
                 'priority': 'high',
                 'data': data,
@@ -313,6 +315,7 @@ sendMessage(
 sendOrderNotification(
     {required String deviceId,
     required String message,
+    String extra = "",
     required String title,
     restaurant}) async {
   int rand = Random().nextInt(5000);
@@ -322,6 +325,8 @@ sendOrderNotification(
     "id": "$rand",
     "restaurantId": auth.currentUser!.uid,
     "message": message,
+    'color': '#dcedc2',
+    "extra": extra,
   };
   try {
     debugPrint("Token is: $deviceId");

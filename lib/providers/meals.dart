@@ -2,7 +2,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:merchants/models/food_model.dart';
 
 import '../global.dart';
-import '../models/service.dart';
 
 class Meals with ChangeNotifier {
   List<Food> meals = [];

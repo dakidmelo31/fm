@@ -711,13 +711,22 @@ class _OrderDetailsState extends State<OrderDetails>
                                             visible: visible,
                                             child: IconButton(
                                               onPressed: () {
+                                                late String title;
+                                                late String message;
+
                                                 switch (order.status) {
                                                   case "pending":
                                                     debugPrint(
                                                         "Pending changed to Processing");
                                                     ordersData.pendingOrders
                                                         .remove(order);
+
                                                     order.status = "cancelled";
+                                                    title =
+                                                        "Order got cancelled";
+                                                    message =
+                                                        "${widget.restaurant!.companyName} cancelled ❌ your order. try talking to them if their reason is unclear.";
+
                                                     ordersData.cancelledOrders
                                                         .add(order);
                                                     setState(() {});
@@ -725,6 +734,10 @@ class _OrderDetailsState extends State<OrderDetails>
                                                   case "processing":
                                                     debugPrint(
                                                         "Pending changed to Processing");
+                                                    title =
+                                                        "Your rder status updated";
+                                                    message =
+                                                        "${widget.restaurant!.companyName} changed your back to PENDING🚨🚨🚨. try talking to them if their reason is unclear.";
                                                     ordersData.processingOrders
                                                         .remove(order);
                                                     order.status = "pending";
@@ -734,6 +747,15 @@ class _OrderDetailsState extends State<OrderDetails>
                                                     break;
 
                                                   case "takeout":
+                                                    title =
+                                                        "Your rder status updated";
+                                                    String home = order
+                                                            .homeDelivery
+                                                        ? "We advise you to delay your visit to pickup your meal or call ahead to know what's up"
+                                                        : "This means your meal is likely not ready yet. Try calling them for more information.";
+                                                    message =
+                                                        "${widget.restaurant!.companyName} changed your back to Processing🚨🚨🚨. $home";
+
                                                     ordersData.takeoutOrders
                                                         .remove(order);
                                                     order.status = "processing";
@@ -745,6 +767,11 @@ class _OrderDetailsState extends State<OrderDetails>
                                                   case "completed":
                                                     debugPrint(
                                                         "nothing to be done");
+                                                    title =
+                                                        "Mistake, your order is not complete yet";
+                                                    message = widget.restaurant!
+                                                            .companyName +
+                                                        " just rolled back your order status, please contact them for clarification if needed.";
                                                     ordersData.completedOrders
                                                         .remove(order);
                                                     order.status = "takeout";
@@ -759,6 +786,7 @@ class _OrderDetailsState extends State<OrderDetails>
 
                                                     ordersData.cancelledOrders
                                                         .add(order);
+                                                    setState(() {});
                                                     break;
                                                 }
                                                 setState(() {

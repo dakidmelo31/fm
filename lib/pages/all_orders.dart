@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:merchants/global.dart';
 import 'package:merchants/models/restaurants.dart';
+import 'package:merchants/providers/global_data.dart';
 import 'package:merchants/widgets/order_tile.dart';
 import 'package:merchants/widgets/orders_app_bar.dart';
 import 'package:merchants/widgets/search_screen.dart';
@@ -206,11 +207,12 @@ class _AllOrdersState extends State<AllOrders> with TickerProviderStateMixin {
                                       break;
 
                                     case "takeout":
-
                                       title = "Your rder status updated";
-                                      String home = order.homeDelivery? "We advise you to delay your visit to pickup your meal or call ahead to know what's up": "This means your meal is likely not ready yet. Try calling them for more information.";
+                                      String home = order.homeDelivery
+                                          ? "We advise you to delay your visit to pickup your meal or call ahead to know what's up"
+                                          : "This means your meal is likely not ready yet. Try calling them for more information.";
                                       message =
-                                          "${widget.restaurant.companyName} changed your back to Processing🚨🚨🚨. That means you should try and contact them if it's .";
+                                          "${widget.restaurant.companyName} changed your back to Processing🚨🚨🚨. $home";
 
                                       ordersData.takeoutOrders.remove(order);
                                       order.status = "processing";
@@ -220,6 +222,10 @@ class _AllOrdersState extends State<AllOrders> with TickerProviderStateMixin {
 
                                     case "completed":
                                       debugPrint("nothing to be done");
+                                      title =
+                                          "Mistake, your order is not complete yet";
+                                      message = widget.restaurant.companyName +
+                                          " just rolled back your order status, please contact them for clarification if needed.";
                                       ordersData.completedOrders.remove(order);
                                       order.status = "takeout";
                                       ordersData.takeoutOrders.add(order);
@@ -244,6 +250,13 @@ class _AllOrdersState extends State<AllOrders> with TickerProviderStateMixin {
                                               "Order #${order.friendlyId} status Changed back",
                                           description:
                                               "You changed the status back to ${order.status}. We'll Inform the user instantly."))
+                                      .then((value) {
+                                        sendOrderNotification(
+                                            deviceId: order.deviceId,
+                                            message: message,
+                                            title: title,
+                                            extra: widget.restaurant.phone);
+                                      })
                                       .catchError((onError) {
                                         debugPrint(
                                             "Error while changing: $onError");
@@ -330,6 +343,15 @@ class _AllOrdersState extends State<AllOrders> with TickerProviderStateMixin {
                                               .doc(order.orderId)
                                               .update({
                                             "status": order.status
+                                          }).then((value) {
+                                            sendOrderNotification(
+                                                deviceId: order.deviceId,
+                                                title: widget.restaurant
+                                                        .companyName +
+                                                    " updated your order status📝",
+                                                message:
+                                                    "#${order.friendlyId} status has been updated to ${order.status}. come check it out👌",
+                                                extra: widget.restaurant.phone);
                                           }).catchError((onError) {
                                             debugPrint(
                                                 "Error while changing: $onError");

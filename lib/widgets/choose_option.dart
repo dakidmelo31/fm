@@ -3,7 +3,6 @@ import "dart:math" as math;
 
 import 'package:merchants/animations/slideup_tween.dart';
 
-import '../pages/startup_screen.dart';
 
 class ChooseOption extends StatelessWidget {
   const ChooseOption(

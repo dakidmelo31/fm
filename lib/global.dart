@@ -1,4 +1,3 @@
-import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -71,6 +70,7 @@ Future<String?> getFirebaseToken() async {
     final fcmToken = await FirebaseMessaging.instance.getAPNSToken();
     return fcmToken;
   }
+  return null;
 }
 
 getCount({required String collection, required String field}) async {

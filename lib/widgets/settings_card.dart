@@ -3,7 +3,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:merchants/global.dart';
 import 'package:merchants/models/restaurants.dart';
 import 'package:provider/provider.dart';
 
