@@ -1,3 +1,5 @@
+// ignore_for_file: must_be_immutable
+
 import 'dart:async';
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -35,10 +37,7 @@ class _CreateAccountState extends State<CreateAccount> {
       _passwordController = TextEditingController(),
       _companyNameController = TextEditingController(),
       _companyAddressController = TextEditingController(),
-      _companyWebsiteController = TextEditingController(),
-      _phoneController = TextEditingController(),
-      _companyPhoneController = TextEditingController();
-  late final bool _canContinue = currentStep < 4;
+      _phoneController = TextEditingController();
   final _generalKey = GlobalKey<FormState>();
   final _shopKey = GlobalKey<FormState>();
   final _extraKey = GlobalKey<FormState>();
@@ -78,16 +77,16 @@ class _CreateAccountState extends State<CreateAccount> {
 
   File? image;
   bool _imageSet = false;
-  _imageFromCamera() async {
-    XFile? _image = await ImagePicker().pickImage(
-      source: ImageSource.camera,
-      imageQuality: 50,
-    );
-    setState(() {
-      image = File(_image!.path);
-      _imageSet = true;
-    });
-  }
+  // _imageFromCamera() async {
+  //   XFile? _image = await ImagePicker().pickImage(
+  //     source: ImageSource.camera,
+  //     imageQuality: 50,
+  //   );
+  //   setState(() {
+  //     image = File(_image!.path);
+  //     _imageSet = true;
+  //   });
+  // }
 
   Future uploadFile() async {
     if (image == null) {
@@ -125,7 +124,9 @@ class _CreateAccountState extends State<CreateAccount> {
         }, SetOptions(merge: true)).then((value) async {
           debugPrint("Done signing up user");
           Navigator.pushReplacementNamed(context, HomeScreen.routeName);
-        }).catchError((onError) => debugPrint("found error ${onError}"));
+        }).catchError((onError) {
+          debugPrint("found error ${onError}");
+        });
       });
     });
     return url;
@@ -151,7 +152,6 @@ class _CreateAccountState extends State<CreateAccount> {
   String photoURL = "";
   @override
   void dispose() {
-    // TODO: implement dispose
     super.dispose();
   }
 
@@ -578,6 +578,7 @@ class _CreateAccountState extends State<CreateAccount> {
                                   child: TextFormField(
                                     controller: _companyAddressController,
                                     onEditingComplete: () async {
+                                      // ignore: unused_local_variable
                                       bool outcome =
                                           await showCupertinoModalPopup(
                                               context: context,

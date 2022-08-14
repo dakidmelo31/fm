@@ -76,36 +76,42 @@ class OrderCards extends StatelessWidget {
                 tappable: true,
                 openBuilder: (context, action) =>
                     AllOrders(name: name, restaurant: restaurant),
-                closedBuilder: ((context, action) => Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.max,
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Icon(Icons.shopping_cart, size: 30, color: textColor),
-                          Text("No orders yet",
-                              style: TextStyle(color: textColor, fontSize: 15)),
-                          Text(name,
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: cardColor == Colors.lightGreen
-                                    ? Colors.white
-                                    : Colors.black,
-                                fontWeight: FontWeight.w700,
-                              )),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 15),
-                            child: Text(
-                              "",
-                              style: TextStyle(
+                closedBuilder: ((context, action) => InkWell(
+                      onTap: () {},
+                      child: Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.max,
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Icon(Icons.shopping_cart,
+                                size: 30, color: textColor),
+                            Text("No orders yet",
+                                style:
+                                    TextStyle(color: textColor, fontSize: 15)),
+                            Text(name,
+                                style: TextStyle(
+                                  fontSize: 12,
                                   color: cardColor == Colors.lightGreen
                                       ? Colors.white
-                                      : Colors.grey[700],
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w400),
+                                      : Colors.black,
+                                  fontWeight: FontWeight.w700,
+                                )),
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 15),
+                              child: Text(
+                                "",
+                                style: TextStyle(
+                                    color: cardColor == Colors.lightGreen
+                                        ? Colors.white
+                                        : Colors.grey[700],
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w400),
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     )),
               ),

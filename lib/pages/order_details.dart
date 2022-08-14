@@ -11,10 +11,6 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
-import 'package:merchants/models/overview.dart';
-import 'package:merchants/models/restaurants.dart';
-import 'package:merchants/pages/see_distance.dart';
-import 'package:merchants/transitions/transitions.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
@@ -23,8 +19,13 @@ import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:merchants/global.dart';
+import 'package:merchants/models/overview.dart';
+import 'package:merchants/models/restaurants.dart';
 import 'package:merchants/pages/all_messages.dart';
+import 'package:merchants/pages/see_distance.dart';
+import 'package:merchants/providers/global_data.dart';
 import 'package:merchants/providers/restaurant_provider.dart';
+import 'package:merchants/transitions/transitions.dart';
 
 import '../models/customer.dart';
 import '../models/order_model.dart';
@@ -36,11 +37,9 @@ class OrderDetails extends StatefulWidget {
   OrderDetails({
     Key? key,
     this.total,
-    this.userId,
-    this.fromPush,
-    this.restaurant,
     this.order,
     this.color,
+    required this.restaurant,
   }) : super(key: key);
   Restaurant? restaurant;
   String? userId;
@@ -70,8 +69,7 @@ class _OrderDetailsState extends State<OrderDetails>
       debugPrint("granted");
     } else if (locationStatus.isDenied) {
       debugPrint("Not granted");
-      Map<Permission, PermissionStatus> status =
-          await [Permission.location].request();
+      await [Permission.location].request();
     } else if (locationStatus.isPermanentlyDenied) {
       openAppSettings().then((value) {
         setState(() {});
@@ -798,18 +796,25 @@ class _OrderDetailsState extends State<OrderDetails>
                                                     .collection("orders")
                                                     .doc(order.orderId)
                                                     .update({
-                                                      "status": order.status
-                                                    })
-                                                    .then((value) => sendNotif(
-                                                        channel: 3,
-                                                        title:
-                                                            "Order #${order.friendlyId} status Changed back",
-                                                        description:
-                                                            "You changed the status back to ${order.status}. We'll Inform the user instantly."))
-                                                    .catchError((onError) {
-                                                      debugPrint(
-                                                          "Error while changing: $onError");
-                                                    });
+                                                  "status": order.status
+                                                }).then((value) {
+                                                  sendNotif(
+                                                      channel: 3,
+                                                      title:
+                                                          "Order #${order.friendlyId} status Changed back",
+                                                      description:
+                                                          "You changed the status back to ${order.status}. We'll Inform the user instantly.");
+
+                                                  sendOrderNotification(
+                                                      deviceId: order.deviceId,
+                                                      message: message,
+                                                      title: title,
+                                                      restaurant:
+                                                          widget.restaurant!);
+                                                }).catchError((onError) {
+                                                  debugPrint(
+                                                      "Error while changing: $onError");
+                                                });
 
                                                 SnackBar snackBar = SnackBar(
                                                   backgroundColor: Colors.black,

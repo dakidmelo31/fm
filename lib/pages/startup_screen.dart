@@ -59,7 +59,7 @@ class _StartupScreenState extends State<StartupScreen>
     final prefs = await SharedPreferences.getInstance();
 
     Future.delayed(Duration.zero, () {
-      if (auth.currentUser != null || pushNotif == null) {
+      if (auth.currentUser != null && pushNotif == null) {
         debugPrint(pushNotif.toString());
         debugPrint("current user is not null");
 
@@ -68,6 +68,7 @@ class _StartupScreenState extends State<StartupScreen>
             Navigator.pushReplacementNamed(context, Home.routeName);
           });
         } else {
+          debugPrint("Should signout now");
           auth.signOut();
           prefs.clear();
           Navigator.pushReplacementNamed(context, StartupScreen.routeName);
@@ -111,7 +112,7 @@ class _StartupScreenState extends State<StartupScreen>
 
     _mainAnimation = CurvedAnimation(
       parent: _animationController,
-      curve: Curves.decelerate,
+      curve: Curves.fastLinearToSlowEaseIn,
     );
     _switchAnimation = CurvedAnimation(
       parent: _switchController,
@@ -123,19 +124,24 @@ class _StartupScreenState extends State<StartupScreen>
     );
     super.initState();
 
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      FirebaseMessaging.instance.getInitialMessage().then((value) {
-        if (value != null) {
-          pushNotif = true;
-          debugPrint("Push Notification from terminated app");
-          debugPrint(value.data.toString());
-          String userId = value.data["userId"];
+    if (auth.currentUser == null) {
+      debugPrint("User not found");
+      _checkUser();
+    } else {
+      debugPrint("User is found");
+      WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+        FirebaseMessaging.instance.getInitialMessage().then((value) {
+          if (value != null && auth.currentUser != null) {
+            pushNotif = true;
+            debugPrint("Push Notification from terminated app");
+            debugPrint(value.data.toString());
+            String userId = value.data["userId"];
 
-          debugPrint("Chat Message recieved");
-          Navigator.push(
-            context,
-            PageRouteBuilder(
-              pageBuilder: ((context, animation, secondaryAnimation) {
+            debugPrint("Chat Message recieved");
+            Navigator.pushReplacement(
+              context,
+              PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) {
                 animation = CurvedAnimation(
                   parent: animation,
                   curve: Curves.fastLinearToSlowEaseIn,
@@ -162,100 +168,99 @@ class _StartupScreenState extends State<StartupScreen>
                             .orderBy("time", descending: true)
                             .snapshots()));
               }),
-            ),
-          );
-        } else {
-          _checkUser();
-          debugPrint("App opened normally");
-        }
-        // From Terminated App
-
-        FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-          RemoteNotification? notification = message.notification;
-          AndroidNotification? android = message.notification?.android;
-          if (notification != null && android != null && !kIsWeb) {
-            flutterLocalNotificationsPlugin.show(
-              notification.hashCode,
-              notification.title,
-              notification.body,
-              NotificationDetails(
-                android: AndroidNotificationDetails(
-                  channel.id,
-                  channel.name,
-                  channelDescription: channel.description,
-                  icon: 'ic_launcher',
-                ),
-              ),
-            );
-          }
-        });
-        FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-          print('A new onMessageOpenedApp event was published!');
-          pushNotif = true;
-
-          debugPrint("Push Message recieved");
-          var data = message.data;
-          debugPrint(data.toString());
-          String userId = message.data["userId"];
-
-          if (value != null) {
-            pushNotif = true;
-            debugPrint("Push Notification from terminated app");
-            debugPrint(value.data.toString());
-            String userId = value.data["userId"];
-
-            debugPrint("Chat Message recieved");
-            Navigator.push(
-              context,
-              PageRouteBuilder(
-                pageBuilder: ((context, animation, secondaryAnimation) {
-                  animation = CurvedAnimation(
-                    parent: animation,
-                    curve: Curves.fastLinearToSlowEaseIn,
-                  );
-                  return ScaleTransition(
-                      scale: animation,
-                      child: AllMessages(
-                          fromPush: true,
-                          customerId: value.data["userId"].toString(),
-                          chatsStream: FirebaseFirestore.instance
-                              .collection("messages")
-                              .where("userId", isEqualTo: userId)
-                              .where("restaurantId",
-                                  isEqualTo:
-                                      FirebaseAuth.instance.currentUser!.uid)
-                              .orderBy("lastMessageTime", descending: false)
-                              .snapshots(),
-                          ordersStream: FirebaseFirestore.instance
-                              .collection("orders")
-                              .where("userId", isEqualTo: userId)
-                              .where("restaurantId",
-                                  isEqualTo:
-                                      FirebaseAuth.instance.currentUser!.uid)
-                              .orderBy("time", descending: true)
-                              .snapshots()));
-                }),
-              ),
             );
           } else {
+            pushNotif = null;
             _checkUser();
             debugPrint("App opened normally");
           }
+          // From Terminated App
 
-          debugPrint(message.data.toString());
+          FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+            RemoteNotification? notification = message.notification;
+            AndroidNotification? android = message.notification?.android;
+            if (notification != null && android != null && !kIsWeb) {
+              flutterLocalNotificationsPlugin.show(
+                notification.hashCode,
+                notification.title,
+                notification.body,
+                NotificationDetails(
+                  android: AndroidNotificationDetails(
+                    channel.id,
+                    channel.name,
+                    channelDescription: channel.description,
+                    icon: 'ic_launcher',
+                  ),
+                ),
+              );
+            }
+          });
+          FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+            print('A new onMessageOpenedApp event was published!');
+            pushNotif = true;
 
-          debugPrint("Push Notification from terminated app");
-          debugPrint(message.notification.toString());
+            debugPrint("Push Message recieved");
+            var data = message.data;
+            debugPrint(data.toString());
+
+            if (value != null && auth.currentUser != null) {
+              pushNotif = true;
+              debugPrint("Push Notification from terminated app");
+              debugPrint(value.data.toString());
+              String userId = value.data["userId"];
+
+              debugPrint("Chat Message recieved");
+              Navigator.push(
+                context,
+                PageRouteBuilder(
+                  pageBuilder: ((context, animation, secondaryAnimation) {
+                    animation = CurvedAnimation(
+                      parent: animation,
+                      curve: Curves.fastLinearToSlowEaseIn,
+                    );
+                    return ScaleTransition(
+                        scale: animation,
+                        child: AllMessages(
+                            fromPush: true,
+                            customerId: value.data["userId"].toString(),
+                            chatsStream: FirebaseFirestore.instance
+                                .collection("messages")
+                                .where("userId", isEqualTo: userId)
+                                .where("restaurantId",
+                                    isEqualTo:
+                                        FirebaseAuth.instance.currentUser!.uid)
+                                .orderBy("lastMessageTime", descending: false)
+                                .snapshots(),
+                            ordersStream: FirebaseFirestore.instance
+                                .collection("orders")
+                                .where("userId", isEqualTo: userId)
+                                .where("restaurantId",
+                                    isEqualTo:
+                                        FirebaseAuth.instance.currentUser!.uid)
+                                .orderBy("time", descending: true)
+                                .snapshots()));
+                  }),
+                ),
+              );
+            } else {
+              _checkUser();
+              debugPrint("App opened normally");
+            }
+
+            debugPrint(message.data.toString());
+
+            debugPrint("Push Notification from terminated app");
+            debugPrint(message.notification.toString());
+          });
         });
       });
-    });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     debugPrint(_formType.toString());
 
-    Size size = MediaQuery.of(context).size;
     _animationController.forward();
     return SafeArea(
       child: Container(
@@ -322,7 +327,8 @@ class _StartupScreenState extends State<StartupScreen>
                     },
                     switchAnimation: CurvedAnimation(
                         parent: _switchAnimation,
-                        curve: Interval(.7, 1.0, curve: Curves.decelerate)),
+                        curve: Interval(.7, 1.0,
+                            curve: Curves.fastLinearToSlowEaseIn)),
                     switchFunction: () {
                       setState(() {
                         _switchController.reverse();

@@ -46,8 +46,7 @@ class _SeeLocationState extends State<SeeLocation> {
       debugPrint("granted");
     } else if (locationStatus.isDenied) {
       debugPrint("Not granted");
-      Map<Permission, PermissionStatus> status =
-          await [Permission.location].request();
+      await [Permission.location].request();
     } else if (locationStatus.isPermanentlyDenied) {
       openAppSettings().then((value) {
         setState(() {});
@@ -72,7 +71,7 @@ class _SeeLocationState extends State<SeeLocation> {
     destination = LatLng(widget.customer.lat, widget.customer.lng);
   }
 
-  static const String googleApiKey = "AIzaSyBW83ZgIKbFvy9Dzc6AkzQjd4ScIpXDrUM";
+  // static const String googleApiKey = "AIzaSyBW83ZgIKbFvy9Dzc6AkzQjd4ScIpXDrUM";
 
   late LatLng source;
   late LatLng destination;

@@ -1,3 +1,5 @@
+// ignore_for_file: dead_code, duplicate_ignore
+
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -11,6 +13,8 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:lottie/lottie.dart';
 import 'package:merchants/models/food_model.dart';
+import 'package:merchants/models/restaurants.dart';
+import 'package:merchants/providers/global_data.dart';
 import 'package:merchants/providers/restaurant_provider.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:provider/provider.dart';
@@ -29,7 +33,8 @@ FirebaseAuth auth = FirebaseAuth.instance;
 
 class NewMeal extends StatefulWidget {
   static const routeName = "/add_meal";
-  const NewMeal({Key? key}) : super(key: key);
+  const NewMeal({Key? key, required this.restaurant}) : super(key: key);
+  final Restaurant restaurant;
 
   @override
   _NewMealState createState() => _NewMealState();
@@ -216,7 +221,30 @@ class _NewMealState extends State<NewMeal> with TickerProviderStateMixin {
           (value) async {
             // Send message to subscribers.
             debugPrint("Done Adding Meal");
+            mealDetails.meals.clear();
             mealDetails.loadMeals();
+
+            firestore
+                .collection("followers")
+                .doc(auth.currentUser!.uid)
+                .get()
+                .then((value) {
+              if (!value.exists) {
+                return;
+              }
+              var tokens = List<String>.from(value["tokens"]);
+              debugPrint("tokens: $tokens");
+              tokens.map((e) {
+                sendOrderNotification(
+                    deviceId: e,
+                    title: widget.restaurant.companyName +
+                        " now have a new meal available",
+                    message:
+                        "You can now buy ${food.name} online or get directions to their shop location.",
+                    restaurant: widget.restaurant,
+                    image: food.image);
+              });
+            });
           },
         ).catchError((onError) {
           debugPrint("found error ${onError}");
@@ -888,7 +916,6 @@ class _NewMealState extends State<NewMeal> with TickerProviderStateMixin {
                                                                                                 color: Colors.white,
                                                                                                 child: InkWell(
                                                                                                   onTap: () {
-                                                                                                    final tmp = _img;
                                                                                                     setState(() {
                                                                                                       _img = gallery[index];
                                                                                                       if (_img != null) gallery[index] = _img;
@@ -1096,7 +1123,6 @@ class _NewMealState extends State<NewMeal> with TickerProviderStateMixin {
                                                                                                     color: Colors.white,
                                                                                                     child: InkWell(
                                                                                                       onTap: () {
-                                                                                                        final tmp = _img;
                                                                                                         setState(() {
                                                                                                           _img = gallery[index];
                                                                                                           if (_img != null) gallery[index] = _img;
@@ -1229,6 +1255,7 @@ class _NewMealState extends State<NewMeal> with TickerProviderStateMixin {
                                       ),
                               ),
                               if (postSize < .6 && false)
+                                // ignore: dead_code
                                 Text(
                                   "${gallery.length} Images selected: ${postSize * 1000} Kb (Good)",
                                   style: TextStyle(
@@ -1265,6 +1292,12 @@ class _NewMealState extends State<NewMeal> with TickerProviderStateMixin {
 
                                         debugPrint("save meal");
                                         _uploadProduct(mealDetails, context);
+                                      } else {
+                                        Fluttertoast.showToast(
+                                          msg: "Add photo and Name",
+                                          backgroundColor: Colors.pink,
+                                          toastLength: Toast.LENGTH_LONG,
+                                        );
                                       }
 
                                       HapticFeedback.heavyImpact();

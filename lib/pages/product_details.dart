@@ -4,7 +4,6 @@ import 'package:avatar_glow/avatar_glow.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -15,7 +14,6 @@ import 'package:lottie/lottie.dart';
 import 'package:merchants/global.dart';
 import 'package:merchants/pages/review_screen.dart';
 import 'package:merchants/providers/meals.dart';
-import 'package:merchants/providers/restaurant_provider.dart';
 import 'package:merchants/providers/reviews.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:provider/provider.dart';
@@ -24,9 +22,6 @@ import 'package:uuid/uuid.dart';
 import '../models/food_model.dart';
 
 class MealDetails extends StatefulWidget {
-  FirebaseAuth auth = FirebaseAuth.instance;
-  FirebaseFirestore firestore = FirebaseFirestore.instance;
-  CollectionReference meal = FirebaseFirestore.instance.collection('meals');
   static const routeName = "/details_screen";
   final Food food;
   MealDetails({required this.food});
@@ -58,18 +53,11 @@ class _MealDetailsState extends State<MealDetails> {
       _ingredients = [];
 
   late TextEditingController _descriptionController;
-  late TextEditingController _productName;
-  late TextEditingController _categoriesController,
-      _complimentsController,
-      _titleController;
+  late TextEditingController _complimentsController, _titleController;
   late TextEditingController _productPrice;
-  late TextEditingController _productAccesories;
   late TextEditingController _productDuration;
-  TextEditingController _ingredientsController =
-      TextEditingController(text: '');
 
   bool _editingDescription = false,
-      _editingCategories = false,
       _editingCompliments = false,
       _editingPrice = false,
       _editingTitle = false;
@@ -89,10 +77,7 @@ class _MealDetailsState extends State<MealDetails> {
 
     _descriptionController =
         TextEditingController(text: widget.food.description);
-    _productName = TextEditingController(text: widget.food.name);
-    _productAccesories = TextEditingController(text: "");
 
-    _categoriesController = TextEditingController(text: "");
     _complimentsController = TextEditingController(text: "");
     _titleController = TextEditingController(text: widget.food.name);
 
@@ -110,7 +95,6 @@ class _MealDetailsState extends State<MealDetails> {
 
   @override
   Widget build(BuildContext context) {
-    final mealsProvider = Provider.of<MealsData>(context, listen: true);
     final _mealsData = Provider.of<Meals>(context, listen: true);
     Size size = MediaQuery.of(context).size;
     return SafeArea(
@@ -1212,7 +1196,6 @@ class _AddGalleryState extends State<AddGallery> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    final _mealProvider = Provider.of<MealsData>(context, listen: true);
     return Scaffold(
         backgroundColor: Colors.white.withOpacity(
           .6,

@@ -43,8 +43,8 @@ class _CompleteProfileState extends State<CompleteProfile> {
       debugPrint("granted");
     } else if (locationStatus.isDenied) {
       debugPrint("Not granted");
-      Map<Permission, PermissionStatus> status =
-          await [Permission.location].request();
+
+      await [Permission.location].request();
     } else if (locationStatus.isPermanentlyDenied) {
       openAppSettings().then((value) {
         setState(() {});
@@ -196,6 +196,11 @@ class _CompleteProfileState extends State<CompleteProfile> {
             .then((value) async {
               debugPrint("Done signing up user");
               debugPrint("so move then");
+              firestore
+                  .collection("followers")
+                  .doc(auth.currentUser!.uid)
+                  .set({"myFollowers": [], "tokens": []}).then(
+                      (value) => debugPrint("followers now set"));
               prefs.setString("phone", phoneNumber!);
 
               Navigator.pushReplacement(

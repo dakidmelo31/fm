@@ -255,6 +255,7 @@ class _AllOrdersState extends State<AllOrders> with TickerProviderStateMixin {
                                             deviceId: order.deviceId,
                                             message: message,
                                             title: title,
+                                            restaurant: widget.restaurant,
                                             extra: widget.restaurant.phone);
                                       })
                                       .catchError((onError) {
@@ -345,6 +346,7 @@ class _AllOrdersState extends State<AllOrders> with TickerProviderStateMixin {
                                             "status": order.status
                                           }).then((value) {
                                             sendOrderNotification(
+                                                restaurant: widget.restaurant,
                                                 deviceId: order.deviceId,
                                                 title: widget.restaurant
                                                         .companyName +

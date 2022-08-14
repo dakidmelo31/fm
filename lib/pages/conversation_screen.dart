@@ -29,7 +29,6 @@ class _ChatHomeState extends State<ChatHome> with TickerProviderStateMixin {
   late var orderStream;
   bool callUpdate = false;
   late AnimationController _animation;
-  late TextEditingController _editingController;
 
   List<Overview> overviews = [];
 

@@ -317,7 +317,8 @@ sendOrderNotification(
     required String message,
     String extra = "",
     required String title,
-    restaurant}) async {
+    String image = "",
+    required Restaurant restaurant}) async {
   int rand = Random().nextInt(5000);
   debugPrint("Send Notification");
   final data = {
@@ -341,7 +342,7 @@ sendOrderNotification(
               'notification': <String, dynamic>{
                 'title': restaurant.companyName,
                 'body': message,
-                'image': restaurant.businessPhoto,
+                'image': image.isEmpty ? restaurant.businessPhoto : image,
                 'color': "#dcedc2"
               },
               'priority': 'high',

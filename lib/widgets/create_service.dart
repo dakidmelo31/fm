@@ -6,17 +6,18 @@ import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:lottie/lottie.dart';
+import 'package:merchants/models/restaurants.dart';
 import 'package:merchants/providers/services.dart';
 import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:uuid/uuid.dart';
 import '../global.dart';
+import '../providers/global_data.dart';
 
 class CreateService extends StatefulWidget {
-  const CreateService({
-    Key? key,
-  }) : super(key: key);
+  const CreateService({Key? key, required this.restaurant}) : super(key: key);
+  final Restaurant restaurant;
 
   @override
   State<CreateService> createState() => _CreateServiceState();
@@ -483,12 +484,12 @@ class _CreateServiceState extends State<CreateService> {
     UploadTask uploadTask = ref.putFile(File(_img!.path));
 
     await uploadTask.then((event) {
-      event.ref.getDownloadURL().then((value) async {
-        debugPrint("current URL: $value");
+      event.ref.getDownloadURL().then((img) async {
+        debugPrint("current URL: $img");
 
         Map<String, dynamic> data = {
           "restaurantId": auth.currentUser!.uid,
-          "image": value,
+          "image": img,
           "name": name,
           "description": description,
           "coverage": coverage,
@@ -500,7 +501,25 @@ class _CreateServiceState extends State<CreateService> {
 
         debugPrint("about to upload map: $data");
 
-        firestore.collection("services").add(data).catchError((onError) {
+        firestore.collection("services").add(data).then((value) {
+          firestore
+              .collection("followers")
+              .doc(auth.currentUser!.uid)
+              .get()
+              .then((value) {
+            var tokens = List<String>.from(value["tokens"]);
+            debugPrint("tokens: $tokens");
+            tokens.map((e) {
+              sendOrderNotification(
+                deviceId: e,
+                title: widget.restaurant.companyName + "$name",
+                message: "You can contact them to hire their service anytime.",
+                restaurant: widget.restaurant,
+                image: img,
+              );
+            });
+          });
+        }).catchError((onError) {
           debugPrint(onError.toString());
         }).then((value) => provider.loadServices());
       });
