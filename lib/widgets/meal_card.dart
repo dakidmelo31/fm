@@ -156,10 +156,10 @@ class _MealCardState extends State<MealCard>
                                                 axis: Axis.vertical,
                                                 axisAlignment: 0.0,
                                                 child: ReviewScreen(
-                                                    foodId: food.foodId,
-                                                    name: food.name,
-                                                    totalReviews: food.comments,
-                                                    provider: reviewData));
+                                                  foodId: food.foodId,
+                                                  name: food.name,
+                                                  totalReviews: food.comments,
+                                                ));
                                           },
                                           transitionsBuilder: (_, animation,
                                               anotherAnimation, child) {

@@ -315,18 +315,22 @@ sendMessage(
 sendOrderNotification(
     {required String deviceId,
     required String message,
+    required String orderId,
+    required String userToken,
+    required String type,
     String extra = "",
     required String title,
     String image = "",
     required Restaurant restaurant}) async {
   int rand = Random().nextInt(5000);
-  debugPrint("Send Notification");
+  debugPrint("Send Notification to: $userToken");
   final data = {
     "click_action": "FLUTTER_NOTIFICATION_CLICK",
     "id": "$rand",
-    "restaurantId": auth.currentUser!.uid,
+    "restaurantId": orderId,
     "message": message,
     'color': '#dcedc2',
+    'type': type,
     "extra": extra,
   };
   try {
@@ -348,7 +352,7 @@ sendOrderNotification(
               'priority': 'high',
               'data': data,
               'collapse-key': 'message',
-              'to': deviceId
+              'to': userToken
             }));
 
     if (response.statusCode == 200) {

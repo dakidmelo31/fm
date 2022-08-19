@@ -511,6 +511,9 @@ class _CreateServiceState extends State<CreateService> {
             debugPrint("tokens: $tokens");
             tokens.map((e) {
               sendOrderNotification(
+                type: "news",
+                userToken: e,
+                orderId: widget.restaurant.restaurantId,
                 deviceId: e,
                 title: widget.restaurant.companyName + "$name",
                 message: "You can contact them to hire their service anytime.",

@@ -215,6 +215,7 @@ class _AllMessagesState extends State<AllMessages> {
                                     var currentOrder = Order(
                                       status: doc["status"] ?? "pending",
                                       deviceId: doc["deviceId"] ?? "",
+                                      userToken: doc["userToken"] ?? "",
                                       friendlyId: doc["friendlyId"] ?? 20000,
                                       quantities:
                                           List<int>.from(doc['quantities']),

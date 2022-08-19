@@ -148,11 +148,11 @@ class _ServiceCardState extends State<ServiceCard>
                                                   axis: Axis.vertical,
                                                   axisAlignment: 0.0,
                                                   child: ReviewScreen(
-                                                      name: service.name,
-                                                      totalReviews:
-                                                          service.comments,
-                                                      foodId: service.serviceId,
-                                                      provider: reviewData)),
+                                                    name: service.name,
+                                                    totalReviews:
+                                                        service.comments,
+                                                    foodId: service.serviceId,
+                                                  )),
                                             );
                                           },
                                           transitionsBuilder: (_, animation,

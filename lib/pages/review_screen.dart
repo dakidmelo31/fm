@@ -1,8 +1,10 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:merchants/models/review_models.dart';
+import 'package:merchants/providers/auth_provider.dart';
 import 'package:merchants/providers/reviews.dart';
 
 class ReviewScreen extends StatefulWidget {
@@ -10,42 +12,32 @@ class ReviewScreen extends StatefulWidget {
       {Key? key,
       required this.name,
       required this.foodId,
-      required this.totalReviews,
-      required this.provider})
+      this.isMeal,
+      required this.totalReviews})
       : super(key: key);
   final String foodId;
   final String name;
+  final bool? isMeal;
   final int totalReviews;
-  final ReviewProvider provider;
 
   @override
   State<ReviewScreen> createState() => _ReviewScreenState();
 }
 
 class _ReviewScreenState extends State<ReviewScreen> {
-  ScrollController _scrollController = ScrollController();
+  late var _stream;
   @override
   void initState() {
     super.initState();
-    _scrollController.addListener(scrollListener);
-    widget.provider.fetchNextReviews(foodId: widget.foodId);
+    _stream = firestore
+        .collection("reviews")
+        .where("foodId", isEqualTo: widget.foodId)
+        .snapshots();
   }
 
   @override
   void dispose() {
-    _scrollController.dispose();
     super.dispose();
-  }
-
-  scrollListener() {
-    if (_scrollController.offset >=
-            _scrollController.position.maxScrollExtent &&
-        !_scrollController.position.outOfRange) {
-      debugPrint("load reviews");
-      if (widget.provider.hasNext) {
-        widget.provider.fetchNextReviews(foodId: widget.foodId);
-      }
-    }
   }
 
   @override
@@ -59,7 +51,6 @@ class _ReviewScreenState extends State<ReviewScreen> {
             physics:
                 BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
             dragStartBehavior: DragStartBehavior.down,
-            controller: _scrollController,
             slivers: [
               SliverAppBar(
                 actions: [
@@ -108,93 +99,134 @@ class _ReviewScreenState extends State<ReviewScreen> {
                 ),
               ),
               SliverList(
-                delegate: SliverChildBuilderDelegate((context, index) {
-                  ReviewModel item = widget.provider.reviews[index];
-                  return Padding(
-                    padding:
-                        EdgeInsets.symmetric(horizontal: 15.0, vertical: 30.0),
-                    child: Column(
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: ClipOval(
-                                    child: CachedNetworkImage(
-                                      imageUrl: item.avatar,
-                                      alignment: Alignment.center,
-                                      fit: BoxFit.cover,
-                                      errorWidget: (_, __, ___) => Lottie.asset(
-                                          "assets/no-connection.json"),
-                                      placeholder: (
-                                        _,
-                                        __,
-                                      ) =>
-                                          Lottie.asset("assets/loading7.json"),
-                                      fadeInCurve:
-                                          Curves.fastLinearToSlowEaseIn,
-                                      width: 45.0,
-                                      height: 45.0,
+                delegate: SliverChildListDelegate([
+                  StreamBuilder<QuerySnapshot>(
+                    stream: _stream,
+                    builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                      if (snapshot.hasError) {
+                        return Center(
+                          child: Lottie.asset("assets/hat-review.json"),
+                        );
+                      }
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return Center(
+                          child: Lottie.asset("assets/hat-review.json"),
+                        );
+                      }
+                      List<ReviewModel> list = [];
+
+                      snapshot.data!.docs.map((DocumentSnapshot document) {
+                        Map<String, dynamic> data =
+                            document.data()! as Map<String, dynamic>;
+                        ReviewModel rev = ReviewModel.fromMap(data);
+                        rev.reviewId = document.id;
+                        return list.add(rev);
+                      }).toList();
+
+                      return ListView.builder(
+                          physics: BouncingScrollPhysics(
+                              parent: AlwaysScrollableScrollPhysics()),
+                          shrinkWrap: true,
+                          itemCount: list.length,
+                          itemBuilder: (_, index) {
+                            ReviewModel item = list[index];
+
+                            return Padding(
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 15.0, vertical: 30.0),
+                              child: Column(
+                                children: [
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: ClipOval(
+                                              child: CachedNetworkImage(
+                                                imageUrl: item.avatar,
+                                                alignment: Alignment.center,
+                                                fit: BoxFit.cover,
+                                                errorWidget: (_, __, ___) =>
+                                                    Lottie.asset(
+                                                        "assets/no-connection.json"),
+                                                placeholder: (
+                                                  _,
+                                                  __,
+                                                ) =>
+                                                    Lottie.asset(
+                                                        "assets/loading7.json"),
+                                                fadeInCurve: Curves
+                                                    .fastLinearToSlowEaseIn,
+                                                width: 45.0,
+                                                height: 45.0,
+                                              ),
+                                            ),
+                                          ),
+                                          Text(
+                                            item.username,
+                                            style: TextStyle(
+                                                fontSize: 15.0,
+                                                fontWeight: FontWeight.w400),
+                                          ),
+                                        ],
+                                      ),
+                                      IconButton(
+                                        onPressed: () {},
+                                        icon: Icon(Icons.delete_rounded,
+                                            size: 15),
+                                      ),
+                                    ],
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 12.0),
+                                    child: Row(
+                                      children: [
+                                        Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: Row(
+                                            children: [
+                                              for (var i = 0; i < 5; i++)
+                                                Icon(
+                                                  Icons.star_rounded,
+                                                  color: i <= item.rating
+                                                      ? Colors.green
+                                                      : Colors.grey
+                                                          .withOpacity(.3),
+                                                  size: 15.0,
+                                                ),
+                                            ],
+                                          ),
+                                        ),
+                                        Text(
+                                          item.created_at.day.toString() +
+                                              "/" +
+                                              item.created_at.month.toString() +
+                                              "/" +
+                                              item.created_at.year.toString(),
+                                          style: TextStyle(
+                                              fontSize: 15.0,
+                                              fontWeight: FontWeight.w400),
+                                        )
+                                      ],
                                     ),
                                   ),
-                                ),
-                                Text(
-                                  item.username,
-                                  style: TextStyle(
-                                      fontSize: 15.0,
-                                      fontWeight: FontWeight.w400),
-                                ),
-                              ],
-                            ),
-                            IconButton(
-                              onPressed: () {},
-                              icon: Icon(Icons.delete_rounded, size: 15),
-                            ),
-                          ],
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 12.0),
-                          child: Row(
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Row(
-                                  children: [
-                                    for (var i = 0; i < 5; i++)
-                                      Icon(
-                                        Icons.star_rounded,
-                                        color: i <= item.rating
-                                            ? Colors.green
-                                            : Colors.grey.withOpacity(.3),
-                                        size: 15.0,
-                                      ),
-                                  ],
-                                ),
+                                  SizedBox(
+                                      width:
+                                          size.width - ((size.width / 30) * 2),
+                                      child: Text(item.description))
+                                ],
                               ),
-                              Text(
-                                item.created_at.day.toString() +
-                                    "/" +
-                                    item.created_at.month.toString() +
-                                    "/" +
-                                    item.created_at.year.toString(),
-                                style: TextStyle(
-                                    fontSize: 15.0,
-                                    fontWeight: FontWeight.w400),
-                              )
-                            ],
-                          ),
-                        ),
-                        SizedBox(
-                            width: size.width - ((size.width / 30) * 2),
-                            child: Text(item.description))
-                      ],
-                    ),
-                  );
-                }, childCount: widget.provider.reviews.length),
+                            );
+                          });
+                    },
+                  )
+                ]),
               )
             ],
           ),

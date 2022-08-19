@@ -252,6 +252,9 @@ class _AllOrdersState extends State<AllOrders> with TickerProviderStateMixin {
                                               "You changed the status back to ${order.status}. We'll Inform the user instantly."))
                                       .then((value) {
                                         sendOrderNotification(
+                                            orderId: order.orderId,
+                                            type: "order",
+                                            userToken: order.userToken,
                                             deviceId: order.deviceId,
                                             message: message,
                                             title: title,
@@ -346,6 +349,9 @@ class _AllOrdersState extends State<AllOrders> with TickerProviderStateMixin {
                                             "status": order.status
                                           }).then((value) {
                                             sendOrderNotification(
+                                                type: "order",
+                                                orderId: order.orderId,
+                                                userToken: order.userToken,
                                                 restaurant: widget.restaurant,
                                                 deviceId: order.deviceId,
                                                 title: widget.restaurant

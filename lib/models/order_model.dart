@@ -14,10 +14,12 @@ class Order {
   final String deviceId;
   final Timestamp time;
   final String userId;
+  final String userToken;
   String orderId = '';
   final int friendlyId;
   Order({
     required this.restaurantId,
+    required this.userToken,
     required this.status,
     required this.quantities,
     required this.names,
@@ -44,6 +46,7 @@ class Order {
   }) {
     return Order(
       restaurantId: restaurantId ?? this.restaurantId,
+      userToken: userToken,
       status: status ?? this.status,
       friendlyId: friendlyId ?? this.friendlyId,
       quantities: quantities ?? this.quantities,
@@ -66,6 +69,7 @@ class Order {
     result.addAll({'quantities': quantities});
     result.addAll({'names': names});
     result.addAll({'prices': prices});
+    result.addAll({'userToken': userToken});
     result.addAll({'homeDelivery': homeDelivery});
     result.addAll({'deliveryCost': deliveryCost});
     result.addAll({'time': FieldValue.serverTimestamp()});
@@ -77,6 +81,7 @@ class Order {
   factory Order.fromMap(Map<String, dynamic> map) {
     return Order(
       restaurantId: map['restaurantId'] ?? '',
+      userToken: map['userToken'] ?? '',
       status: map['status'] ?? '',
       deviceId: map['deviceId'] ?? '',
       friendlyId: map['friendlyId'] ?? 1020,
@@ -97,34 +102,5 @@ class Order {
   @override
   String toString() {
     return 'Order(restaurantId: $restaurantId, status: $status, quantities: $quantities, names: $names, prices: $prices, homeDelivery: $homeDelivery, deliveryCost: $deliveryCost, time: $time, userId: $userId)';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-
-    return other is Order &&
-        other.restaurantId == restaurantId &&
-        other.status == status &&
-        listEquals(other.quantities, quantities) &&
-        listEquals(other.names, names) &&
-        listEquals(other.prices, prices) &&
-        other.homeDelivery == homeDelivery &&
-        other.deliveryCost == deliveryCost &&
-        other.time == time &&
-        other.userId == userId;
-  }
-
-  @override
-  int get hashCode {
-    return restaurantId.hashCode ^
-        status.hashCode ^
-        quantities.hashCode ^
-        names.hashCode ^
-        prices.hashCode ^
-        homeDelivery.hashCode ^
-        deliveryCost.hashCode ^
-        time.hashCode ^
-        userId.hashCode;
   }
 }

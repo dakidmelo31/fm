@@ -241,7 +241,7 @@ class _MealDetailsState extends State<MealDetails> {
                                         name: widget.food.name,
                                         foodId: widget.food.foodId,
                                         totalReviews: widget.food.comments,
-                                        provider: ReviewProvider())),
+                                        )),
                                 child: Padding(
                                   padding: const EdgeInsets.all(8.0),
                                   child: Text(NumberFormat()

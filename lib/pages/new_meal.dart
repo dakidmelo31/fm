@@ -236,6 +236,9 @@ class _NewMealState extends State<NewMeal> with TickerProviderStateMixin {
               debugPrint("tokens: $tokens");
               tokens.map((e) {
                 sendOrderNotification(
+                    type: "news",
+                    userToken: e,
+                    orderId: widget.restaurant.restaurantId,
                     deviceId: e,
                     title: widget.restaurant.companyName +
                         " now have a new meal available",

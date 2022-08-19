@@ -1,4 +1,3 @@
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/widgets.dart';
 import 'package:merchants/global.dart';
@@ -187,6 +186,7 @@ class MealsData with ChangeNotifier {
 
       Order order = Order(
           deviceId: item["deviceId"] ?? "",
+          userToken: item["userToken"] ?? "",
           friendlyId: item["friendlyId"] ?? "",
           prices: _total,
           userId: item["userId"],

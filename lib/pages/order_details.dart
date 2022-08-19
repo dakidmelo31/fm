@@ -806,6 +806,10 @@ class _OrderDetailsState extends State<OrderDetails>
                                                           "You changed the status back to ${order.status}. We'll Inform the user instantly.");
 
                                                   sendOrderNotification(
+                                                      type: "order",
+                                                      userToken:
+                                                          order.userToken,
+                                                      orderId: order.orderId,
                                                       deviceId: order.deviceId,
                                                       message: message,
                                                       title: title,
@@ -968,6 +972,8 @@ class _OrderDetailsState extends State<OrderDetails>
                                             visible: visible,
                                             child: IconButton(
                                                 onPressed: () {
+                                                  String title = '',
+                                                      description = '';
                                                   switch (order.status) {
                                                     case "cancelled":
                                                       debugPrint(
@@ -990,6 +996,10 @@ class _OrderDetailsState extends State<OrderDetails>
                                                       ordersData
                                                           .processingOrders
                                                           .add(order);
+                                                      title =
+                                                          "#${order.friendlyId} Update";
+                                                      description =
+                                                          "Your order has been accepted";
                                                       setState(() {});
                                                       break;
 
@@ -1000,6 +1010,11 @@ class _OrderDetailsState extends State<OrderDetails>
                                                       order.status = "takeout";
                                                       ordersData.takeoutOrders
                                                           .add(order);
+                                                      title =
+                                                          "#${order.friendlyId} Update";
+                                                      description =
+                                                          "Your order has been processed, it's now ready";
+
                                                       setState(() {});
                                                       break;
 
@@ -1010,6 +1025,11 @@ class _OrderDetailsState extends State<OrderDetails>
                                                           "completed";
                                                       ordersData.completedOrders
                                                           .add(order);
+                                                      title =
+                                                          "#${order.friendlyId} Update";
+                                                      description =
+                                                          "Your order is marked as completed, leave a review for the product if you are satisfied.";
+
                                                       setState(() {});
                                                       break;
 
@@ -1055,6 +1075,17 @@ class _OrderDetailsState extends State<OrderDetails>
                                                               "Error while changing: $onError");
                                                         });
                                                   }
+
+                                                  sendOrderNotification(
+                                                      orderId: order.orderId,
+                                                      userToken:
+                                                          order.userToken,
+                                                      deviceId: order.deviceId,
+                                                      message: description,
+                                                      title: title,
+                                                      type: "order",
+                                                      restaurant:
+                                                          widget.restaurant!);
 
                                                   SnackBar snackBar = SnackBar(
                                                     backgroundColor:

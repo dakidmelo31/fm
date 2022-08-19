@@ -81,7 +81,7 @@ void main() async {
     );
   }
 
-  // SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
 
   NotificationService().initNotification();
