@@ -74,6 +74,7 @@ class _SettingsCardState extends State<SettingsCard> {
 
         break;
     }
+    debugPrint("card built");
 
     return Material(
       child: InkWell(

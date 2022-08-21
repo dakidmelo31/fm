@@ -346,6 +346,7 @@ sendOrderNotification(
               'notification': <String, dynamic>{
                 'title': restaurant.companyName,
                 'body': message,
+                'type': type,
                 'image': image.isEmpty ? restaurant.businessPhoto : image,
                 'color': "#dcedc2"
               },
