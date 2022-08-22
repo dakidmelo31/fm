@@ -565,6 +565,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                           .fastLinearToSlowEaseIn,
                                                       child: FadeInAnimation(
                                                           child: MealCard(
+                                                              restaurant: widget
+                                                                  .restaurant,
                                                               food: food),
                                                           curve: Curves
                                                               .fastLinearToSlowEaseIn),

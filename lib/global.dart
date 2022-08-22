@@ -1,4 +1,3 @@
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -149,5 +148,6 @@ isAccountCreated() async {
   return false;
 }
 
-
 //Free Key: QS6R-4YD4-2Q9S-SGTY
+
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();

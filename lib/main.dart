@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:in_app_notification/in_app_notification.dart';
 import 'package:merchants/firebase_options.dart';
+import 'package:merchants/global.dart';
 import 'package:merchants/pages/SimplePage.dart';
 import 'package:merchants/pages/home_screen.dart';
 import 'package:merchants/pages/signup_screen.dart';
@@ -83,8 +84,8 @@ void main() async {
 
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-
   NotificationService().initNotification();
+
   runApp(
     InAppNotification(
       child: ChangeNotifierProvider(
@@ -119,6 +120,7 @@ class AppHome extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ReviewProvider())
       ],
       child: MaterialApp(
+        navigatorKey: navigatorKey,
         debugShowCheckedModeBanner: false,
         title: "Foodin Merchant",
         theme: ThemeData(

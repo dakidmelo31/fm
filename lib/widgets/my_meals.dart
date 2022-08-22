@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:math';
+import 'package:http/http.dart' as http;
 import 'package:animations/animations.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -176,6 +179,8 @@ class _MyMealsState extends State<MyMeals> {
                                               value: food.available,
                                               onChanged: (update) {
                                                 //change status
+
+                                                debugPrint("show this now");
                                                 firestore
                                                     .collection("meals")
                                                     .doc(food.foodId)
