@@ -91,6 +91,58 @@ class _AllMessagesState extends State<AllMessages> {
           customer = value;
         });
       });
+
+      var dat = await firestore
+          .collection("restaurants")
+          .doc(auth.currentUser!.uid)
+          .get();
+      if (dat.exists) {
+        var event = dat.data() as Map<String, dynamic>;
+        // int doubleCost = int.parse("${event["deliveryCost"]}");
+        // int cost = doubleCost.toInt();
+        // if (snapshot.connectionState == ConnectionState.waiting) {
+        //   return Container(
+        //     width: size.width,
+        //     height: size.height,
+        //     color: Colors.white,
+        //     child: Center(
+        //       child: Lottie.asset("assets/loading5.json"),
+        //     ),
+        //   );
+        // }
+        Restaurant restaurant = Restaurant(
+          gallery: List<String>.from(event["gallery"]),
+          name: event["name"] ?? "",
+          deviceToken: event["deviceToken"],
+          address: event["address"] ?? "",
+          companyName: event["companyName"] ?? "",
+          businessPhoto: event["businessPhoto"] ?? "",
+          tableReservation: event["tableReservation"] ?? "",
+          closingTime: event["closingTime"] ?? "",
+          categories: List<String>.from(event["categories"]),
+          avatar: event["avatar"] ?? "",
+          email: event["email"] ?? "",
+          foodReservation: event["foodReservation"] ?? false,
+          ghostKitchen: event["ghostKitchen"] ?? false,
+          homeDelivery: event["homeDelivery"] ?? false,
+          momo: event["momo"] ?? false,
+          specialOrders: event["specialOrders"] ?? false,
+          lat: event["lat"] ?? 0.0,
+          lng: event["long"] ?? 0.0,
+          openingTime: event['openTime'] ?? "",
+          phone: event['phone'] ?? "",
+          username: event['username'] ?? "",
+          restaurantId: dat.id,
+          deliveryCost: event['deliveryCost'],
+          comments: event['comments'] ?? "",
+          followers: event['followers'] ?? 0,
+          likes: event['likes'] ?? 0,
+          cash: event["cash"] ?? false,
+        );
+        setState(() {
+          widget.restaurant = restaurant;
+        });
+      }
     } else {
       debugPrint("Nothing to load");
     }

@@ -390,6 +390,7 @@ class _AllOrdersState extends State<AllOrders> with TickerProviderStateMixin {
                                           order: order));
 
                                   // order.status = "processing";
+                                  String message = '', title = '';
 
                                   switch (order.status) {
                                     case "pending":
@@ -397,6 +398,10 @@ class _AllOrdersState extends State<AllOrders> with TickerProviderStateMixin {
                                           "Pending changed to Processing");
                                       ordersData.pendingOrders.remove(order);
                                       order.status = "processing";
+                                      title =
+                                          "Order #${order.friendlyId} updated";
+                                      message = widget.restaurant.companyName +
+                                          " have accepted your order, your food being processed 🥘";
                                       ordersData.processingOrders.add(order);
                                       setState(() {});
                                       break;
@@ -404,6 +409,12 @@ class _AllOrdersState extends State<AllOrders> with TickerProviderStateMixin {
                                     case "processing":
                                       ordersData.processingOrders.remove(order);
                                       order.status = "takeout";
+
+                                      title =
+                                          "Order #${order.friendlyId} updated";
+                                      message = widget.restaurant.companyName +
+                                          " has finished processing your order, and is ready for you 🍴";
+
                                       ordersData.takeoutOrders.add(order);
                                       setState(() {});
                                       break;
@@ -411,6 +422,12 @@ class _AllOrdersState extends State<AllOrders> with TickerProviderStateMixin {
                                     case "takeout":
                                       ordersData.takeoutOrders.remove(order);
                                       order.status = "completed";
+
+                                      title =
+                                          "Order #${order.friendlyId} updated";
+                                      message =
+                                          "Happy with your service? then consider leaving a review for the food you just bought 😁👌";
+
                                       ordersData.completedOrders.add(order);
                                       setState(() {});
                                       break;
@@ -432,17 +449,29 @@ class _AllOrdersState extends State<AllOrders> with TickerProviderStateMixin {
                                     FirebaseFirestore.instance
                                         .collection("orders")
                                         .doc(order.orderId)
-                                        .update({"status": order.status})
-                                        .then((value) => sendNotif(
-                                            channel: 3,
-                                            title:
-                                                "You changed Order #${order.friendlyId} status",
-                                            description:
-                                                "Order status changed to ${order.status}. We'll Inform the user instantly."))
-                                        .catchError((onError) {
-                                          debugPrint(
-                                              "Error while changing: $onError");
-                                        });
+                                        .update({"status": order.status}).then(
+                                            (value) {
+                                      sendNotif(
+                                          channel: 3,
+                                          title:
+                                              "You changed Order #${order.friendlyId} status",
+                                          description:
+                                              "Order status changed to ${order.status}. We'll Inform the user instantly.");
+
+                                              if(message.isNotEmpty && title.isNotEmpty)
+                                      sendOrderNotification(
+                                          orderId: order.orderId,
+                                          type: "order",
+                                          userToken: order.userToken,
+                                          deviceId: order.deviceId,
+                                          message: message,
+                                          title: title,
+                                          restaurant: widget.restaurant,
+                                          extra: widget.restaurant.phone);
+                                    }).catchError((onError) {
+                                      debugPrint(
+                                          "Error while changing: $onError");
+                                    });
                                   }
 
                                   SnackBar snackBar = SnackBar(

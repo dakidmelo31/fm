@@ -322,11 +322,11 @@ sendOrderNotification(
     required String title,
     String image = "",
     required Restaurant restaurant}) async {
-  int rand = Random().nextInt(5000);
+  // int rand = Random().nextInt(5000);
   debugPrint("Send Notification to: $userToken");
   final data = {
     "click_action": "FLUTTER_NOTIFICATION_CLICK",
-    "id": "$rand",
+    "id": "1",
     "restaurantId": orderId,
     "message": message,
     'color': '#dcedc2',

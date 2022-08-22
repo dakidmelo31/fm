@@ -72,7 +72,8 @@ class _MealCardState extends State<MealCard>
                   closedShape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(25.0)),
                   transitionDuration: transitionDuration,
-                  openBuilder: ((context, action) => MealDetails(food: food)),
+                  openBuilder: ((context, action) =>
+                      MealDetails(food: food)),
                   closedBuilder: (context, action) => InkWell(
                     onTap: action,
                     child: ClipRRect(

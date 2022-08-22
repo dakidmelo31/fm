@@ -9,6 +9,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:merchants/global.dart';
 import 'package:merchants/pages/all_messages.dart';
 import 'package:merchants/pages/complete_signup.dart';
+import 'package:merchants/pages/product_details.dart';
 import 'package:merchants/widgets/choose_option.dart';
 import 'package:merchants/widgets/login_form.dart';
 import 'package:merchants/widgets/top_info.dart';
@@ -235,6 +236,24 @@ class _StartupScreenState extends State<StartupScreen>
                                       FirebaseAuth.instance.currentUser!.uid)
                               .orderBy("time", descending: true)
                               .snapshots()));
+                }),
+              );
+            }
+            if (_data.containsKey("type") && _data['type'] == "like") {
+              debugPrint("Order clicked");
+
+              navigatorKey.currentState?.push(
+                PageRouteBuilder(
+                    pageBuilder: (context, animation, secondaryAnimation) {
+                  animation = CurvedAnimation(
+                    parent: animation,
+                    curve: Curves.fastLinearToSlowEaseIn,
+                  );
+                  return ScaleTransition(
+                      scale: animation,
+                      child: MealDetails(
+                        foodId: _data['typeId'],
+                      ));
                 }),
               );
             }

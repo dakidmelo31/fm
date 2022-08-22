@@ -35,6 +35,7 @@ class _ChatHomeState extends State<ChatHome> with TickerProviderStateMixin {
   late Animation<double> animation;
   @override
   void initState() {
+    timeAgo.setLocaleMessages('en', timeAgo.EnShortMessages());
     _animation = AnimationController(
       vsync: this,
       duration: Duration(
@@ -199,9 +200,9 @@ class _ChatHomeState extends State<ChatHome> with TickerProviderStateMixin {
                                   context,
                                   PageRouteBuilder(
                                     transitionDuration:
-                                        Duration(milliseconds: 1500),
+                                        Duration(milliseconds: 1200),
                                     reverseTransitionDuration:
-                                        Duration(milliseconds: 200),
+                                        Duration(milliseconds: 500),
                                     pageBuilder:
                                         (_, animation, anotherAnimation) {
                                       return AllMessages(
@@ -217,13 +218,18 @@ class _ChatHomeState extends State<ChatHome> with TickerProviderStateMixin {
                                           parent: animation,
                                           curve: Curves.fastLinearToSlowEaseIn,
                                           reverseCurve: Curves.fastOutSlowIn);
-                                      return Align(
-                                        alignment: Alignment.centerRight,
-                                        child: SizeTransition(
-                                          sizeFactor: animation,
-                                          axis: Axis.horizontal,
-                                          axisAlignment: 0.0,
-                                          child: child,
+                                      return FadeTransition(
+                                        opacity: animation,
+                                        child: ScaleTransition(
+                                          filterQuality: FilterQuality.high,
+                                          scale: animation,
+                                          alignment: Alignment.bottomCenter,
+                                          child: SizeTransition(
+                                            sizeFactor: animation,
+                                            axis: Axis.horizontal,
+                                            axisAlignment: 0.0,
+                                            child: child,
+                                          ),
                                         ),
                                       );
                                     },
@@ -250,99 +256,100 @@ class _ChatHomeState extends State<ChatHome> with TickerProviderStateMixin {
                               },
                               child: Padding(
                                 padding: const EdgeInsets.all(8.0),
-                                child: Row(children: [
-                                  Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: ClipOval(
-                                      child: CachedNetworkImage(
-                                        imageUrl: item.photo,
-                                        errorWidget: (_, __, ___) =>
-                                            Lottie.asset(
-                                                "assets/no-connection2.json"),
-                                        fit: BoxFit.cover,
-                                        alignment: Alignment.center,
-                                        fadeInCurve:
-                                            Curves.fastLinearToSlowEaseIn,
-                                        filterQuality: FilterQuality.high,
-                                        height: size.width * .12,
-                                        width: size.width * .12,
+                                child: Row(
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: ClipOval(
+                                        child: CachedNetworkImage(
+                                          imageUrl: item.photo,
+                                          errorWidget: (_, __, ___) =>
+                                              Lottie.asset(
+                                                  "assets/no-connection2.json"),
+                                          fit: BoxFit.cover,
+                                          alignment: Alignment.center,
+                                          fadeInCurve:
+                                              Curves.fastLinearToSlowEaseIn,
+                                          filterQuality: FilterQuality.high,
+                                          height: size.width * .12,
+                                          width: size.width * .12,
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                  SizedBox(
-                                    width: size.width * .6,
-                                    child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceEvenly,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(item.name,
-                                            style: GoogleFonts.lato(
-                                              fontWeight: FontWeight.w800,
-                                              color: Colors.black,
-                                              fontSize: 18.0,
-                                            ),
-                                            overflow: TextOverflow.ellipsis),
-                                        item.you
-                                            ? RichText(
-                                                text: TextSpan(
-                                                    text: 'You',
-                                                    style: TextStyle(
-                                                        color: Theme.of(context)
-                                                            .primaryColor,
-                                                        fontWeight:
-                                                            FontWeight.w700),
-                                                    children: <TextSpan>[
-                                                      TextSpan(
-                                                          text: ': ' +
-                                                              item.message,
-                                                          style: TextStyle(
-                                                              color:
-                                                                  Colors.black,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w400),
-                                                          recognizer:
-                                                              TapGestureRecognizer()
-                                                                ..onTap = () {
-                                                                  // navigate to desired screen
-                                                                })
-                                                    ]),
-                                              )
-                                            : Text(
-                                                item.message,
-                                                style: TextStyle(
-                                                    fontWeight: FontWeight.w400,
-                                                    color: Colors.black,
-                                                    overflow:
-                                                        TextOverflow.ellipsis),
+                                    SizedBox(
+                                      width: size.width * .6,
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceEvenly,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(item.name,
+                                              style: GoogleFonts.lato(
+                                                fontWeight: FontWeight.w800,
+                                                color: Colors.black,
+                                                fontSize: 18.0,
                                               ),
+                                              overflow: TextOverflow.ellipsis),
+                                          item.you
+                                              ? RichText(
+                                                  text: TextSpan(
+                                                      text: 'You',
+                                                      style: TextStyle(
+                                                          color:
+                                                              Theme.of(context)
+                                                                  .primaryColor,
+                                                          fontWeight:
+                                                              FontWeight.w700),
+                                                      children: <TextSpan>[
+                                                        TextSpan(
+                                                            text: ': ' +
+                                                                item.message,
+                                                            style: TextStyle(
+                                                                color: Colors
+                                                                    .black,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w400),
+                                                            recognizer:
+                                                                TapGestureRecognizer()
+                                                                  ..onTap = () {
+                                                                    // navigate to desired screen
+                                                                  })
+                                                      ]),
+                                                )
+                                              : Text(
+                                                  item.message,
+                                                  style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.w400,
+                                                      color: Colors.black,
+                                                      overflow: TextOverflow
+                                                          .ellipsis),
+                                                ),
+                                        ],
+                                      ),
+                                    ),
+                                    Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.end,
+                                      children: [
+                                        Text(
+                                          time,
+                                          style: TextStyle(
+                                              fontSize: 12.0,
+                                              fontWeight: FontWeight.w700,
+                                              color: Colors.lightGreen),
+                                        ),
                                       ],
                                     ),
-                                  ),
-                                  Column(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text(
-                                        time,
-                                        style: TextStyle(
-                                            fontSize: 10.0, color: Colors.grey),
-                                      ),
-                                      item.unreadCount == 0
-                                          ? Container()
-                                          : ClipOval(
-                                              child: Container(
-                                                width: 15.0,
-                                                height: 15.0,
-                                                color: Theme.of(context)
-                                                    .primaryColor,
-                                              ),
-                                            )
-                                    ],
-                                  ),
-                                ]),
+                                  ],
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                ),
                               ),
                             ));
                       },
