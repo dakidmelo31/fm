@@ -6,6 +6,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:merchants/global.dart';
 import 'package:merchants/pages/all_messages.dart';
 import 'package:merchants/pages/complete_signup.dart';
 import 'package:merchants/widgets/choose_option.dart';
@@ -74,11 +75,13 @@ class _StartupScreenState extends State<StartupScreen>
           Navigator.pushReplacementNamed(context, StartupScreen.routeName);
         }
       } else {
-        debugPrint("user is not logged in");
+        debugPrint("user is not logged in $pushNotif");
+        debugPrint("data is:  $_data");
       }
     });
   }
 
+  var _data = null;
   @override
   void dispose() {
     _animationController.dispose();
@@ -134,7 +137,7 @@ class _StartupScreenState extends State<StartupScreen>
           if (value != null && auth.currentUser != null) {
             pushNotif = true;
             debugPrint("Push Notification from terminated app");
-            debugPrint(value.data.toString());
+            // debugPrint(value.data.toString());
             String userId = value.data["userId"];
 
             debugPrint("Chat Message recieved");
@@ -195,61 +198,47 @@ class _StartupScreenState extends State<StartupScreen>
               );
             }
           });
+
           FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-            print('A new onMessageOpenedApp event was published!');
-            pushNotif = true;
+            String userId = message.data.toString();
+            var _data = message.data as Map<String, dynamic>;
 
-            debugPrint("Push Message recieved");
-            var data = message.data;
-            debugPrint(data.toString());
+            if (_data.containsKey("order_type") &&
+                _data['order_type'] == "order") {
+              debugPrint("Order clicked");
 
-            if (value != null && auth.currentUser != null) {
-              pushNotif = true;
-              debugPrint("Push Notification from terminated app");
-              debugPrint(value.data.toString());
-              String userId = value.data["userId"];
-
-              debugPrint("Chat Message recieved");
-              Navigator.push(
-                context,
+              navigatorKey.currentState?.push(
                 PageRouteBuilder(
-                  pageBuilder: ((context, animation, secondaryAnimation) {
-                    animation = CurvedAnimation(
-                      parent: animation,
-                      curve: Curves.fastLinearToSlowEaseIn,
-                    );
-                    return ScaleTransition(
-                        scale: animation,
-                        child: AllMessages(
-                            fromPush: true,
-                            customerId: value.data["userId"].toString(),
-                            chatsStream: FirebaseFirestore.instance
-                                .collection("messages")
-                                .where("userId", isEqualTo: userId)
-                                .where("restaurantId",
-                                    isEqualTo:
-                                        FirebaseAuth.instance.currentUser!.uid)
-                                .orderBy("lastMessageTime", descending: false)
-                                .snapshots(),
-                            ordersStream: FirebaseFirestore.instance
-                                .collection("orders")
-                                .where("userId", isEqualTo: userId)
-                                .where("restaurantId",
-                                    isEqualTo:
-                                        FirebaseAuth.instance.currentUser!.uid)
-                                .orderBy("time", descending: true)
-                                .snapshots()));
-                  }),
-                ),
+                    pageBuilder: (context, animation, secondaryAnimation) {
+                  animation = CurvedAnimation(
+                    parent: animation,
+                    curve: Curves.fastLinearToSlowEaseIn,
+                  );
+                  return ScaleTransition(
+                      scale: animation,
+                      child: AllMessages(
+                          fromPush: true,
+                          customerId: _data["userId"].toString(),
+                          chatsStream: FirebaseFirestore.instance
+                              .collection("messages")
+                              .where("userId", isEqualTo: userId)
+                              .where("restaurantId",
+                                  isEqualTo:
+                                      FirebaseAuth.instance.currentUser!.uid)
+                              .orderBy("lastMessageTime", descending: false)
+                              .snapshots(),
+                          ordersStream: FirebaseFirestore.instance
+                              .collection("orders")
+                              .where("userId", isEqualTo: userId)
+                              .where("restaurantId",
+                                  isEqualTo:
+                                      FirebaseAuth.instance.currentUser!.uid)
+                              .orderBy("time", descending: true)
+                              .snapshots()));
+                }),
               );
-            } else {
-              _checkUser();
-              debugPrint("App opened normally");
             }
-
-            debugPrint(message.data.toString());
-
-            debugPrint("Push Notification from terminated app");
+            debugPrint("work on this too $userId");
             debugPrint(message.notification.toString());
           });
         });
