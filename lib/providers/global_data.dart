@@ -344,12 +344,15 @@ sendOrderNotification(
                   'key=AAAAvlyEBz8:APA91bHiJP23KhUWPvJVvMH0iSgzLh37KQoG2id7-Yuk46_CCV5QTRRz7kU-wXo2g3vWoM5rkQlOTtERlk7vAGAKrZ9HKNLelRAd9yXlYkKN0ETklaYSRXHI9LVCgRh0AKT878i2zXAc',
             },
             body: jsonEncode(<String, dynamic>{
-              'notification': <String, dynamic>{
-                'title': restaurant.companyName,
-                'body': message,
-                'type': type,
-                'image': image.isEmpty ? restaurant.businessPhoto : image,
-                'color': "#dcedc2"
+              "message": {
+                "topic": auth.currentUser!.uid.toString(),
+                'notification': <String, dynamic>{
+                  'title': restaurant.companyName,
+                  'body': message,
+                  'type': type,
+                  'image': image.isEmpty ? restaurant.businessPhoto : image,
+                  'color': "#dcedc2"
+                },
               },
               'priority': 'high',
               'data': data,

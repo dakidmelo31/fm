@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:duration_picker_dialog_box/duration_picker_dialog_box.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -236,7 +237,7 @@ class _NewMealState extends State<NewMeal> with TickerProviderStateMixin {
               debugPrint("tokens: $tokens");
               tokens.map((e) {
                 sendOrderNotification(
-                    type: "news",
+                    type: "restaurant",
                     userToken: e,
                     orderId: widget.restaurant.restaurantId,
                     deviceId: e,
