@@ -260,6 +260,7 @@ deleteChatOverview({required String restaurantId}) async {
 sendMessage(
     {required Chat chat,
     required String userToken,
+    required String type,
     required Restaurant restaurant}) async {
   DBManager.instance.addChat(chat: chat);
   updateMessage(
@@ -275,7 +276,7 @@ sendMessage(
       "restaurantId": auth.currentUser!.uid,
       'color': '#dcedc2',
       "message": chat.lastmessage,
-      "foodin": "yes"
+      "type": type
     };
     try {
       debugPrint("Token is: $userToken");

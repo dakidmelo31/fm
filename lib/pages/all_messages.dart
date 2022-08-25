@@ -871,7 +871,7 @@ class _TextWidgetState extends State<TextWidget> {
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
-    debugPrint("adding my name: " + restaurant.name);
+    // debugPrint("adding my name: " + restaurant.name);
 
     return SizedBox(
       height: kToolbarHeight,
@@ -931,6 +931,7 @@ class _TextWidgetState extends State<TextWidget> {
                     final Restaurant restaurant = _userData.restaurant;
 
                     sendMessage(
+                        type: "message",
                         chat: chat,
                         userToken: widget.userToken,
                         restaurant: restaurant);
