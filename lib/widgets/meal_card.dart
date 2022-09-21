@@ -11,6 +11,7 @@ import 'package:lottie/lottie.dart';
 import 'package:merchants/global.dart';
 import 'package:merchants/models/food_model.dart';
 import 'package:merchants/pages/product_details.dart';
+import 'package:merchants/providers/global_data.dart';
 import 'package:provider/provider.dart';
 
 import '../models/restaurants.dart';
@@ -72,8 +73,7 @@ class _MealCardState extends State<MealCard>
                   closedShape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(25.0)),
                   transitionDuration: transitionDuration,
-                  openBuilder: ((context, action) =>
-                      MealDetails(food: food)),
+                  openBuilder: ((context, action) => MealDetails(food: food)),
                   closedBuilder: (context, action) => InkWell(
                     onTap: action,
                     child: ClipRRect(
@@ -208,7 +208,7 @@ class _MealCardState extends State<MealCard>
                             Text("Available"),
                             Switch(
                                 value: food.available,
-                                onChanged: (update) {
+                                onChanged: (update) async {
                                   updateData(
                                       collection: "meals",
                                       data: {"available": update},
@@ -217,90 +217,19 @@ class _MealCardState extends State<MealCard>
                                     food.available = update;
                                   });
 
-                                  firestore
-                                      .collection("followers")
-                                      .doc(auth.currentUser!.uid)
-                                      .get()
-                                      .then((value) async {
-                                    if (value.exists) {
-                                      var tokens =
-                                          List<String>.from(value['tokens']);
-                                      debugPrint("Tokens: $tokens");
-
-                                      tokens.map((userToken) async {
-                                        int rand = Random().nextInt(5000);
-                                        debugPrint(
-                                            "Send Notification to: $userToken");
-                                        final data = {
-                                          "click_action":
-                                              "FLUTTER_NOTIFICATION_CLICK",
-                                          "id": "$rand",
-                                          "restaurantId": auth.currentUser!.uid,
-                                          'message': update
-                                              ? food.name +
-                                                  " is now available, order or pass by if you're in the mood for some"
-                                              : food.name +
-                                                  " is fresh out☹️, but there are other meals you can check out",
-                                          'color': '#dcedc2',
-                                          'type':
-                                              update ? 'meal' : 'restaurant',
-                                          "extra": food.foodId,
-                                          "foodId": food.foodId
-                                        };
-                                        try {
-                                          debugPrint("Token is: $userToken");
-                                          http.Response response = await http.post(
-                                              Uri.parse(
-                                                  "https://fcm.googleapis.com/fcm/send"),
-                                              headers: <String, String>{
-                                                'Content-Type':
-                                                    'application/json',
-                                                'Authorization':
-                                                    'key=AAAAvlyEBz8:APA91bHiJP23KhUWPvJVvMH0iSgzLh37KQoG2id7-Yuk46_CCV5QTRRz7kU-wXo2g3vWoM5rkQlOTtERlk7vAGAKrZ9HKNLelRAd9yXlYkKN0ETklaYSRXHI9LVCgRh0AKT878i2zXAc',
-                                              },
-                                              body:
-                                                  jsonEncode(<String, dynamic>{
-                                                'notification':
-                                                    <String, dynamic>{
-                                                  'title': widget
-                                                      .restaurant.companyName,
-                                                  'body': update
-                                                      ? food.name +
-                                                          " is now available, order or pass by if you're in the mood for some"
-                                                      : food.name +
-                                                          " is fresh out☹️, but there are other meals you can check out",
-                                                  'type': update
-                                                      ? 'meal'
-                                                      : 'restaurant',
-                                                  'image': !update
-                                                      ? widget.restaurant
-                                                          .businessPhoto
-                                                      : food.image,
-                                                  'color': "#dcedc2"
-                                                },
-                                                'priority': 'high',
-                                                'data': data,
-                                                'collapse-key': update
-                                                    ? 'meal'
-                                                    : "restaurant",
-                                                'to': userToken
-                                              }));
-
-                                          if (response.statusCode == 200) {
-                                            debugPrint("Notification Sent");
-                                          } else {
-                                            debugPrint(
-                                                "error found ${response.body}");
-                                          }
-                                        } catch (e) {
-                                          throw Exception(
-                                              "Error sending personal notification");
-                                        }
-                                      });
-                                    }
-                                  }).catchError((onError) {
-                                    debugPrint("gone through here");
-                                  });
+                                  String description = update
+                                      ? food.name +
+                                          " is now available, order or pass by if you're in the mood for some"
+                                      : food.name +
+                                          " is fresh out☹️, but there are other meals you can check out";
+                                  debugPrint("About to broadcast");
+                                  sendTopicNotification(
+                                      image: food.image,
+                                      title: "Oh Ooh☹️ We ran out❗",
+                                      description: description,
+                                      type: 'restaurant',
+                                      topic: food.restaurantId,
+                                      restaurantId: food.restaurantId);
                                 })
                           ],
                         )

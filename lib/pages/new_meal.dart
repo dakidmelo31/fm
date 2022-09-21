@@ -224,31 +224,15 @@ class _NewMealState extends State<NewMeal> with TickerProviderStateMixin {
             debugPrint("Done Adding Meal");
             mealDetails.meals.clear();
             mealDetails.loadMeals();
-
-            firestore
-                .collection("followers")
-                .doc(auth.currentUser!.uid)
-                .get()
-                .then((value) {
-              if (!value.exists) {
-                return;
-              }
-              var tokens = List<String>.from(value["tokens"]);
-              debugPrint("tokens: $tokens");
-              tokens.map((e) {
-                sendOrderNotification(
-                    type: "restaurant",
-                    userToken: e,
-                    orderId: widget.restaurant.restaurantId,
-                    deviceId: e,
-                    title: widget.restaurant.companyName +
-                        " now have a new meal available",
-                    message:
-                        "You can now buy ${food.name} online or get directions to their shop location.",
-                    restaurant: widget.restaurant,
-                    image: food.image);
-              });
-            });
+            sendNewsNotification(
+                type: "restaurant",
+                orderId: widget.restaurant.restaurantId,
+                title: widget.restaurant.companyName +
+                    " now have a new meal available",
+                message:
+                    "You can now buy ${food.name} online or get directions to their shop location.",
+                restaurant: widget.restaurant,
+                image: food.image);
           },
         ).catchError((onError) {
           debugPrint("found error ${onError}");

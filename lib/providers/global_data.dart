@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:merchants/models/restaurants.dart';
@@ -358,6 +359,112 @@ sendOrderNotification(
               'data': data,
               'collapse-key': 'message',
               'to': userToken
+            }));
+
+    if (response.statusCode == 200) {
+      debugPrint("Notification Sent");
+    } else {
+      debugPrint("error found ${response.body}");
+    }
+  } catch (e) {
+    throw Exception("Error sending personal notification");
+  }
+}
+
+sendNewsNotification(
+    {required String message,
+    required String orderId,
+    required String type,
+    String extra = "",
+    required String title,
+    String image = "",
+    required Restaurant restaurant}) async {
+  // int rand = Random().nextInt(5000);
+
+  final data = {
+    "click_action": "FLUTTER_NOTIFICATION_CLICK",
+    "id": "1",
+    "restaurantId": orderId,
+    "message": message,
+    'color': '#dcedc2',
+    'type': type,
+    "extra": extra,
+  };
+  try {
+    http.Response response =
+        await http.post(Uri.parse("https://fcm.googleapis.com/fcm/send"),
+            headers: <String, String>{
+              'Content-Type': 'application/json',
+              'Authorization':
+                  'key=AAAAvlyEBz8:APA91bHiJP23KhUWPvJVvMH0iSgzLh37KQoG2id7-Yuk46_CCV5QTRRz7kU-wXo2g3vWoM5rkQlOTtERlk7vAGAKrZ9HKNLelRAd9yXlYkKN0ETklaYSRXHI9LVCgRh0AKT878i2zXAc',
+            },
+            body: jsonEncode(<String, dynamic>{
+              "message": {
+                "topic": auth.currentUser!.uid.toString(),
+                'notification': <String, dynamic>{
+                  'title': restaurant.companyName,
+                  'body': message,
+                  'type': type,
+                  'image': image.isEmpty ? restaurant.businessPhoto : image,
+                  'color': "#dcedc2"
+                },
+              },
+              'priority': 'high',
+              'data': data,
+              'collapse-key': 'message',
+            }));
+
+    if (response.statusCode == 200) {
+      debugPrint("Notification Sent");
+    } else {
+      debugPrint("error found ${response.body}");
+    }
+  } catch (e) {
+    throw Exception("Error sending personal notification");
+  }
+}
+
+sendTopicNotification(
+    {required String image,
+    required String title,
+    required String description,
+    required String type,
+    required String topic,
+    required String restaurantId}) async {
+  FirebaseMessaging.instance.subscribeToTopic(auth.currentUser!.uid);
+  final data = {
+    "click_action": "FLUTTER_NOTIFICATION_CLICK",
+    "id": "1",
+    "restaurantId": restaurantId,
+    "message": description,
+    'color': '#dcedc2',
+    'type': type,
+  };
+  String token =
+      await FirebaseMessaging.instance.getToken() ?? "/topics/" + restaurantId;
+  try {
+    http.Response response =
+        await http.post(Uri.parse("https://fcm.googleapis.com/fcm/send"),
+            headers: <String, String>{
+              'Content-Type': 'application/json',
+              'Authorization':
+                  'key=AAAAvlyEBz8:APA91bHiJP23KhUWPvJVvMH0iSgzLh37KQoG2id7-Yuk46_CCV5QTRRz7kU-wXo2g3vWoM5rkQlOTtERlk7vAGAKrZ9HKNLelRAd9yXlYkKN0ETklaYSRXHI9LVCgRh0AKT878i2zXAc',
+            },
+            body: jsonEncode(<String, dynamic>{
+              "message": {
+                "topic": topic,
+                'notification': <String, dynamic>{
+                  'title': title,
+                  'body': description,
+                  'type': type,
+                  'image': image,
+                  'color': "#dcedc2"
+                },
+              },
+              'priority': 'high',
+              'data': data,
+              'collapse-key': 'message',
+              "to": token //"/topics/" + topic,
             }));
 
     if (response.statusCode == 200) {
