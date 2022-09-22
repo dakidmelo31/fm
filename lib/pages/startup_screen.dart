@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -12,6 +13,7 @@ import 'package:merchants/pages/complete_signup.dart';
 import 'package:merchants/pages/product_details.dart';
 import 'package:merchants/widgets/choose_option.dart';
 import 'package:merchants/widgets/login_form.dart';
+import 'package:merchants/widgets/subscription_board.dart';
 import 'package:merchants/widgets/top_info.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -64,7 +66,6 @@ class _StartupScreenState extends State<StartupScreen>
       if (auth.currentUser != null && pushNotif == null) {
         debugPrint(pushNotif.toString());
         debugPrint("current user is not null");
-
         if (prefs.containsKey("phone")) {
           Future.delayed(Duration.zero, () {
             Navigator.pushReplacementNamed(context, Home.routeName);
@@ -78,9 +79,14 @@ class _StartupScreenState extends State<StartupScreen>
       } else {
         debugPrint("user is not logged in $pushNotif");
         debugPrint("data is:  $_data");
+        Future.delayed(Duration(seconds: 2), (() {
+          _subscriptionController.forward();
+        }));
       }
     });
   }
+
+  late AnimationController _subscriptionController;
 
   var _data = null;
   @override
@@ -100,6 +106,12 @@ class _StartupScreenState extends State<StartupScreen>
         seconds: 2,
       ),
     );
+    _subscriptionController = AnimationController(
+        vsync: this,
+        duration: Duration(
+          milliseconds: 1600,
+        ),
+        reverseDuration: Duration(milliseconds: 400));
 
     _switchController = AnimationController(
       vsync: this,
@@ -271,96 +283,106 @@ class _StartupScreenState extends State<StartupScreen>
 
     _animationController.forward();
     return SafeArea(
-      child: Container(
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage(
-              "assets/logo/splash_bg.png",
+      child: Stack(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage(
+                  "assets/logo/splash_bg.png",
+                ),
+                filterQuality: FilterQuality.high,
+                fit: BoxFit.cover,
+                alignment: Alignment.center,
+              ),
+              gradient: LinearGradient(
+                colors: [
+                  Colors.transparent,
+                  Colors.transparent,
+                  // Colors.black,
+                  // Colors.black.withOpacity(.83),
+                  // Colors.black.withOpacity(.47),
+                ],
+                begin: Alignment.bottomRight,
+                end: Alignment.topLeft,
+              ),
             ),
-            filterQuality: FilterQuality.high,
-            fit: BoxFit.cover,
-            alignment: Alignment.center,
-          ),
-          gradient: LinearGradient(
-            colors: [
-              Colors.transparent,
-              Colors.transparent,
-              // Colors.black,
-              // Colors.black.withOpacity(.83),
-              // Colors.black.withOpacity(.47),
-            ],
-            begin: Alignment.bottomRight,
-            end: Alignment.topLeft,
-          ),
-        ),
-        child: Scaffold(
-          resizeToAvoidBottomInset: false,
-          backgroundColor: Colors.transparent,
-          body: WillPopScope(
-            onWillPop: () async => false,
-            child: Stack(
-              alignment: Alignment.bottomCenter,
-              children: [
-                TopInfo(mainAnimation: _mainAnimation),
-                ChooseOption(
-                    mainAnimation: _mainAnimation,
-                    switchAnimation: CurvedAnimation(
-                        parent: _switchAnimation,
-                        curve: Interval(
-                          0.0,
-                          0.8,
-                        )),
-                    onAnimationStarted: () {
-                      setState(() {
-                        _formType = FormType.login;
-                        _switchController.forward();
-                      });
-                    }),
-                if (_formType == FormType.login)
-                  LoginForm(
-                    loginFunction: () {
-                      setState(() {
-                        _formType = FormType.login;
-                      });
-                    },
-                    completedAnimation: _completedAnimation,
-                    completedCallback: () {
-                      setState(() {
-                        _formType = FormType.complete;
-                        _completedController.forward();
-                        _switchController
-                            .reverse()
-                            .then((value) => _animationController.reverse());
-                      });
-                    },
-                    switchAnimation: CurvedAnimation(
-                        parent: _switchAnimation,
-                        curve: Interval(.7, 1.0,
-                            curve: Curves.fastLinearToSlowEaseIn)),
-                    switchFunction: () {
-                      setState(() {
-                        _switchController.reverse();
-                        _completedController.forward();
-                        _formType = FormType.complete;
-                      });
-                    },
-                  ),
-                if (_formType == FormType.complete)
-                  CompleteProfile(
-                      completedAnimation: _completedAnimation,
-                      completedCallback: () {
-                        _completedController.forward();
-                        _switchController
-                            .reverse()
-                            .then((value) => _animationController.reverse());
-                      },
-                      reverseAnimation: () {
-                        _completedController.reverse();
-                      }),
-              ],
+            child: Scaffold(
+              resizeToAvoidBottomInset: false,
+              backgroundColor: Colors.transparent,
+              body: WillPopScope(
+                onWillPop: () async => false,
+                child: Stack(
+                  alignment: Alignment.bottomCenter,
+                  children: [
+                    TopInfo(mainAnimation: _mainAnimation),
+                    ChooseOption(
+                        mainAnimation: _mainAnimation,
+                        switchAnimation: CurvedAnimation(
+                            parent: _switchAnimation,
+                            curve: Interval(
+                              0.0,
+                              0.8,
+                            )),
+                        onAnimationStarted: () {
+                          setState(() {
+                            _formType = FormType.login;
+                            _switchController.forward();
+                          });
+                        }),
+                    if (_formType == FormType.login)
+                      LoginForm(
+                        loginFunction: () {
+                          setState(() {
+                            _formType = FormType.login;
+                          });
+                        },
+                        completedAnimation: _completedAnimation,
+                        completedCallback: () {
+                          setState(() {
+                            _formType = FormType.complete;
+                            _completedController.forward();
+                            _switchController.reverse().then(
+                                (value) => _animationController.reverse());
+                          });
+                        },
+                        switchAnimation: CurvedAnimation(
+                            parent: _switchAnimation,
+                            curve: Interval(.7, 1.0,
+                                curve: Curves.fastLinearToSlowEaseIn)),
+                        switchFunction: () {
+                          setState(() {
+                            _switchController.reverse();
+                            _completedController.forward();
+                            _formType = FormType.complete;
+                          });
+                        },
+                      ),
+                    if (_formType == FormType.complete)
+                      CompleteProfile(
+                          completedAnimation: _completedAnimation,
+                          completedCallback: () {
+                            _completedController.forward();
+                            _switchController.reverse().then(
+                                (value) => _animationController.reverse());
+                          },
+                          reverseAnimation: () {
+                            _completedController.reverse();
+                          }),
+                  ],
+                ),
+              ),
             ),
           ),
-        ),
+          SubscriptionBoard(
+              callback: () {
+                _subscriptionController.reverse();
+              },
+              animation: CurvedAnimation(
+                  parent: _subscriptionController,
+                  curve:
+                      Interval(0, 1.0, curve: Curves.fastLinearToSlowEaseIn)))
+        ],
       ),
     );
   }

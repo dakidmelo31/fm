@@ -450,7 +450,7 @@ class _CreateServiceState extends State<CreateService> {
   }
 
   saveService({required BuildContext context}) async {
-    final provider = Provider.of<ServicesData>(context);
+    final provider = Provider.of<ServicesData>(context, listen: false);
 
     String name = _serviceName.text;
     String description = _serviceDescription.text;

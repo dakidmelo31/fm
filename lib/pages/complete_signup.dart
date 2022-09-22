@@ -1118,14 +1118,14 @@ class _CompleteProfileState extends State<CompleteProfile> {
                                                   }),
                                               SwitchListTile.adaptive(
                                                   title: Text(
-                                                    "Do you have a kitchen?",
+                                                    "Do you have a Restaurant Eatery?",
                                                     style: greenAccent,
                                                   ),
                                                   enableFeedback: true,
                                                   subtitle: _specialOrders
                                                       ? null
                                                       : Text(
-                                                          "Select this if you do only Home deliveries.",
+                                                          "Select this if you do deliveries directly from.",
                                                           style: whiteText),
                                                   value: _ghostKitchen,
                                                   onChanged: (bool data) {
