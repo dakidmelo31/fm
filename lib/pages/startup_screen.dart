@@ -111,7 +111,7 @@ class _StartupScreenState extends State<StartupScreen>
         duration: Duration(
           milliseconds: 1600,
         ),
-        reverseDuration: Duration(milliseconds: 400));
+        reverseDuration: Duration(milliseconds: 700));
 
     _switchController = AnimationController(
       vsync: this,
@@ -380,8 +380,8 @@ class _StartupScreenState extends State<StartupScreen>
               },
               animation: CurvedAnimation(
                   parent: _subscriptionController,
-                  curve:
-                      Interval(0, 1.0, curve: Curves.fastLinearToSlowEaseIn)))
+                  curve: Interval(0, 1.0, curve: Curves.fastLinearToSlowEaseIn),
+                  reverseCurve: Curves.fastOutSlowIn))
         ],
       ),
     );
