@@ -14,6 +14,7 @@ import 'package:merchants/pages/startup_screen.dart';
 import 'package:merchants/pages/verification_form.dart';
 import 'package:merchants/providers/restaurant_provider.dart';
 import 'package:merchants/transitions/transitions.dart';
+import 'package:merchants/widgets/location_update.dart';
 import 'package:merchants/widgets/settings_card.dart';
 import 'package:merchants/widgets/upload_gallery.dart';
 import 'package:page_transition/page_transition.dart';
@@ -302,6 +303,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ],
                   ),
                 ),
+
+                Center(
+                  child: Column(
+                    children: [
+                      IconButton(
+                        onPressed: () {
+                          Navigator.push(
+                              context,
+                              VerticalSizeTransition(
+                                  child: LocationUpdate(
+                                restaurant: restaurant,
+                              )));
+                        },
+                        iconSize: 65.0,
+                        icon: Icon(Icons.location_pin),
+                        color: Colors.lightGreen,
+                      ),
+                      Text("Tap to update your map location")
+                    ],
+                  ),
+                ),
+
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [

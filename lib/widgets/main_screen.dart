@@ -582,7 +582,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                 Navigator.push(
                                                     context,
                                                     HorizontalSizeTransition(
-                                                        child: NewMeal(
+                                                        child: CreateService(
                                                       restaurant: restaurant,
                                                     )));
                                               },
