@@ -16,11 +16,14 @@ class ServicesData with ChangeNotifier {
         .orderBy("created_time", descending: true)
         .snapshots()
         .listen((event) {
+      debugPrint("going through services now");
       services.clear();
       for (var serviceData in event.docs) {
         String documentID = serviceData.id;
 
+        debugPrint(serviceData.id);
         ServiceModel service = ServiceModel(
+          verified: serviceData['verified'],
           serviceId: documentID,
           likes: convertInt(serviceData['likes']),
           description: serviceData['description'],

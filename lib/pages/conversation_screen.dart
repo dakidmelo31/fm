@@ -81,8 +81,8 @@ class _ChatHomeState extends State<ChatHome> with TickerProviderStateMixin {
                 height: 100,
                 child: Center(
                   child: Card(
-                    elevation: 10.0,
-                    shadowColor: Colors.grey.withOpacity(.16),
+                    elevation: 0.0,
+                    shadowColor: Colors.grey.withOpacity(.0),
                     child: Center(
                       child: Text(
                         "Messages",

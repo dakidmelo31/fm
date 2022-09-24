@@ -14,6 +14,7 @@ import 'package:merchants/pages/startup_screen.dart';
 import 'package:merchants/pages/verification_form.dart';
 import 'package:merchants/providers/restaurant_provider.dart';
 import 'package:merchants/transitions/transitions.dart';
+import 'package:merchants/widgets/home_delivery_variations.dart';
 import 'package:merchants/widgets/location_update.dart';
 import 'package:merchants/widgets/settings_card.dart';
 import 'package:merchants/widgets/upload_gallery.dart';
@@ -847,7 +848,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                     ],
                   ),
-                )
+                ),
+                HomeDeliveryVariants()
               ],
             ),
           ],

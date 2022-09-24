@@ -13,10 +13,12 @@ class ServiceModel {
   final String name;
   final String restaurantId;
   final List<String> gallery;
+  bool verified;
   int likes;
   int comments;
   bool negociable;
   ServiceModel({
+    required this.verified,
     required this.cost,
     required this.coverage,
     required this.serviceId,
@@ -53,6 +55,7 @@ class ServiceModel {
       description: description ?? this.description,
       image: image ?? this.image,
       name: name ?? this.name,
+      verified: verified,
       restaurantId: restaurantId ?? this.restaurantId,
       gallery: gallery ?? this.gallery,
       likes: likes ?? this.likes,
@@ -81,6 +84,7 @@ class ServiceModel {
   factory ServiceModel.fromMap(Map<String, dynamic> map) {
     return ServiceModel(
       cost: map['cost'] as String,
+      verified: map['verified'] as bool,
       coverage: map['coverage'] as String,
       serviceId: map['serviceId'] as String,
       duration: map['duration'] as String,
