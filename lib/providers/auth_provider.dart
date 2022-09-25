@@ -16,6 +16,8 @@ class Auth with ChangeNotifier {
       gallery: [],
       name: "",
       categories: [],
+      costs: [],
+      variants: [],
       lng: 0.0,
       lat: 0.0,
       restaurantId: "",
@@ -49,6 +51,10 @@ class Auth with ChangeNotifier {
     notifyListeners();
   }
 
+  toggleVariant() {
+    notifyListeners();
+  }
+
   getRestaurant() async {
     final deviceToken = await FirebaseMessaging.instance.getToken().toString();
     if (auth.currentUser == null) return;
@@ -58,6 +64,8 @@ class Auth with ChangeNotifier {
         return;
       }
       restaurant = Restaurant(
+        variants: List<String>.from(event["variants"]),
+        costs: List<int>.from(event["costs"]),
         deviceToken: deviceToken,
         address: event["address"],
         name: event['name'],

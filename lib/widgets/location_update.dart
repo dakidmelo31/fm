@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import "package:flutter/material.dart";
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -162,6 +163,22 @@ class _LocationUpdateState extends State<LocationUpdate>
                                 child: InkWell(
                                   onTap: () {
                                     HapticFeedback.heavyImpact();
+                                    DocumentReference documentReference =
+                                        firestore
+                                            .collection("restaurants")
+                                            .doc(auth.currentUser!.uid);
+                                    firestore
+                                        .runTransaction((transaction) async {
+                                      DocumentSnapshot snap = await transaction
+                                          .get(documentReference);
+                                      if (!snap.exists) {
+                                        throw Exception("No restaurant found");
+                                      }
+                                      transaction.update(documentReference, {
+                                        "lat": _marker.position.latitude,
+                                        "long": _marker.position.longitude
+                                      });
+                                    });
                                   },
                                   child: Padding(
                                       padding: EdgeInsets.symmetric(

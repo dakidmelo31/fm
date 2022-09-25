@@ -112,6 +112,8 @@ class _AllMessagesState extends State<AllMessages> {
         // }
         Restaurant restaurant = Restaurant(
           gallery: List<String>.from(event["gallery"]),
+          variants: List<String>.from(event["variants"]),
+          costs: List<int>.from(event["costs"]),
           name: event["name"] ?? "",
           deviceToken: event["deviceToken"],
           address: event["address"] ?? "",

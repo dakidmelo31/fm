@@ -57,6 +57,7 @@ dependencies:
   share_plus: 
   permission_handler:
   google_nav_bar:
+  carousel_grid:
   animations:
   firebase_auth:
   firebase_analytics:

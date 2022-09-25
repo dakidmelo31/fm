@@ -62,6 +62,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final _restaurantData = Provider.of<MealsData>(context, listen: true);
     final _userData = Provider.of<Auth>(context, listen: true);
     final Restaurant restaurant = _userData.restaurant;
+
     final List<Food> meals = _restaurantData.meals;
     const caption = TextStyle(
         color: Colors.orange, fontSize: 30, fontWeight: FontWeight.w700);
@@ -709,6 +710,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 Card(
                   elevation: 10,
+                  shadowColor: Colors.grey.withOpacity(.125),
                   margin: const EdgeInsets.symmetric(horizontal: 10),
                   child: Column(
                     mainAxisSize: MainAxisSize.max,
@@ -766,7 +768,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ],
                   ),
                 ),
+
                 Card(
+                  shadowColor: Colors.grey.withOpacity(.125),
                   elevation: 10,
                   margin:
                       const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
@@ -849,7 +853,38 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ],
                   ),
                 ),
-                HomeDeliveryVariants()
+                Card(
+                  color: Colors.transparent,
+                  elevation: 0,
+                  child: SwitchListTile(
+                      value: restaurant.homeDelivery,
+                      title: Text("You do Home Deliveries"),
+                      subtitle: Text(
+                          "Add variations if you deliver on many locations"),
+                      secondary: Icon(Icons.pending),
+                      onChanged: (value) {
+                        setState(
+                          () {
+                            restaurant.homeDelivery = value;
+                          },
+                        );
+                      }),
+                ),
+                AnimatedOpacity(
+                    duration: Duration(milliseconds: 1600),
+                    curve: Curves.fastLinearToSlowEaseIn,
+                    opacity: restaurant.homeDelivery ? 1.0 : 0.35,
+                    child: AnimatedScale(
+                        duration: Duration(milliseconds: 1600),
+                        curve: Curves.fastLinearToSlowEaseIn,
+                        scale: restaurant.homeDelivery ? 1.0 : .85,
+                        alignment: Alignment.center,
+                        filterQuality: FilterQuality.high,
+                        child: AbsorbPointer(
+                            absorbing: !restaurant.homeDelivery,
+                            child: HomeDeliveryVariants(
+                              restaurant: restaurant,
+                            ))))
               ],
             ),
           ],

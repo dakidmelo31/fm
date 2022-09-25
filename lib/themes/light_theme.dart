@@ -16,6 +16,10 @@ class Primary {
     color: Colors.black,
     fontSize: 20,
   );
+  static const TextStyle bigWhiteHeading = TextStyle(
+    color: Colors.white,
+    fontSize: 22,
+  );
   static const TextStyle whiteText = TextStyle(
     color: Colors.white,
   );
@@ -50,5 +54,7 @@ class Primary {
         backgroundColor: primaryColor,
         elevation: 10,
         enableFeedback: true,
-      ), colorScheme: ColorScheme.fromSwatch(primarySwatch: Colors.orange).copyWith(secondary: Colors.black));
+      ),
+      colorScheme: ColorScheme.fromSwatch(primarySwatch: Colors.orange)
+          .copyWith(secondary: Colors.black));
 }

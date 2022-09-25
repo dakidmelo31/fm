@@ -139,6 +139,8 @@ class _RevealWidgetState extends State<RevealWidget> {
             Restaurant restaurant = Restaurant(
               gallery: List<String>.from(event["gallery"]),
               name: event["name"] ?? "",
+              variants: List<String>.from(event["variants"]),
+              costs: List<int>.from(event["costs"]),
               deviceToken: event["deviceToken"],
               address: event["address"] ?? "",
               companyName: event["companyName"] ?? "",

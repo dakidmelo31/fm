@@ -1,6 +1,7 @@
 class Restaurant {
   int followers;
   final String deviceToken;
+
   String name,
       address,
       restaurantId,
@@ -20,7 +21,8 @@ class Restaurant {
       foodReservation,
       ghostKitchen;
   double lat, lng;
-  List<String> categories, gallery;
+  List<int> costs;
+  List<String> categories, gallery, variants;
   double deliveryCost = 500;
   int comments = 0;
   int likes = 0;
@@ -28,6 +30,8 @@ class Restaurant {
   Restaurant(
       {required this.address,
       required this.name,
+      required this.variants,
+      required this.costs,
       required this.categories,
       required this.lng,
       required this.lat,
