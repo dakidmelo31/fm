@@ -22,7 +22,7 @@ class Restaurant {
       ghostKitchen;
   double lat, lng;
   List<int> costs;
-  List<String> categories, gallery, variants;
+  List<String> categories, gallery, variants, days;
   double deliveryCost = 500;
   int comments = 0;
   int likes = 0;
@@ -55,6 +55,7 @@ class Restaurant {
       required this.foodReservation,
       required this.ghostKitchen,
       required this.homeDelivery,
+      required this.days,
       required this.phone,
       required this.deviceToken});
 }

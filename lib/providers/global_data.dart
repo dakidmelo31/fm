@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:merchants/models/restaurants.dart';
@@ -426,22 +427,17 @@ sendNewsNotification(
 
 sendTopicNotification(
     {required String image,
-    required String title,
     required String description,
-    required String type,
-    required String topic,
-    required String restaurantId}) async {
+    required String title,
+    String restaurantId = ''}) async {
   FirebaseMessaging.instance.subscribeToTopic(auth.currentUser!.uid);
   final data = {
     "click_action": "FLUTTER_NOTIFICATION_CLICK",
     "id": "1",
-    "restaurantId": restaurantId,
-    "message": description,
+    "restaurantId": auth.currentUser!.uid,
+    "message": title,
     'color': '#dcedc2',
-    'type': type,
   };
-  String token =
-      await FirebaseMessaging.instance.getToken() ?? "/topics/" + restaurantId;
   try {
     http.Response response =
         await http.post(Uri.parse("https://fcm.googleapis.com/fcm/send"),
@@ -451,24 +447,20 @@ sendTopicNotification(
                   'key=AAAAvlyEBz8:APA91bHiJP23KhUWPvJVvMH0iSgzLh37KQoG2id7-Yuk46_CCV5QTRRz7kU-wXo2g3vWoM5rkQlOTtERlk7vAGAKrZ9HKNLelRAd9yXlYkKN0ETklaYSRXHI9LVCgRh0AKT878i2zXAc',
             },
             body: jsonEncode(<String, dynamic>{
-              "message": {
-                "topic": topic,
-                'notification': <String, dynamic>{
-                  'title': title,
-                  'body': description,
-                  'type': type,
-                  'image': image,
-                  'color': "#dcedc2"
-                },
+              'notification': <String, dynamic>{
+                'title': title,
+                'body': description,
+                'image': image,
+                'color': "#dcedc2"
               },
               'priority': 'high',
               'data': data,
               'collapse-key': 'message',
-              "to": token //"/topics/" + topic,
+              'to': '/topics/' + auth.currentUser!.uid,
             }));
 
     if (response.statusCode == 200) {
-      debugPrint("Notification Sent");
+      debugPrint("Broadcasted Successfully");
     } else {
       debugPrint("error found ${response.body}");
     }
@@ -490,6 +482,18 @@ updateMessage(
       .catchError((onError) {
         debugPrint(onError.toString());
       });
+}
+
+updateTransaction(
+    {required DocumentReference documentReference,
+    required Map<String, dynamic> data}) async {
+  firestore.runTransaction((transaction) async {
+    DocumentSnapshot snap = await transaction.get(documentReference);
+    if (!snap.exists) {
+      throw Exception("Please login to continue");
+    }
+    transaction.update(documentReference, data);
+  }).then((value) => Fluttertoast.showToast(msg: "Updated Successfully"));
 }
 
 updateTables(

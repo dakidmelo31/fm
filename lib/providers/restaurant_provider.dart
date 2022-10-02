@@ -240,4 +240,16 @@ class MealsData with ChangeNotifier {
       debugPrint("Error updating data: $onError");
     });
   }
+
+  void clear() {
+    this.allOrders.clear();
+    this.completedOrders.clear();
+    this.completedOrders.clear();
+    this.meals.clear();
+    this.searchList.clear();
+    this.takeoutOrders.clear();
+    this.completedOrders.clear();
+    this.processingOrders.clear();
+    this.cancelledOrders.clear();
+  }
 }

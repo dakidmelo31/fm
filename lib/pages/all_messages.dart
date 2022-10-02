@@ -112,6 +112,7 @@ class _AllMessagesState extends State<AllMessages> {
         // }
         Restaurant restaurant = Restaurant(
           gallery: List<String>.from(event["gallery"]),
+          days: List<String>.from(event["days"]),
           variants: List<String>.from(event["variants"]),
           costs: List<int>.from(event["costs"]),
           name: event["name"] ?? "",
@@ -215,11 +216,11 @@ class _AllMessagesState extends State<AllMessages> {
       },
       child: Stack(
         children: [
-          Image.asset("assets/merchant.png",
+          Image.asset("assets/app/bg8.jpg",
               width: size.width,
               height: size.height,
               alignment: Alignment.center,
-              fit: BoxFit.contain),
+              fit: BoxFit.cover),
           SafeArea(
             child: Scaffold(
               backgroundColor: Colors.transparent,

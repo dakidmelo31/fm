@@ -84,8 +84,14 @@ class _NewMealState extends State<NewMeal> with TickerProviderStateMixin {
     ),
   );
   bool uploading = false;
+  Future<void> testSubscrive() async {
+    await FirebaseMessaging.instance.subscribeToTopic(auth.currentUser!.uid);
+    debugPrint("You have subscribed");
+  }
+
   @override
   void initState() {
+    testSubscrive();
     auth.currentUser != null
         ? null
         : Navigator.popUntil(context, (HomeScreen) => true);
@@ -224,14 +230,10 @@ class _NewMealState extends State<NewMeal> with TickerProviderStateMixin {
             debugPrint("Done Adding Meal");
             mealDetails.meals.clear();
             mealDetails.loadMeals();
-            sendNewsNotification(
-                type: "restaurant",
-                orderId: widget.restaurant.restaurantId,
-                title: widget.restaurant.companyName +
-                    " now have a new meal available",
-                message:
-                    "You can now buy ${food.name} online or get directions to their shop location.",
-                restaurant: widget.restaurant,
+            sendTopicNotification(
+                title: widget.restaurant.companyName + " just posted",
+                description: widget.restaurant.companyName +
+                    " just added a new product to their store",
                 image: food.image);
           },
         ).catchError((onError) {
@@ -1302,8 +1304,6 @@ class _NewMealState extends State<NewMeal> with TickerProviderStateMixin {
                                         );
                                         return;
                                       }
-
-                                      HapticFeedback.mediumImpact();
                                     },
                                     child: Padding(
                                       padding: const EdgeInsets.symmetric(

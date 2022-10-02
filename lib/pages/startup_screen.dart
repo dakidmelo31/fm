@@ -147,6 +147,9 @@ class _StartupScreenState extends State<StartupScreen>
       debugPrint("User is found");
       WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
         FirebaseMessaging.instance.getInitialMessage().then((value) {
+          if (value != null) {
+            debugPrint("You just received a message");
+          }
           if (value != null && auth.currentUser != null) {
             pushNotif = true;
             debugPrint("Push Notification from terminated app");
@@ -181,7 +184,7 @@ class _StartupScreenState extends State<StartupScreen>
                             .where("restaurantId",
                                 isEqualTo:
                                     FirebaseAuth.instance.currentUser!.uid)
-                            .orderBy("time", descending: true)
+                            .orderBy("time", descending: false)
                             .snapshots()));
               }),
             );
@@ -215,7 +218,7 @@ class _StartupScreenState extends State<StartupScreen>
           FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
             String userId = message.data.toString();
             var _data = message.data as Map<String, dynamic>;
-
+            debugPrint("You just received a message");
             if (_data.containsKey("order_type") &&
                 _data['order_type'] == "order") {
               debugPrint("Order clicked");
@@ -246,7 +249,7 @@ class _StartupScreenState extends State<StartupScreen>
                               .where("restaurantId",
                                   isEqualTo:
                                       FirebaseAuth.instance.currentUser!.uid)
-                              .orderBy("time", descending: true)
+                              .orderBy("time", descending: false)
                               .snapshots()));
                 }),
               );
@@ -374,14 +377,14 @@ class _StartupScreenState extends State<StartupScreen>
               ),
             ),
           ),
-          SubscriptionBoard(
-              callback: () {
-                _subscriptionController.reverse();
-              },
-              animation: CurvedAnimation(
-                  parent: _subscriptionController,
-                  curve: Interval(0, 1.0, curve: Curves.fastLinearToSlowEaseIn),
-                  reverseCurve: Curves.fastOutSlowIn))
+          // SubscriptionBoard(
+          //     callback: () {
+          //       _subscriptionController.reverse();
+          //     },
+          //     animation: CurvedAnimation(
+          //         parent: _subscriptionController,
+          //         curve: Interval(0, 1.0, curve: Curves.fastLinearToSlowEaseIn),
+          //         reverseCurve: Curves.fastOutSlowIn))
         ],
       ),
     );

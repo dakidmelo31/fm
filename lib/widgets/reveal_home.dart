@@ -25,6 +25,7 @@ class RevealWidget extends StatefulWidget {
 }
 
 class _RevealWidgetState extends State<RevealWidget> {
+  FirebaseFirestore _firestore = FirebaseFirestore.instance;
   AnimationController? _animation;
   late PageController _pageController;
   int _index = 0;
@@ -39,8 +40,22 @@ class _RevealWidgetState extends State<RevealWidget> {
             .signOut()
             .then((value) => debugPrint("signed Out User"));
         Navigator.pushReplacementNamed(context, StartupScreen.routeName);
-      } else
-        return;
+      } else {
+        String deviceToken = await getFirebaseToken() ?? "";
+        debugPrint("device token is: --- $deviceToken");
+        DocumentReference documentReference = FirebaseFirestore.instance
+            .collection("restaurants")
+            .doc(FirebaseAuth.instance.currentUser!.uid);
+        if (deviceToken.isNotEmpty)
+          FirebaseFirestore.instance.runTransaction((transaction) async {
+            DocumentSnapshot snap = await transaction.get(documentReference);
+            if (!snap.exists) {
+              throw Exception("No user found");
+            }
+
+            transaction.update(documentReference, {"deviceToken": deviceToken});
+          });
+      }
     } else {
       Future.delayed(Duration.zero, () {
         prefs.clear();
@@ -140,6 +155,7 @@ class _RevealWidgetState extends State<RevealWidget> {
               gallery: List<String>.from(event["gallery"]),
               name: event["name"] ?? "",
               variants: List<String>.from(event["variants"]),
+              days: List<String>.from(event["days"]),
               costs: List<int>.from(event["costs"]),
               deviceToken: event["deviceToken"],
               address: event["address"] ?? "",
@@ -222,13 +238,11 @@ class _RevealWidgetState extends State<RevealWidget> {
                           milliseconds: 2700,
                         ),
                         transitionBuilder: (child, animation) {
-                          return SizeTransition(
-                            sizeFactor: CurvedAnimation(
+                          return FadeTransition(
+                            opacity: CurvedAnimation(
                                 curve: Curves.fastLinearToSlowEaseIn,
                                 parent: animation,
                                 reverseCurve: Curves.fastOutSlowIn),
-                            axis: Axis.horizontal,
-                            axisAlignment: 0.0,
                             child: child,
                           );
                         },

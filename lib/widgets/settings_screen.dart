@@ -12,10 +12,13 @@ import 'package:merchants/models/restaurants.dart';
 import 'package:merchants/pages/intro_page.dart';
 import 'package:merchants/pages/startup_screen.dart';
 import 'package:merchants/pages/verification_form.dart';
+import 'package:merchants/providers/global_data.dart';
 import 'package:merchants/providers/restaurant_provider.dart';
+import 'package:merchants/providers/services.dart';
 import 'package:merchants/transitions/transitions.dart';
 import 'package:merchants/widgets/home_delivery_variations.dart';
 import 'package:merchants/widgets/location_update.dart';
+import 'package:merchants/widgets/selling_days.dart';
 import 'package:merchants/widgets/settings_card.dart';
 import 'package:merchants/widgets/upload_gallery.dart';
 import 'package:page_transition/page_transition.dart';
@@ -151,6 +154,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 final prefs = await SharedPreferences.getInstance();
                 prefs.remove("phone");
                 prefs.clear();
+                Provider.of<Auth>(context, listen: false).clear();
+                Provider.of<MealsData>(context, listen: false).clear();
+                Provider.of<ServicesData>(context, listen: false).clear();
+
                 setState(() {
                   auth.signOut();
                 });
@@ -305,6 +312,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ],
                   ),
                 ),
+
+                SellingDays(restaurant: restaurant),
 
                 Center(
                   child: Column(
@@ -862,7 +871,66 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       subtitle: Text(
                           "Add variations if you deliver on many locations"),
                       secondary: Icon(Icons.pending),
-                      onChanged: (value) {
+                      onChanged: (value) async {
+                        bool? outcome;
+
+                        if (value) {
+                          outcome = await showDialog(
+                              context: context,
+                              builder: (_) {
+                                return CupertinoAlertDialog(
+                                  content: Column(
+                                    children: [
+                                      Lottie.asset("assets/delivery-boy.json",
+                                          alignment: Alignment.center,
+                                          width: double.infinity,
+                                          height: 120.0,
+                                          fit: BoxFit.contain,
+                                          filterQuality: FilterQuality.high),
+                                      Text("Our Disclaimer",
+                                          style: TextStyle(
+                                              color: Colors.pink,
+                                              fontWeight: FontWeight.w600)),
+                                      Text(
+                                          "Enabling delivery services soley puts you responsible for your deliveries."),
+                                    ],
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                        onPressed: () {
+                                          HapticFeedback.heavyImpact();
+                                          Navigator.pop(context, true);
+                                        },
+                                        child: Text("Enable")),
+                                    TextButton(
+                                        onPressed: () {
+                                          HapticFeedback.heavyImpact();
+                                          Navigator.pop(context, false);
+                                        },
+                                        child: Text("Cancel"))
+                                  ],
+                                );
+                              });
+
+                          if (outcome != null && outcome == true) {
+                            debugPrint("accepted");
+                            updateTransaction(
+                                documentReference: FirebaseFirestore.instance
+                                    .collection("restaurants")
+                                    .doc(auth.currentUser!.uid),
+                                data: {"homeDelivery": value});
+                          } else {
+                            debugPrint("denied");
+                            value = false;
+                          }
+                        } else {
+                          debugPrint("nothing even");
+                          updateTransaction(
+                              documentReference: FirebaseFirestore.instance
+                                  .collection("restaurants")
+                                  .doc(auth.currentUser!.uid),
+                              data: {"homeDelivery": value});
+                        }
                         setState(
                           () {
                             restaurant.homeDelivery = value;

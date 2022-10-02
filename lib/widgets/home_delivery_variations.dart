@@ -27,8 +27,8 @@ class _HomeDeliveryVariantsState extends State<HomeDeliveryVariants> {
 
   @override
   void initState() {
-    variants = widget.restaurant.variants ?? [];
-    costs = widget.restaurant.costs ?? [];
+    variants = widget.restaurant.variants;
+    costs = widget.restaurant.costs;
     _locationController = TextEditingController();
     _priceController = TextEditingController();
     super.initState();
@@ -172,6 +172,7 @@ class _HomeDeliveryVariantsState extends State<HomeDeliveryVariants> {
                     Icons.add,
                   )),
             ),
+            
             Card(
               color: Colors.white,
               elevation: 20.0,

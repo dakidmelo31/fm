@@ -42,4 +42,8 @@ class ServicesData with ChangeNotifier {
     });
     notifyListeners();
   }
+
+  void clear() {
+    this.services.clear();
+  }
 }

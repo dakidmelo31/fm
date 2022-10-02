@@ -222,14 +222,13 @@ class _MealCardState extends State<MealCard>
                                           " is now available, order or pass by if you're in the mood for some"
                                       : food.name +
                                           " is fresh out☹️, but there are other meals you can check out";
+                                  String title =
+                                      widget.restaurant.name + " Stock update";
                                   debugPrint("About to broadcast");
                                   sendTopicNotification(
                                       image: food.image,
-                                      title: "Oh Ooh☹️ We ran out❗",
-                                      description: description,
-                                      type: 'restaurant',
-                                      topic: food.restaurantId,
-                                      restaurantId: food.restaurantId);
+                                      title: title,
+                                      description: description);
                                 })
                           ],
                         )

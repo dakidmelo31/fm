@@ -248,7 +248,7 @@ class _MealDetailsState extends State<MealDetails> {
                                                           errorWidget:
                                                               (_, __, ___) =>
                                                                   Lottie.asset(
-                                                            "assets/no-connection.json",
+                                                            "assets/no-connection2.json",
                                                             alignment: Alignment
                                                                 .center,
                                                             fit: BoxFit
@@ -273,7 +273,7 @@ class _MealDetailsState extends State<MealDetails> {
                                               imageUrl: localFood!.image,
                                               errorWidget: (_, __, ___) =>
                                                   Lottie.asset(
-                                                      "assets/no-connection.json"),
+                                                      "assets/no-connection2.json"),
                                               placeholder: (
                                                 _,
                                                 __,
@@ -438,7 +438,7 @@ class _MealDetailsState extends State<MealDetails> {
                                                                         errorWidget: (_,
                                                                                 __,
                                                                                 ___) =>
-                                                                            Lottie.asset("assets/no-connection.json"),
+                                                                            Lottie.asset("assets/no-connection2.json"),
                                                                         placeholder: (
                                                                           _,
                                                                           __,
@@ -525,7 +525,7 @@ class _MealDetailsState extends State<MealDetails> {
                                                     imageUrl: image,
                                                     errorWidget: (_, __, ___) =>
                                                         Lottie.asset(
-                                                            "assets/no-connection.json"),
+                                                            "assets/no-connection2.json"),
                                                     placeholder: (
                                                       _,
                                                       __,

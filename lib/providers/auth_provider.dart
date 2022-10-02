@@ -16,6 +16,7 @@ class Auth with ChangeNotifier {
       gallery: [],
       name: "",
       categories: [],
+      days: [],
       costs: [],
       variants: [],
       lng: 0.0,
@@ -65,6 +66,7 @@ class Auth with ChangeNotifier {
       }
       restaurant = Restaurant(
         variants: List<String>.from(event["variants"]),
+        days: List<String>.from(event["days"]),
         costs: List<int>.from(event["costs"]),
         deviceToken: deviceToken,
         address: event["address"],
@@ -109,5 +111,35 @@ class Auth with ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     prefs.setString(val, update);
     notifyListeners();
+  }
+
+  clear() {
+    this.restaurant = Restaurant(
+        deviceToken: '',
+        address: '',
+        gallery: [],
+        days: [],
+        name: "",
+        categories: [],
+        costs: [],
+        variants: [],
+        lng: 0.0,
+        lat: 0.0,
+        restaurantId: "",
+        businessPhoto: '',
+        tableReservation: false,
+        cash: false,
+        momo: false,
+        specialOrders: false,
+        avatar: '',
+        closingTime: '',
+        openingTime: '',
+        companyName: '',
+        username: '',
+        email: '',
+        foodReservation: false,
+        ghostKitchen: false,
+        homeDelivery: false,
+        phone: '');
   }
 }
