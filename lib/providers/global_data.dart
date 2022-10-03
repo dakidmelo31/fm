@@ -430,6 +430,7 @@ sendTopicNotification(
     required String description,
     required String title,
     String restaurantId = ''}) async {
+      debugPrint("pserfect broadcast");
   FirebaseMessaging.instance.subscribeToTopic(auth.currentUser!.uid);
   final data = {
     "click_action": "FLUTTER_NOTIFICATION_CLICK",
