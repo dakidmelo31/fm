@@ -70,6 +70,7 @@ dependencies:
   video_player:
   font_awesome_flutter:
   date_picker_timeline:
+  date_time_format:
   concentric_transition:
   fluttertoast: 
   flutter_snake_navigationbar:

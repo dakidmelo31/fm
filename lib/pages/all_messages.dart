@@ -1,4 +1,4 @@
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:date_time_format/date_time_format.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:concentric_transition/page_route.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -15,6 +15,7 @@ import '../models/order_model.dart';
 import '../models/restaurants.dart';
 import '../providers/auth_provider.dart';
 import '../providers/global_data.dart';
+import '../themes/light_theme.dart';
 import 'order_details.dart';
 
 class AllMessages extends StatefulWidget {
@@ -472,20 +473,10 @@ class _AllMessagesState extends State<AllMessages> {
                                       height: size.width - 100,
                                     );
                                   }
-
-                                  snapshot.data!.docChanges.map((e) {
-                                    if (e["userId"] == e['sender']) {
-                                      lastMessage = e["lastmessage"];
-                                      sentByMe = false;
-                                      debugPrint(
-                                          "recently Received message: $lastMessage");
-                                    }
-                                  });
-
                                   List<DocumentSnapshot<Map<String, dynamic>>>
                                       chatMessages = snapshot.data!.docs;
-
-                                  var dateTracker;
+                                  DateTime? dateTracker;
+                                  List<int> daysMarked = [];
                                   return ListView.builder(
                                       physics: BouncingScrollPhysics(),
                                       itemCount: chatMessages
@@ -510,85 +501,92 @@ class _AllMessagesState extends State<AllMessages> {
                                                   map['lastMessageTime']),
                                           opened: map['opened'] ?? true,
                                         );
+                                        var map2 = chatMessages[
+                                            chatMessages.length - 2 - index >= 0
+                                                ? chatMessages.length -
+                                                    2 -
+                                                    index
+                                                : 0];
+                                        Chat msg2 = Chat(
+                                          senderName: map2['senderName'],
+                                          messageId: map2.id,
+                                          restaurantId: map2['restaurantId'],
+                                          restaurantImage:
+                                              map2['restaurantImage'],
+                                          restaurantName:
+                                              map2['restaurantName'],
+                                          userId: map2['userId'],
+                                          sender: map2['sender'],
+                                          userImage: map2['userImage'],
+                                          lastmessage: map2['lastmessage'],
+                                          lastMessageTime: DateTime
+                                              .fromMillisecondsSinceEpoch(
+                                                  map2['lastMessageTime']),
+                                          opened: map2['opened'] ?? true,
+                                        );
                                         msg.messageId = map.id;
                                         DateTime time = msg.lastMessageTime;
-                                        bool mergeTimes = false;
+                                        DateTime time2 = msg2.lastMessageTime;
 
-                                        Duration difference;
-                                        if (dateTracker == null) {
-                                          dateTracker = time;
-                                        } else {
-                                          difference =
-                                              dateTracker.difference(time);
-
-                                          // debugPrint(difference.inMinutes.toString());
-                                          if (difference.inMinutes <= 1) {
-                                            mergeTimes = true;
-                                          }
-                                          dateTracker = time;
+                                        if (index == chatMessages.length - 1) {
+                                          DBManager.instance.addChat(chat: msg);
                                         }
 
-                                        var moment = timeAgo.format(
-                                          time,
-                                          allowFromNow: false,
-                                          clock: DateTime.now(),
-                                        );
-                                        // debugPrint("restaurant: ${msg.restaurantId}");
-                                        // debugPrint("sender: ${msg.sender}");
-                                        // debugPrint("userId: ${msg.userId}");
-                                        return msg.sender == msg.userId
+                                        bool mergeTimes = false;
+
+                                        String separator = time.format("z");
+                                        String separator2 = time2.format("z");
+                                        if (separator != separator2) {
+                                          separator = time.format("l j M, Y");
+                                        } else if (msg == msg2) {
+                                          separator = time.format("l j M, Y");
+                                        } else {
+                                          separator = '';
+                                        }
+
+                                        String moment = time.format("H:i");
+                                        String moment2 = time2.format("H:i");
+                                        if (moment == moment2) {
+                                          mergeTimes = true;
+                                        }
+
+                                        return msg.sender !=
+                                                FirebaseAuth
+                                                    .instance.currentUser!.uid
                                             ? Column(
                                                 crossAxisAlignment:
                                                     CrossAxisAlignment.start,
                                                 children: [
-                                                  Row(
+                                                  if (separator.isNotEmpty)
+                                                    Align(
+                                                        alignment:
+                                                            Alignment.center,
+                                                        child: Card(
+                                                            elevation: 15.0,
+                                                            shadowColor:
+                                                                Colors.grey,
+                                                            color: Colors.black,
+                                                            child: InkWell(
+                                                              onTap: () {},
+                                                              child: Padding(
+                                                                padding:
+                                                                    const EdgeInsets
+                                                                            .all(
+                                                                        8.0),
+                                                                child: Text(
+                                                                    separator,
+                                                                    style: Primary
+                                                                        .whiteText),
+                                                              ),
+                                                            ))),
+                                                  Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
                                                     mainAxisAlignment:
-                                                        MainAxisAlignment.start,
+                                                        MainAxisAlignment
+                                                            .spaceBetween,
                                                     children: [
-                                                      ClipOval(
-                                                        child:
-                                                            CachedNetworkImage(
-                                                          imageUrl:
-                                                              customer!.photo,
-                                                          width:
-                                                              size.width * .1,
-                                                          height:
-                                                              size.width * .1,
-                                                          fit: BoxFit.cover,
-                                                          alignment:
-                                                              Alignment.center,
-                                                          filterQuality:
-                                                              FilterQuality
-                                                                  .high,
-                                                          placeholder: (_, __) {
-                                                            return Lottie.asset(
-                                                                "assets/loading-animation.json");
-                                                          },
-                                                          errorWidget: (_, __,
-                                                                  ___) =>
-                                                              Lottie.asset(
-                                                                  "assets/no-connection2.json",
-                                                                  width:
-                                                                      size.width *
-                                                                          .1,
-                                                                  height:
-                                                                      size.width *
-                                                                          .1,
-                                                                  fit: BoxFit
-                                                                      .cover,
-                                                                  reverse: true,
-                                                                  options: LottieOptions(
-                                                                      enableMergePaths:
-                                                                          true)),
-                                                          maxHeightDiskCache:
-                                                              54,
-                                                          maxWidthDiskCache:
-                                                              ((size.width *
-                                                                          .1) *
-                                                                      100)
-                                                                  .ceil(),
-                                                        ),
-                                                      ),
                                                       SizedBox(
                                                           width:
                                                               size.width * .9,
@@ -598,17 +596,23 @@ class _AllMessagesState extends State<AllMessages> {
                                                             child: SizedBox(
                                                               child: Card(
                                                                   elevation: 0,
+                                                                  shadowColor: Colors
+                                                                      .grey
+                                                                      .withOpacity(
+                                                                          .3),
                                                                   margin: EdgeInsets.symmetric(
                                                                       horizontal:
                                                                           10,
                                                                       vertical:
-                                                                          10),
+                                                                          !mergeTimes && msg.sender == msg2.sender
+                                                                              ? 0
+                                                                              : 4),
                                                                   color: Color
                                                                       .fromARGB(
                                                                           255,
-                                                                          231,
-                                                                          66,
-                                                                          0),
+                                                                          255,
+                                                                          255,
+                                                                          255),
                                                                   child:
                                                                       Padding(
                                                                     padding: const EdgeInsets
@@ -620,9 +624,9 @@ class _AllMessagesState extends State<AllMessages> {
                                                                         style: TextStyle(
                                                                             color: Color.fromARGB(
                                                                                 255,
-                                                                                255,
-                                                                                255,
-                                                                                255))),
+                                                                                0,
+                                                                                0,
+                                                                                0))),
                                                                   )),
                                                             ),
                                                           )),
@@ -647,9 +651,9 @@ class _AllMessagesState extends State<AllMessages> {
                                                                     color: Color
                                                                         .fromARGB(
                                                                             255,
-                                                                            245,
-                                                                            245,
-                                                                            245),
+                                                                            246,
+                                                                            255,
+                                                                            0),
                                                                     fontSize:
                                                                         12),
                                                               ),
@@ -680,8 +684,7 @@ class _AllMessagesState extends State<AllMessages> {
                                                                         left:
                                                                             5.0),
                                                                 child: Text(
-                                                                  customer!.name
-                                                                      .toString(),
+                                                                  msg.senderName,
                                                                   style:
                                                                       TextStyle(
                                                                     color: Color
@@ -707,6 +710,28 @@ class _AllMessagesState extends State<AllMessages> {
                                                 crossAxisAlignment:
                                                     CrossAxisAlignment.end,
                                                 children: [
+                                                  if (separator.isNotEmpty)
+                                                    Align(
+                                                        alignment:
+                                                            Alignment.center,
+                                                        child: Card(
+                                                            elevation: 15.0,
+                                                            shadowColor:
+                                                                Colors.grey,
+                                                            color: Colors.black,
+                                                            child: InkWell(
+                                                              onTap: () {},
+                                                              child: Padding(
+                                                                padding:
+                                                                    const EdgeInsets
+                                                                            .all(
+                                                                        8.0),
+                                                                child: Text(
+                                                                    separator,
+                                                                    style: Primary
+                                                                        .whiteText),
+                                                              ),
+                                                            ))),
                                                   Row(
                                                     crossAxisAlignment:
                                                         CrossAxisAlignment.end,
@@ -721,10 +746,13 @@ class _AllMessagesState extends State<AllMessages> {
                                                           child: SizedBox(
                                                             child: Card(
                                                               elevation: 0,
-                                                              margin: EdgeInsets
-                                                                  .only(
-                                                                      right: 10,
-                                                                      top: 10),
+                                                              margin: EdgeInsets.only(
+                                                                  right: 10,
+                                                                  top: mergeTimes &&
+                                                                          msg.sender ==
+                                                                              msg2.sender
+                                                                      ? 4
+                                                                      : 10),
                                                               color: Color
                                                                   .fromARGB(
                                                                       255,
@@ -752,75 +780,57 @@ class _AllMessagesState extends State<AllMessages> {
                                                     ],
                                                   ),
                                                   if (!mergeTimes)
-                                                    Align(
-                                                        alignment:
-                                                            Alignment.topRight,
-                                                        child: Padding(
-                                                          padding:
-                                                              const EdgeInsets
-                                                                  .all(8.0),
-                                                          child: Row(
-                                                            mainAxisSize:
-                                                                MainAxisSize
-                                                                    .min,
-                                                            children: [
-                                                              Text(
-                                                                moment,
-                                                                style: TextStyle(
-                                                                    color: Colors
-                                                                        .black
-                                                                        .withOpacity(
-                                                                            .4),
-                                                                    fontSize:
-                                                                        12),
-                                                              ),
-                                                              Padding(
-                                                                padding:
-                                                                    const EdgeInsets
-                                                                            .only(
-                                                                        left:
-                                                                            5.0),
-                                                                child: ClipOval(
-                                                                  child:
-                                                                      Container(
-                                                                    width: 5,
-                                                                    height: 5,
-                                                                    color: Color
-                                                                        .fromARGB(
-                                                                            255,
-                                                                            157,
-                                                                            101,
-                                                                            255),
-                                                                  ),
-                                                                ),
-                                                              ),
-                                                              Padding(
-                                                                padding:
-                                                                    const EdgeInsets
-                                                                            .only(
-                                                                        left:
-                                                                            5.0),
-                                                                child: Text(
-                                                                  "You",
-                                                                  style:
-                                                                      TextStyle(
-                                                                    color: Color
-                                                                        .fromARGB(
-                                                                            255,
-                                                                            68,
-                                                                            0,
-                                                                            255),
-                                                                    fontSize:
-                                                                        12,
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .bold,
-                                                                  ),
-                                                                ),
-                                                              ),
-                                                            ],
+                                                    Padding(
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                              8.0),
+                                                      child: Row(
+                                                        mainAxisSize:
+                                                            MainAxisSize.min,
+                                                        children: [
+                                                          Text(
+                                                            moment,
+                                                            style: TextStyle(
+                                                                color: Color
+                                                                    .fromARGB(
+                                                                        255,
+                                                                        255,
+                                                                        255,
+                                                                        255),
+                                                                fontSize: 12),
                                                           ),
-                                                        )),
+                                                          Padding(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                        .only(
+                                                                    left: 5.0),
+                                                            child: ClipOval(
+                                                              child: Container(
+                                                                width: 8,
+                                                                height: 8,
+                                                                color: Colors
+                                                                    .deepOrange,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                          Text(
+                                                            "You",
+                                                            style: TextStyle(
+                                                              color: Color
+                                                                  .fromARGB(
+                                                                      255,
+                                                                      0,
+                                                                      247,
+                                                                      255),
+                                                              fontSize: 12,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
                                                 ],
                                               );
                                       });
@@ -876,80 +886,84 @@ class _TextWidgetState extends State<TextWidget> {
     Size size = MediaQuery.of(context).size;
     // debugPrint("adding my name: " + restaurant.name);
 
-    return SizedBox(
-      height: kToolbarHeight,
-      width: size.width,
-      child: Row(
-        children: [
-          Flexible(
-            child: Container(
-              decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(16),
-                  color: Colors.white,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(.05),
-                      blurRadius: 5,
-                      offset: const Offset(
-                        0,
-                        -2,
+    return Padding(
+      padding: EdgeInsets.only(top: 20, bottom: 10),
+      child: SizedBox(
+        height: kToolbarHeight,
+        width: size.width,
+        child: Row(
+          children: [
+            Flexible(
+              child: Container(
+                decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    color: Colors.white,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(.05),
+                        blurRadius: 5,
+                        offset: const Offset(
+                          0,
+                          -2,
+                        ),
                       ),
+                    ]),
+                child: TextField(
+                  controller: _editingController,
+                  decoration: InputDecoration(
+                    border: InputBorder.none,
+                    hintText: "Message",
+                    contentPadding: EdgeInsets.symmetric(
+                      vertical: 10,
+                      horizontal: 15,
                     ),
-                  ]),
-              child: TextField(
-                controller: _editingController,
-                decoration: InputDecoration(
-                  border: InputBorder.none,
-                  hintText: "Message",
-                  contentPadding: EdgeInsets.symmetric(
-                    vertical: 10,
-                    horizontal: 15,
                   ),
                 ),
               ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(right: 8.0),
-            child: FloatingActionButton(
-                onPressed: () async {
-                  if (_editingController.text.isNotEmpty) {
-                    widget.update(_editingController.text);
-                  }
-                  Chat chat = Chat(
-                    lastMessageTime: DateTime.now(),
-                    senderName: restaurant.name.toString(),
-                    opened: false,
-                    lastmessage: _editingController.text,
-                    restaurantId: auth.currentUser!.uid,
-                    restaurantImage: restaurant.businessPhoto.toString(),
-                    restaurantName: restaurant.companyName.toString(),
-                    sender: auth.currentUser!.uid,
-                    userId: widget.customerId,
-                    userImage: restaurant.phone,
-                  );
+            Padding(
+              padding: const EdgeInsets.only(right: 8.0),
+              child: FloatingActionButton(
+                  onPressed: () async {
+                    if (_editingController.text.isNotEmpty) {
+                      widget.update(_editingController.text);
+                    }
+                    Chat chat = Chat(
+                      lastMessageTime: DateTime.now(),
+                      senderName: restaurant.name.toString(),
+                      opened: false,
+                      lastmessage: _editingController.text,
+                      restaurantId: auth.currentUser!.uid,
+                      restaurantImage: restaurant.businessPhoto.toString(),
+                      restaurantName: restaurant.companyName.toString(),
+                      sender: auth.currentUser!.uid,
+                      userId: widget.customerId,
+                      userImage: restaurant.phone,
+                    );
 
-                  if (_editingController.text.isNotEmpty) {
-                    final _userData = Provider.of<Auth>(context, listen: false);
-                    final Restaurant restaurant = _userData.restaurant;
+                    if (_editingController.text.isNotEmpty) {
+                      final _userData =
+                          Provider.of<Auth>(context, listen: false);
+                      final Restaurant restaurant = _userData.restaurant;
 
-                    sendMessage(
-                        type: "message",
-                        chat: chat,
-                        userToken: widget.userToken,
-                        restaurant: restaurant);
-                    _editingController.text = "";
-                  } else {
-                    debugPrint("no text sent");
-                  }
-                },
-                child: const Icon(
-                  Icons.send_outlined,
-                  color: Colors.white,
-                ),
-                elevation: 6),
-          ),
-        ],
+                      sendMessage(
+                          type: "message",
+                          chat: chat,
+                          userToken: widget.userToken,
+                          restaurant: restaurant);
+                      _editingController.text = "";
+                    } else {
+                      debugPrint("no text sent");
+                    }
+                  },
+                  child: const Icon(
+                    Icons.send_outlined,
+                    color: Colors.white,
+                  ),
+                  elevation: 6),
+            ),
+          ],
+        ),
       ),
     );
   }

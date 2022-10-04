@@ -217,6 +217,7 @@ class _LoginFormState extends State<LoginForm> with TickerProviderStateMixin {
                                 child: SlideUpTween(
                                   begin: Offset(100, 10),
                                   child: Container(
+                                    width: size.width,
                                     margin: const EdgeInsets.symmetric(
                                         horizontal: 40),
                                     decoration: BoxDecoration(
@@ -240,7 +241,7 @@ class _LoginFormState extends State<LoginForm> with TickerProviderStateMixin {
                                           children: [
                                             SizedBox(
                                               height: 68,
-                                              width: 45,
+                                              width: 35,
                                               child: TextFormField(
                                                 onSaved: ((newValue) {}),
                                                 onChanged: (val) {
@@ -276,7 +277,7 @@ class _LoginFormState extends State<LoginForm> with TickerProviderStateMixin {
                                             ),
                                             SizedBox(
                                               height: 68,
-                                              width: 45,
+                                              width: 35,
                                               child: TextFormField(
                                                 onSaved: ((newValue) {}),
                                                 onChanged: (val) {
@@ -312,7 +313,7 @@ class _LoginFormState extends State<LoginForm> with TickerProviderStateMixin {
                                             ),
                                             SizedBox(
                                               height: 68,
-                                              width: 45,
+                                              width: 35,
                                               child: TextFormField(
                                                 onSaved: ((newValue) {}),
                                                 onChanged: (val) {
@@ -348,7 +349,7 @@ class _LoginFormState extends State<LoginForm> with TickerProviderStateMixin {
                                             ),
                                             SizedBox(
                                               height: 68,
-                                              width: 45,
+                                              width: 35,
                                               child: TextFormField(
                                                 onSaved: ((newValue) {}),
                                                 onChanged: (val) {
@@ -384,7 +385,7 @@ class _LoginFormState extends State<LoginForm> with TickerProviderStateMixin {
                                             ),
                                             SizedBox(
                                               height: 68,
-                                              width: 45,
+                                              width: 35,
                                               child: TextFormField(
                                                 onSaved: ((newValue) {}),
                                                 onChanged: (val) {
@@ -420,7 +421,7 @@ class _LoginFormState extends State<LoginForm> with TickerProviderStateMixin {
                                             ),
                                             SizedBox(
                                               height: 68,
-                                              width: 45,
+                                              width: 35,
                                               child: TextFormField(
                                                 onSaved: ((newValue) {}),
                                                 onChanged: (val) {

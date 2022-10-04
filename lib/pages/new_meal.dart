@@ -216,6 +216,7 @@ class _NewMealState extends State<NewMeal> with TickerProviderStateMixin {
             "ingredients": food.ingredients,
             "averageRating": food.averageRating,
             "verified": food.verified,
+            "score": 0,
             "created_time": FieldValue.serverTimestamp()
           },
           SetOptions(merge: true),

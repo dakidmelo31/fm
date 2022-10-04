@@ -496,6 +496,7 @@ class _CreateServiceState extends State<CreateService> {
           "duration": duration,
           "cost": _servicePrice.text,
           "verified": false,
+          "score": 0,
           "gallery": galleryImages
         };
 
