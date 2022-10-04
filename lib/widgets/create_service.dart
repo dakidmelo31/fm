@@ -510,16 +510,12 @@ class _CreateServiceState extends State<CreateService> {
             var tokens = List<String>.from(value["tokens"]);
             debugPrint("tokens: $tokens");
             tokens.map((e) {
-              sendOrderNotification(
-                type: "news",
-                userToken: e,
-                orderId: widget.restaurant.restaurantId,
-                deviceId: e,
-                title: widget.restaurant.companyName + "$name",
-                message: "You can contact them to hire their service anytime.",
-                restaurant: widget.restaurant,
-                image: img,
-              );
+              sendTopicNotification(
+                  title: widget.restaurant.companyName + " just posted a dish",
+                  description: widget.restaurant.companyName.toUpperCase() +
+                      " just added a new product to their store".toUpperCase(),
+                  image: img);
+              ;
             });
           });
         }).catchError((onError) {

@@ -44,34 +44,9 @@ class _SellingDaysState extends State<SellingDays>
     final size = MediaQuery.of(context).size;
     return Column(
       children: [
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: TextButton(
-            child: Text("Subscribe to topic"),
-            onPressed: () {
-              FirebaseMessaging.instance
-                  .subscribeToTopic(auth.currentUser!.uid)
-                  .then((value) => Fluttertoast.showToast(msg: "Subscribed"));
-            },
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: TextButton(
-            child: Text("Send Broadcast notification"),
-            onPressed: () async {
-              await sendTopicNotification(
-                image:
-                    'https://images.unsplash.com/photo-1612262501903-1add4a20dc04?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MjR8fHN3ZWV0c3xlbnwwfHwwfHw%3D&auto=format&fit=crop&w=500&q=60',
-                description: "Please show up in description",
-                title: "Sending broadcast message to users",
-              );
-            },
-          ),
-        ),
         SizedBox(
           width: size.width,
-          height: 190,
+          height: 140,
           child: Column(
             children: [
               Padding(
@@ -108,7 +83,7 @@ class _SellingDaysState extends State<SellingDays>
                                 }
                               },
                               child: SizedBox(
-                                height: 60,
+                                height: 50,
                                 child: ClipOval(
                                   child: AnimatedPadding(
                                     duration: Duration(milliseconds: 500),
@@ -157,6 +132,12 @@ class _SellingDaysState extends State<SellingDays>
                                     transaction.update(
                                         documentReference, {"days": _days});
                                   }).then((value) {
+                                    sendTopicNotification(
+                                        image: widget.restaurant.businessPhoto,
+                                        description:
+                                            "We now sell on" + _days.join(", "),
+                                        title: widget.restaurant.companyName +
+                                            " changed selling days");
                                     Fluttertoast.cancel();
                                     Fluttertoast.showToast(
                                         msg: "Selling days Updated");

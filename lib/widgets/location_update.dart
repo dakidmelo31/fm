@@ -7,6 +7,7 @@ import 'package:lottie/lottie.dart' as lottie;
 import 'package:merchants/global.dart';
 
 import '../models/restaurants.dart';
+import '../providers/global_data.dart';
 import '../themes/light_theme.dart';
 
 class LocationUpdate extends StatefulWidget {
@@ -178,6 +179,17 @@ class _LocationUpdateState extends State<LocationUpdate>
                                         "lat": _marker.position.latitude,
                                         "long": _marker.position.longitude
                                       });
+                                    }).then((value) {
+                                      Fluttertoast.cancel();
+                                      Fluttertoast.showToast(
+                                          msg: "Updated successfully");
+                                      sendTopicNotification(
+                                          image:
+                                              widget.restaurant.businessPhoto,
+                                          description:
+                                              'We have updated our Business location',
+                                          title: widget.restaurant.companyName +
+                                              " changed location");
                                     });
                                   },
                                   child: Padding(

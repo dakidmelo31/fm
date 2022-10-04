@@ -11,6 +11,7 @@ import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:lottie/lottie.dart';
+import 'package:merchants/providers/global_data.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 
@@ -212,8 +213,14 @@ class _UploadGalleryState extends State<UploadGallery>
                                                               restaurant.gallery
                                                         },
                                                       ).then(
-                                                        (value) => debugPrint(
-                                                            "remove this information"),
+                                                        (value) {
+                                                          debugPrint(
+                                                              "remove this information");
+                                                          Fluttertoast.cancel();
+                                                          Fluttertoast.showToast(
+                                                              msg:
+                                                                  "New pictures added successfully");
+                                                        },
                                                       );
                                                     });
                                                   },
@@ -524,6 +531,14 @@ class _UploadGalleryState extends State<UploadGallery>
                                                         .then((value) =>
                                                             restaurant.gallery =
                                                                 galleryImages)
+                                                        .then((value) => sendTopicNotification(
+                                                            image: restaurant
+                                                                .businessPhoto,
+                                                            description: restaurant
+                                                                    .companyName +
+                                                                " have added new gallery photos, see them now",
+                                                            title:
+                                                                "See for yourself 😊👌💫📷"))
                                                         .then((value) =>
                                                             Navigator.pop(
                                                                 context, true))

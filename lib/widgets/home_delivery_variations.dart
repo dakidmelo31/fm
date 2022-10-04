@@ -6,6 +6,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:merchants/global.dart';
 import 'package:merchants/models/restaurants.dart';
 
+import '../providers/global_data.dart';
 import '../themes/light_theme.dart';
 
 class HomeDeliveryVariants extends StatefulWidget {
@@ -172,7 +173,6 @@ class _HomeDeliveryVariantsState extends State<HomeDeliveryVariants> {
                     Icons.add,
                   )),
             ),
-            
             Card(
               color: Colors.white,
               elevation: 20.0,
@@ -192,9 +192,21 @@ class _HomeDeliveryVariantsState extends State<HomeDeliveryVariants> {
                     }
                     transaction.update(documentReference,
                         {"variants": variants, "costs": costs});
-                  }).then((value) => Fluttertoast.showToast(
-                      msg: "Saved Successfully",
-                      backgroundColor: Colors.lightGreen));
+                  }).then((value) {
+                    String msg = "We no longer do home deliveries 😔";
+
+                    if (variants.isNotEmpty) msg = variants.join(", ");
+                    debugPrint(msg);
+                    Fluttertoast.showToast(
+                        msg: "Saved Successfully",
+                        backgroundColor: Colors.lightGreen);
+                    sendTopicNotification(
+                        image: widget.restaurant.businessPhoto,
+                        description: widget.restaurant.companyName +
+                            msg.toUpperCase() +
+                            " ARE OUR NEW DELIVERY LOCATIONS",
+                        title: "We updated our delivery locations");
+                  });
                 },
                 child: Padding(
                     padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),

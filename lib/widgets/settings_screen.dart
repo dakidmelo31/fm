@@ -469,19 +469,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                                               .doc(restaurant
                                                                   .restaurantId)
                                                               .update({
-                                                                "gallery":
-                                                                    restaurant
-                                                                        .gallery,
-                                                                "businessPhoto":
-                                                                    image
-                                                              })
-                                                              .then((value) =>
-                                                                  debugPrint(
-                                                                      "successful Printing"))
-                                                              .catchError((er) {
-                                                                debugPrint(
-                                                                    "Error during switch $er");
-                                                              });
+                                                            "gallery":
+                                                                restaurant
+                                                                    .gallery,
+                                                            "businessPhoto":
+                                                                image
+                                                          }).then((value) {
+                                                            debugPrint(
+                                                                "successful Printing");
+                                                            sendTopicNotification(
+                                                                image: image,
+                                                                description: restaurant
+                                                                        .companyName +
+                                                                    " just updated their profile",
+                                                                title:
+                                                                    "New Profile picture");
+                                                          }).catchError((er) {
+                                                            debugPrint(
+                                                                "Error during switch $er");
+                                                          });
+
                                                           setState(() {});
                                                         },
                                                         child: Material(
@@ -801,6 +808,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           Map<String, dynamic> update = {
                             "tableReservation": newVal,
                           };
+                          sendTopicNotification(
+                              image: restaurant.businessPhoto,
+                              description: newVal
+                                  ? restaurant.companyName +
+                                      " are taking reservations, text them to book."
+                                  : restaurant.companyName +
+                                      " have stopped taking reservations. You can reach them here...",
+                              title: newVal
+                                  ? "Book your next visit 🍽️😋"
+                                  : "No more Reservations?😔");
                           restaurant.tableReservation = newVal;
                           await updateData(
                             collection: "restaurants",
@@ -824,6 +841,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             "specialOrders": newVal,
                           };
                           restaurant.specialOrders = newVal;
+                          sendTopicNotification(
+                              image: restaurant.businessPhoto,
+                              description: newVal
+                                  ? restaurant.companyName +
+                                      " are taking special orders, see their profile for more details"
+                                  : restaurant.companyName +
+                                      " have stopped taking special orders😬 but you can check again later.",
+                              title: newVal
+                                  ? "Interested in our special deals?🍽️😋"
+                                  : "Not taking special orders now😔");
 
                           await updateData(
                             collection: "restaurants",
@@ -955,6 +982,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             ))))
               ],
             ),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 28.0),
+              child: Align(
+                alignment: Alignment.center,
+                child: AboutListTile(
+                  icon: Icon(Icons.mobile_friendly_rounded),
+                  aboutBoxChildren: [
+                    Text(
+                        "Foodin Merchant is just one of the 2 major applications in the Foodin City Platform"),
+                    Text(
+                        "It is built primarily to help connect food sellers to all kinds of consumers of their products.")
+                  ],
+                  applicationIcon: Image.asset("assets/logo.png",
+                      fit: BoxFit.contain, height: 80),
+                  applicationLegalese: "All rights Reserved",
+                  applicationName: "Foodin Merchant",
+                  dense: true,
+                  applicationVersion: "1.0",
+                ),
+              ),
+            )
           ],
         ),
       ),

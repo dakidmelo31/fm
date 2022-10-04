@@ -84,13 +84,9 @@ class _NewMealState extends State<NewMeal> with TickerProviderStateMixin {
     ),
   );
   bool uploading = false;
-  Future<void> testSubscrive() async {
-    debugPrint("You have subscribed");
-  }
 
   @override
   void initState() {
-    testSubscrive();
     auth.currentUser != null
         ? null
         : Navigator.popUntil(context, (HomeScreen) => true);
@@ -230,9 +226,9 @@ class _NewMealState extends State<NewMeal> with TickerProviderStateMixin {
             mealDetails.meals.clear();
             mealDetails.loadMeals();
             sendTopicNotification(
-                title: widget.restaurant.companyName + " just posted",
-                description: widget.restaurant.companyName +
-                    " just added a new product to their store",
+                title: widget.restaurant.companyName + " just posted meal",
+                description: widget.restaurant.companyName.toUpperCase() +
+                    " just added a new product to their store".toUpperCase(),
                 image: food.image);
           },
         ).catchError((onError) {
