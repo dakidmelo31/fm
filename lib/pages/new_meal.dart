@@ -85,7 +85,6 @@ class _NewMealState extends State<NewMeal> with TickerProviderStateMixin {
   );
   bool uploading = false;
   Future<void> testSubscrive() async {
-    await FirebaseMessaging.instance.subscribeToTopic(auth.currentUser!.uid);
     debugPrint("You have subscribed");
   }
 
