@@ -29,7 +29,8 @@ class _MyMealsState extends State<MyMeals> {
   PageController _pageController = PageController();
   @override
   Widget build(BuildContext context) {
-    final allServices = Provider.of<ServicesData>(context).services;
+    final allServices =
+        Provider.of<ServicesData>(context, listen: true).services;
     final allMeals = Provider.of<Meals>(context).meals;
     Size size = MediaQuery.of(context).size;
     return StreamBuilder(
@@ -272,8 +273,7 @@ class _MyMealsState extends State<MyMeals> {
                                       borderRadius: BorderRadius.circular(6),
                                       child: OpenContainer(
                                         openBuilder: (context, _) =>
-                                            ServiceDetails(
-                                                serviceId: service.serviceId),
+                                            ServiceDetails(service: service),
                                         closedBuilder:
                                             (context, openContainer) => InkWell(
                                           onTap: openContainer,

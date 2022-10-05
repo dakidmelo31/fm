@@ -377,7 +377,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                     sizeFactor: animation,
                                     axis: Axis.vertical,
                                     axisAlignment: 0.0,
-                                    child: UploadGallery(),
+                                    child: UploadGallery(
+                                      images: [],
+                                      isService: false,
+                                    ),
                                   );
                                 }),
                           ).then((value) {
@@ -478,6 +481,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                                             debugPrint(
                                                                 "successful Printing");
                                                             sendTopicNotification(
+                                                                type:
+                                                                    "restaurant",
+                                                                typeId: restaurant
+                                                                    .restaurantId,
                                                                 image: image,
                                                                 description: restaurant
                                                                         .companyName +
@@ -809,6 +816,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             "tableReservation": newVal,
                           };
                           sendTopicNotification(
+                              type: "restaurant",
+                              typeId: restaurant.restaurantId,
                               image: restaurant.businessPhoto,
                               description: newVal
                                   ? restaurant.companyName +
@@ -842,6 +851,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           };
                           restaurant.specialOrders = newVal;
                           sendTopicNotification(
+                              type: "restaurant",
+                              typeId: restaurant.restaurantId,
                               image: restaurant.businessPhoto,
                               description: newVal
                                   ? restaurant.companyName +

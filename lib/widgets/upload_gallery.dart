@@ -11,7 +11,9 @@ import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:lottie/lottie.dart';
+import 'package:merchants/models/service.dart';
 import 'package:merchants/providers/global_data.dart';
+import 'package:merchants/providers/services.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 
@@ -19,7 +21,12 @@ import '../models/restaurants.dart';
 import '../providers/auth_provider.dart';
 
 class UploadGallery extends StatefulWidget {
-  const UploadGallery({Key? key}) : super(key: key);
+  UploadGallery(
+      {Key? key, this.isService = false, required this.images, this.service})
+      : super(key: key);
+  final bool isService;
+  List<String> images;
+  ServiceModel? service;
 
   @override
   State<UploadGallery> createState() => _UploadGalleryState();
@@ -195,22 +202,43 @@ class _UploadGalleryState extends State<UploadGallery>
                                                     }
 
                                                     setState(() {
-                                                      restaurant.gallery
-                                                          .removeWhere(
-                                                        (element) => selected
-                                                            .any((data) =>
-                                                                data ==
-                                                                element),
-                                                      );
+                                                      if (widget.isService) {
+                                                        widget.service!.gallery
+                                                            .removeWhere(
+                                                          (element) => selected
+                                                              .any((data) =>
+                                                                  data ==
+                                                                  element),
+                                                        );
+                                                      } else {
+                                                        restaurant.gallery
+                                                            .removeWhere(
+                                                          (element) => selected
+                                                              .any((data) =>
+                                                                  data ==
+                                                                  element),
+                                                        );
+                                                      }
                                                       firestore
-                                                          .collection(
-                                                              "restaurants")
-                                                          .doc(restaurant
-                                                              .restaurantId)
+                                                          .collection(widget
+                                                                  .isService
+                                                              ? "services"
+                                                              : "restaurants")
+                                                          .doc(widget.isService
+                                                              ? widget.service!
+                                                                  .serviceId
+                                                              : auth
+                                                                  .currentUser!
+                                                                  .uid)
                                                           .update(
                                                         {
                                                           "gallery":
-                                                              restaurant.gallery
+                                                              widget.isService
+                                                                  ? widget
+                                                                      .service!
+                                                                      .gallery
+                                                                  : restaurant
+                                                                      .gallery
                                                         },
                                                       ).then(
                                                         (value) {
@@ -235,187 +263,217 @@ class _UploadGalleryState extends State<UploadGallery>
                                   if (gallery.isEmpty)
                                     Expanded(
                                       child: Center(
-                                        child: MasonryGridView.count(
+                                        child: ListView(
                                           shrinkWrap: true,
-                                          crossAxisCount: 2,
-                                          mainAxisSpacing: 4,
-                                          crossAxisSpacing: 10.0,
-                                          physics:
-                                              NeverScrollableScrollPhysics(),
-                                          itemCount: restaurant.gallery.length,
-                                          itemBuilder: (context, index) {
-                                            String image =
-                                                restaurant.gallery[index];
+                                          padding: EdgeInsets.symmetric(
+                                              horizontal: 4.0, vertical: 15.0),
+                                          children: [
+                                            Card(
+                                              margin:
+                                                  EdgeInsets.only(bottom: 15.0),
+                                              elevation: 15,
+                                              shadowColor:
+                                                  Colors.grey.withOpacity(.2),
+                                              child: SizedBox(
+                                                height: kToolbarHeight,
+                                                width: size.width * .9,
+                                                child: Center(
+                                                  child: Text(
+                                                      "Hold pictures down to remove them"),
+                                                ),
+                                              ),
+                                            ),
+                                            MasonryGridView.count(
+                                              shrinkWrap: true,
+                                              crossAxisCount: 2,
+                                              mainAxisSpacing: 4,
+                                              crossAxisSpacing: 10.0,
+                                              physics:
+                                                  NeverScrollableScrollPhysics(),
+                                              itemCount: !widget.isService
+                                                  ? restaurant.gallery.length
+                                                  : widget.images.length,
+                                              itemBuilder: (context, index) {
+                                                String image = !widget.isService
+                                                    ? restaurant.gallery[index]
+                                                    : widget.images[index];
 
-                                            return InkWell(
-                                              onLongPress: () {
-                                                HapticFeedback.heavyImpact();
-                                                if (selected.contains(image)) {
-                                                  selected.remove(image);
-                                                } else {
-                                                  selected.add(image);
-                                                }
-                                                setState(() {});
-                                              },
-                                              child: Stack(
-                                                alignment: Alignment.center,
-                                                children: [
-                                                  AnimatedOpacity(
-                                                    duration: Duration(
-                                                        milliseconds: 400),
-                                                    opacity:
-                                                        selected.contains(image)
+                                                return InkWell(
+                                                  onLongPress: () {
+                                                    HapticFeedback
+                                                        .heavyImpact();
+                                                    if (selected
+                                                        .contains(image)) {
+                                                      selected.remove(image);
+                                                    } else {
+                                                      selected.add(image);
+                                                    }
+                                                    setState(() {});
+                                                  },
+                                                  child: Stack(
+                                                    alignment: Alignment.center,
+                                                    children: [
+                                                      AnimatedOpacity(
+                                                        duration: Duration(
+                                                            milliseconds: 400),
+                                                        opacity: selected
+                                                                .contains(image)
                                                             ? 0.125
                                                             : 1.0,
-                                                    child: ClipRRect(
-                                                      borderRadius: BorderRadius
-                                                          .circular(Random()
-                                                                  .nextBool()
-                                                              ? 12
-                                                              : 20.0),
-                                                      child: InkWell(
-                                                        onTap: () {
-                                                          debugPrint(image);
-                                                          Navigator.push(
-                                                            context,
-                                                            PageRouteBuilder(
-                                                              barrierColor: Colors
-                                                                  .transparent,
-                                                              barrierDismissible:
-                                                                  true,
-                                                              opaque: false,
-                                                              transitionDuration:
-                                                                  Duration(
-                                                                      milliseconds:
-                                                                          900),
-                                                              reverseTransitionDuration:
-                                                                  Duration(
-                                                                      milliseconds:
-                                                                          300),
-                                                              pageBuilder: (BuildContext
-                                                                      context,
-                                                                  Animation<
-                                                                          double>
-                                                                      animation,
-                                                                  Animation<
-                                                                          double>
-                                                                      secondaryAnimation) {
-                                                                animation = CurvedAnimation(
-                                                                    parent:
-                                                                        animation,
-                                                                    curve: Curves
-                                                                        .fastLinearToSlowEaseIn);
-                                                                return FadeTransition(
-                                                                  opacity:
-                                                                      animation,
-                                                                  child:
-                                                                      Scaffold(
-                                                                    backgroundColor: Colors
-                                                                        .black
-                                                                        .withOpacity(
-                                                                            .6),
-                                                                    body:
-                                                                        Center(
+                                                        child: ClipRRect(
+                                                          borderRadius: BorderRadius
+                                                              .circular(Random()
+                                                                      .nextBool()
+                                                                  ? 12
+                                                                  : 20.0),
+                                                          child: InkWell(
+                                                            onTap: () {
+                                                              debugPrint(image);
+                                                              Navigator.push(
+                                                                context,
+                                                                PageRouteBuilder(
+                                                                  barrierColor:
+                                                                      Colors
+                                                                          .transparent,
+                                                                  barrierDismissible:
+                                                                      true,
+                                                                  opaque: false,
+                                                                  transitionDuration:
+                                                                      Duration(
+                                                                          milliseconds:
+                                                                              900),
+                                                                  reverseTransitionDuration:
+                                                                      Duration(
+                                                                          milliseconds:
+                                                                              300),
+                                                                  pageBuilder: (BuildContext context,
+                                                                      Animation<
+                                                                              double>
+                                                                          animation,
+                                                                      Animation<
+                                                                              double>
+                                                                          secondaryAnimation) {
+                                                                    animation = CurvedAnimation(
+                                                                        parent:
+                                                                            animation,
+                                                                        curve: Curves
+                                                                            .fastLinearToSlowEaseIn);
+                                                                    return FadeTransition(
+                                                                      opacity:
+                                                                          animation,
                                                                       child:
-                                                                          Column(
-                                                                        mainAxisSize:
-                                                                            MainAxisSize.max,
-                                                                        mainAxisAlignment:
-                                                                            MainAxisAlignment.center,
-                                                                        children: [
-                                                                          Hero(
-                                                                            tag:
-                                                                                image,
-                                                                            child:
-                                                                                CachedNetworkImage(
-                                                                              imageUrl: image,
-                                                                              placeholder: (_, __) => Lottie.asset("assets/loading7.json"),
-                                                                              alignment: Alignment.center,
-                                                                              fit: BoxFit.cover,
-                                                                              errorWidget: (_, __, ___) => Lottie.asset(
-                                                                                "assets/no-connection.json",
-                                                                                alignment: Alignment.center,
-                                                                                fit: BoxFit.fitHeight,
+                                                                          Scaffold(
+                                                                        backgroundColor: Colors
+                                                                            .black
+                                                                            .withOpacity(.6),
+                                                                        body:
+                                                                            Center(
+                                                                          child:
+                                                                              Column(
+                                                                            mainAxisSize:
+                                                                                MainAxisSize.max,
+                                                                            mainAxisAlignment:
+                                                                                MainAxisAlignment.center,
+                                                                            children: [
+                                                                              Hero(
+                                                                                tag: image,
+                                                                                child: CachedNetworkImage(
+                                                                                  imageUrl: image,
+                                                                                  placeholder: (_, __) => Lottie.asset("assets/loading7.json"),
+                                                                                  alignment: Alignment.center,
+                                                                                  fit: BoxFit.cover,
+                                                                                  errorWidget: (_, __, ___) => Lottie.asset(
+                                                                                    "assets/no-connection.json",
+                                                                                    alignment: Alignment.center,
+                                                                                    fit: BoxFit.fitHeight,
+                                                                                  ),
+                                                                                ),
                                                                               ),
-                                                                            ),
+                                                                              Align(
+                                                                                alignment: Alignment.bottomCenter,
+                                                                                child: Hero(
+                                                                                  tag: "button",
+                                                                                  child: ElevatedButton(
+                                                                                      onPressed: () {
+                                                                                        if (widget.isService) {
+                                                                                          Provider.of<ServicesData>(context, listen: false).setImage(image: image, serviceId: widget.service!.serviceId);
+                                                                                        } else {
+                                                                                          _userData.setBusinessPhoto(image);
+                                                                                        }
+
+                                                                                        firestore.collection(widget.isService ? "services" : "restaurants").doc(widget.isService ? widget.service!.serviceId : restaurant.restaurantId).update({"gallery": restaurant.gallery, "image": image}).then((value) => Fluttertoast.showToast(msg: "Changes Saved")).catchError((er) {
+                                                                                              debugPrint("Error during switch $er");
+                                                                                            });
+                                                                                        setState(() {});
+                                                                                      },
+                                                                                      child: Text("Make This Profile Photo")),
+                                                                                ),
+                                                                              )
+                                                                            ],
                                                                           ),
-                                                                          Align(
-                                                                            alignment:
-                                                                                Alignment.bottomCenter,
-                                                                            child:
-                                                                                Hero(
-                                                                              tag: "button",
-                                                                              child: ElevatedButton(
-                                                                                  onPressed: () {
-                                                                                    _userData.setBusinessPhoto(image);
-                                                                                    firestore.collection("restaurants").doc(restaurant.restaurantId).update({"gallery": restaurant.gallery, "businessPhoto": image}).then((value) => debugPrint("successful Printing")).catchError((er) {
-                                                                                          debugPrint("Error during switch $er");
-                                                                                        });
-                                                                                    setState(() {});
-                                                                                  },
-                                                                                  child: Text("Make This Profile Photo")),
-                                                                            ),
-                                                                          )
-                                                                        ],
+                                                                        ),
                                                                       ),
-                                                                    ),
-                                                                  ),
-                                                                );
-                                                              },
-                                                            ),
-                                                          );
-                                                        },
-                                                        child: Hero(
-                                                          tag: image,
-                                                          child:
-                                                              CachedNetworkImage(
-                                                            imageUrl: image,
-                                                            placeholder: (_,
-                                                                    __) =>
-                                                                Lottie.asset(
-                                                                    "assets/loading7.json"),
-                                                            alignment: Alignment
-                                                                .center,
-                                                            fit: BoxFit.cover,
-                                                            errorWidget: (_, __,
-                                                                    ___) =>
-                                                                Lottie.asset(
-                                                              "assets/no-connection2.json",
-                                                              alignment:
-                                                                  Alignment
-                                                                      .center,
-                                                              fit: BoxFit
-                                                                  .fitHeight,
+                                                                    );
+                                                                  },
+                                                                ),
+                                                              );
+                                                            },
+                                                            child: Hero(
+                                                              tag: image,
+                                                              child:
+                                                                  CachedNetworkImage(
+                                                                imageUrl: image,
+                                                                placeholder: (_,
+                                                                        __) =>
+                                                                    Lottie.asset(
+                                                                        "assets/loading7.json"),
+                                                                alignment:
+                                                                    Alignment
+                                                                        .center,
+                                                                fit: BoxFit
+                                                                    .cover,
+                                                                errorWidget: (_,
+                                                                        __,
+                                                                        ___) =>
+                                                                    Lottie
+                                                                        .asset(
+                                                                  "assets/no-connection2.json",
+                                                                  alignment:
+                                                                      Alignment
+                                                                          .center,
+                                                                  fit: BoxFit
+                                                                      .fitHeight,
+                                                                ),
+                                                              ),
                                                             ),
                                                           ),
                                                         ),
                                                       ),
-                                                    ),
+                                                      if (selected
+                                                          .contains(image))
+                                                        Center(
+                                                          child: Column(
+                                                            children: [
+                                                              Text("Removed",
+                                                                  style: TextStyle(
+                                                                      color: Colors
+                                                                          .pink,
+                                                                      fontSize:
+                                                                          20.0)),
+                                                              Text(
+                                                                  "Hold to bring back"),
+                                                            ],
+                                                          ),
+                                                        )
+                                                    ],
                                                   ),
-                                                  if (selected.contains(image))
-                                                    Center(
-                                                      child: Column(
-                                                        children: [
-                                                          Text("Removed",
-                                                              style: TextStyle(
-                                                                  color: Colors
-                                                                      .pink,
-                                                                  fontSize:
-                                                                      20.0)),
-                                                          Text(
-                                                              "Hold to bring back"),
-                                                        ],
-                                                      ),
-                                                    )
-                                                ],
-                                              ),
-                                            );
-                                          },
+                                                );
+                                              },
+                                            ),
+                                          ],
                                         ),
                                       ),
                                     ),
-                                  if (gallery.isEmpty)
-                                    Text("Hold pictures down to remove them"),
                                   if (gallery.isNotEmpty)
                                     Expanded(
                                       child: CarouselSlider.builder(
@@ -458,11 +516,11 @@ class _UploadGalleryState extends State<UploadGallery>
                                             color: Colors.orange,
                                           ),
                                           FloatingActionButton(
-                                              backgroundColor: Colors.blue,
+                                              backgroundColor: Colors.white,
                                               onPressed: addToGallery,
                                               child: Icon(
-                                                Icons.add_business_rounded,
-                                                color: Colors.white,
+                                                Icons.add_photo_alternate,
+                                                color: Colors.grey,
                                               )),
                                           Hero(
                                             tag: "button",
@@ -517,31 +575,69 @@ class _UploadGalleryState extends State<UploadGallery>
                                                     }
                                                     firestore
                                                         .collection(
-                                                            "restaurants")
-                                                        .doc(restaurant
-                                                            .restaurantId)
+                                                            widget.isService
+                                                                ? "services"
+                                                                : "restaurants")
+                                                        .doc(widget.isService
+                                                            ? widget.service!
+                                                                .serviceId
+                                                            : auth.currentUser!
+                                                                .uid)
                                                         .update({
                                                           "gallery": List<
                                                                   String>.from(
-                                                              restaurant
-                                                                  .gallery)
+                                                              widget.isService
+                                                                  ? widget
+                                                                      .service!
+                                                                      .gallery
+                                                                  : restaurant
+                                                                      .gallery)
                                                             ..addAll(
                                                                 galleryImages)
                                                         })
-                                                        .then((value) =>
-                                                            restaurant.gallery =
-                                                                galleryImages)
+                                                        .then((value) {
+                                                          if (widget
+                                                              .isService) {
+                                                            Provider.of<ServicesData>(
+                                                                    context,
+                                                                    listen:
+                                                                        false)
+                                                                .updateGallery(
+                                                                    gallery: List<
+                                                                            String>.from(
+                                                                        widget
+                                                                            .service!
+                                                                            .gallery)
+                                                                      ..addAll(
+                                                                          galleryImages),
+                                                                    serviceId: widget
+                                                                        .service!
+                                                                        .serviceId);
+                                                          } else {
+                                                            debugPrint(
+                                                                "correct photo");
+                                                          }
+                                                        })
                                                         .then((value) => sendTopicNotification(
+                                                            type: widget.isService
+                                                                ? "service"
+                                                                : "restaurant",
+                                                            typeId: widget.isService
+                                                                ? widget
+                                                                    .service!
+                                                                    .serviceId
+                                                                : auth
+                                                                    .currentUser!
+                                                                    .uid,
                                                             image: restaurant
                                                                 .businessPhoto,
-                                                            description: restaurant
-                                                                    .companyName +
-                                                                " have added new gallery photos, see them now",
-                                                            title:
-                                                                "See for yourself 😊👌💫📷"))
-                                                        .then((value) =>
-                                                            Navigator.pop(
-                                                                context, true))
+                                                            description: widget.isService
+                                                                ? restaurant.companyName +
+                                                                    " have added new gallery photos to a service, see them now"
+                                                                : restaurant.companyName +
+                                                                    " have added new gallery photos, see them now",
+                                                            title: "See for yourself 😊👌💫📷"))
+                                                        .then((value) => Navigator.pop(context, true))
                                                         .catchError((onError) {
                                                           debugPrint(
                                                               "Error found adding Gallery");

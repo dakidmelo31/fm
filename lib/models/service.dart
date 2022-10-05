@@ -9,10 +9,10 @@ class ServiceModel {
   String serviceId;
   final String duration;
   final String description;
-  final String image;
+  String image;
   final String name;
   final String restaurantId;
-  final List<String> gallery;
+  List<String> gallery;
   bool verified;
   int likes;
   int comments;

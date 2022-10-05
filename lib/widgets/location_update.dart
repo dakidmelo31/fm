@@ -184,6 +184,9 @@ class _LocationUpdateState extends State<LocationUpdate>
                                       Fluttertoast.showToast(
                                           msg: "Updated successfully");
                                       sendTopicNotification(
+                                          type: "restaurant",
+                                          typeId:
+                                              widget.restaurant.restaurantId,
                                           image:
                                               widget.restaurant.businessPhoto,
                                           description:

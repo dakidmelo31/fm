@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:merchants/global.dart';
 import 'package:merchants/models/service.dart';
+import 'package:merchants/pages/service_details.dart';
 import 'package:merchants/providers/reviews.dart';
+import 'package:merchants/transitions/transitions.dart';
 import 'package:provider/provider.dart';
 
 import '../pages/review_screen.dart';
@@ -59,22 +61,31 @@ class _ServiceCardState extends State<ServiceCard>
                     height: 140,
                     color: Colors.white,
                     child: Center(
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(15.0),
-                        child: CachedNetworkImage(
-                          imageUrl: service.image,
-                          errorWidget: (_, __, ___) =>
-                              Lottie.asset("assets/no-connection.json"),
-                          placeholder: (
-                            _,
-                            __,
-                          ) =>
-                              Lottie.asset("assets/loading7.json"),
-                          fadeInCurve: Curves.fastLinearToSlowEaseIn,
-                          alignment: Alignment.center,
-                          fit: BoxFit.cover,
-                          width: 90,
-                          height: 120,
+                      child: InkWell(
+                        onTap: () {
+                          Navigator.push(
+                              context,
+                              CustomScaleTransition(
+                                  alignment: Alignment.centerLeft,
+                                  child: ServiceDetails(service: service)));
+                        },
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(15.0),
+                          child: CachedNetworkImage(
+                            imageUrl: service.image,
+                            errorWidget: (_, __, ___) =>
+                                Lottie.asset("assets/no-connection.json"),
+                            placeholder: (
+                              _,
+                              __,
+                            ) =>
+                                Lottie.asset("assets/loading7.json"),
+                            fadeInCurve: Curves.fastLinearToSlowEaseIn,
+                            alignment: Alignment.center,
+                            fit: BoxFit.cover,
+                            width: 90,
+                            height: 120,
+                          ),
                         ),
                       ),
                     ),

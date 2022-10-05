@@ -43,7 +43,22 @@ class ServicesData with ChangeNotifier {
     notifyListeners();
   }
 
+  updateGallery({required List<String> gallery, required String serviceId}) {
+    services[services
+            .lastIndexWhere((element) => element.serviceId == serviceId)]
+        .gallery = gallery;
+    notifyListeners();
+  }
+
   void clear() {
     this.services.clear();
+  }
+
+  void setImage({required String image, required String serviceId}) {
+    services[services
+            .lastIndexWhere((element) => element.serviceId == serviceId)]
+        .image = image;
+
+    notifyListeners();
   }
 }

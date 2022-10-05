@@ -198,7 +198,7 @@ class _NewMealState extends State<NewMeal> with TickerProviderStateMixin {
 
         if (duration != null) {}
 
-        FirebaseFirestore.instance.collection("meals").doc().set(
+        FirebaseFirestore.instance.collection("meals").add(
           {
             "name": food.name,
             "available": food.available,
@@ -219,7 +219,6 @@ class _NewMealState extends State<NewMeal> with TickerProviderStateMixin {
             "score": 0,
             "created_time": FieldValue.serverTimestamp()
           },
-          SetOptions(merge: true),
         ).then(
           (value) async {
             // Send message to subscribers.
@@ -227,6 +226,8 @@ class _NewMealState extends State<NewMeal> with TickerProviderStateMixin {
             mealDetails.meals.clear();
             mealDetails.loadMeals();
             sendTopicNotification(
+                type: "meal",
+                typeId: value.id,
                 title: widget.restaurant.companyName + " just posted meal",
                 description: widget.restaurant.companyName.toUpperCase() +
                     " just added a new product to their store".toUpperCase(),

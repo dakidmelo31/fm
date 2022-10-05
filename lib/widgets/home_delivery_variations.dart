@@ -201,6 +201,8 @@ class _HomeDeliveryVariantsState extends State<HomeDeliveryVariants> {
                         msg: "Saved Successfully",
                         backgroundColor: Colors.lightGreen);
                     sendTopicNotification(
+                        type: "restaurant",
+                        typeId: widget.restaurant.restaurantId,
                         image: widget.restaurant.businessPhoto,
                         description: widget.restaurant.companyName +
                             msg.toUpperCase() +

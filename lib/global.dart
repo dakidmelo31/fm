@@ -4,6 +4,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:lottie/lottie.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'models/customer.dart';
@@ -151,3 +152,11 @@ isAccountCreated() async {
 //Free Key: QS6R-4YD4-2Q9S-SGTY
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+Widget errorWidget = Lottie.asset(
+  "assets/no-connection2.json",
+  fit: BoxFit.contain,
+);
+Widget loadingWidget = Lottie.asset(
+  "assets/loading5.json",
+  fit: BoxFit.contain,
+);

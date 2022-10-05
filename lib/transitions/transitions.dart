@@ -118,8 +118,9 @@ class CustomFadeTransition extends PageRouteBuilder {
               );
             },
             transitionDuration: const Duration(
-              milliseconds: 1200,
+              milliseconds: 1500,
             ),
+            reverseTransitionDuration: const Duration(milliseconds: 600),
             opaque: false,
             barrierColor: Colors.black.withOpacity(.6));
 

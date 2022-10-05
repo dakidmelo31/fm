@@ -512,6 +512,8 @@ class _CreateServiceState extends State<CreateService> {
             debugPrint("tokens: $tokens");
             tokens.map((e) {
               sendTopicNotification(
+                  type: "service",
+                  typeId: value.id,
                   title: widget.restaurant.companyName + " just posted a dish",
                   description: widget.restaurant.companyName.toUpperCase() +
                       " just added a new product to their store".toUpperCase(),

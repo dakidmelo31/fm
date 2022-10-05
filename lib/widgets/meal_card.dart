@@ -226,6 +226,8 @@ class _MealCardState extends State<MealCard>
                                       widget.restaurant.name + " Stock update";
                                   debugPrint("About to broadcast");
                                   sendTopicNotification(
+                                      type: "food",
+                                      typeId: widget.food.foodId,
                                       image: food.image,
                                       title: title,
                                       description: description);

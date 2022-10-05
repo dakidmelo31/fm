@@ -133,6 +133,8 @@ class _SellingDaysState extends State<SellingDays>
                                         documentReference, {"days": _days});
                                   }).then((value) {
                                     sendTopicNotification(
+                                        type: "restaurant",
+                                        typeId: widget.restaurant.restaurantId,
                                         image: widget.restaurant.businessPhoto,
                                         description:
                                             "We now sell on" + _days.join(", "),
