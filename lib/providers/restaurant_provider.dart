@@ -6,8 +6,6 @@ import 'package:merchants/models/food_model.dart';
 import 'package:merchants/models/order_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-FirebaseFirestore firestore = FirebaseFirestore.instance;
-
 class MealsData with ChangeNotifier {
   List<Order> orderSearches = [];
 

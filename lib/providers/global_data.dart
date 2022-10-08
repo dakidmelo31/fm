@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
@@ -316,28 +315,26 @@ sendMessage(
 }
 
 sendOrderNotification(
-    {required String deviceId,
-    required String message,
-    required String orderId,
-    required String userToken,
+    {required String message,
+    required String userId,
     required String type,
     String extra = "",
     required String title,
     String image = "",
     required Restaurant restaurant}) async {
   // int rand = Random().nextInt(5000);
-  debugPrint("Send Notification to: $userToken");
+  debugPrint("Send Notification to: $userId");
+  int rand = Random().nextInt(500);
   final data = {
     "click_action": "FLUTTER_NOTIFICATION_CLICK",
-    "id": "1",
-    "restaurantId": orderId,
+    "id": "$rand",
+    "restaurantId": userId,
     "message": message,
     'color': '#dcedc2',
-    'type': type,
+    'type': "order",
     "extra": extra,
   };
   try {
-    debugPrint("Token is: $deviceId");
     http.Response response =
         await http.post(Uri.parse("https://fcm.googleapis.com/fcm/send"),
             headers: <String, String>{
@@ -347,7 +344,7 @@ sendOrderNotification(
             },
             body: jsonEncode(<String, dynamic>{
               'notification': <String, dynamic>{
-                'title': restaurant.companyName,
+                'title': title,
                 'body': message,
                 'type': type,
                 'image': image.isEmpty ? restaurant.businessPhoto : image,
@@ -356,7 +353,7 @@ sendOrderNotification(
               'priority': 'high',
               'data': data,
               'collapse-key': 'orders',
-              'to': "/topics/" + orderId
+              'to': "/topics/" + userId
             }));
 
     if (response.statusCode == 200) {
@@ -431,8 +428,6 @@ sendTopicNotification(
     bool news = false,
     String restaurantId = ''}) async {
   debugPrint("perfect broadcast");
-  // FirebaseMessaging.instance.subscribeToTopic(auth.currentUser!.uid);
-  // FirebaseMessaging.instance.unsubscribeFromTopic(auth.currentUser!.uid);
   final data = {
     "click_action": "FLUTTER_NOTIFICATION_CLICK",
     "id": "1",
@@ -538,4 +533,13 @@ updateOverview(
       }, SetOptions(merge: true))
       .then((value) => debugPrint("now opened"))
       .catchError((onError) => debugPrint("Error adding Overview: $onError"));
+}
+
+Future<void> defaultSubscriptions() async {
+  if (auth.currentUser != null) {
+    await messaging.subscribeToTopic(auth.currentUser!.uid + "_orders");
+    await messaging.subscribeToTopic(auth.currentUser!.uid + "_news");
+    debugPrint("Subscribed to: " + auth.currentUser!.uid + "_orders");
+    debugPrint("Subscribed to: " + auth.currentUser!.uid + "_news");
+  }
 }

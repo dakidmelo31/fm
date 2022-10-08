@@ -160,3 +160,5 @@ Widget loadingWidget = Lottie.asset(
   "assets/loading5.json",
   fit: BoxFit.contain,
 );
+
+FirebaseMessaging messaging = FirebaseMessaging.instance;

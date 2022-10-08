@@ -1,8 +1,4 @@
 // ignore_for_file: must_be_immutable
-import 'dart:math';
-
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 
 import 'package:animations/animations.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -166,6 +162,7 @@ class _MealCardState extends State<MealCard>
                                                 axis: Axis.vertical,
                                                 axisAlignment: 0.0,
                                                 child: ReviewScreen(
+                                                  isMeal: true,
                                                   foodId: food.foodId,
                                                   name: food.name,
                                                   totalReviews: food.comments,

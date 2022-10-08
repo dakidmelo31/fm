@@ -1,11 +1,7 @@
 // ignore_for_file: dead_code, duplicate_ignore
-
 import 'dart:io';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:duration_picker_dialog_box/duration_picker_dialog_box.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -23,6 +19,7 @@ import 'package:shimmer/shimmer.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:uuid/uuid.dart';
 
+import '../global.dart';
 import '../providers/notification_service.dart';
 import '../themes/light_theme.dart';
 
@@ -30,7 +27,6 @@ CollectionReference users =
     FirebaseFirestore.instance.collection("restaurants");
 CollectionReference subscriptions =
     FirebaseFirestore.instance.collection("subscriptions");
-FirebaseAuth auth = FirebaseAuth.instance;
 
 class NewMeal extends StatefulWidget {
   static const routeName = "/add_meal";

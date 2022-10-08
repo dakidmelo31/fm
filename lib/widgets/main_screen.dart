@@ -18,6 +18,7 @@ import 'package:merchants/widgets/settings_screen.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:provider/provider.dart';
 import 'package:lottie/lottie.dart';
+import '../global.dart';
 import '../models/food_model.dart';
 import '../pages/new_meal.dart';
 import '../theme/main_theme.dart';
@@ -25,9 +26,6 @@ import '../themes/light_theme.dart';
 import 'drag_notch.dart';
 import 'meal_card.dart';
 import 'order_cards.dart';
-
-final FirebaseAuth auth = FirebaseAuth.instance;
-FirebaseFirestore firestore = FirebaseFirestore.instance;
 
 class HomeScreen extends StatefulWidget {
   static const routeName = "/homeScreen";

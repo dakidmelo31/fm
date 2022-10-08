@@ -115,7 +115,6 @@ class _OrderDetailsState extends State<OrderDetails>
         phone = "(";
       }
       if (c < 3) {
-        debugPrint(tmp[c]);
         phone = "$phone${tmp[c]}";
       }
 
@@ -287,7 +286,6 @@ class _OrderDetailsState extends State<OrderDetails>
                                   )),
                               IconButton(
                                   onPressed: () async {
-                                    debugPrint("share information");
                                     setState(() {
                                       visible = false;
                                     });
@@ -714,8 +712,8 @@ class _OrderDetailsState extends State<OrderDetails>
 
                                                 switch (order.status) {
                                                   case "pending":
-                                                    debugPrint(
-                                                        "Pending changed to Processing");
+                                                    // debugPrint(
+                                                    //     "Pending changed to Processing");
                                                     ordersData.pendingOrders
                                                         .remove(order);
 
@@ -807,10 +805,7 @@ class _OrderDetailsState extends State<OrderDetails>
 
                                                   sendOrderNotification(
                                                       type: "order",
-                                                      userToken:
-                                                          order.userToken,
-                                                      orderId: order.orderId,
-                                                      deviceId: order.deviceId,
+                                                      userId: order.userId,
                                                       message: message,
                                                       title: title,
                                                       restaurant:
@@ -1077,10 +1072,7 @@ class _OrderDetailsState extends State<OrderDetails>
                                                   }
 
                                                   sendOrderNotification(
-                                                      orderId: order.orderId,
-                                                      userToken:
-                                                          order.userToken,
-                                                      deviceId: order.deviceId,
+                                                      userId: order.userId,
                                                       message: description,
                                                       title: title,
                                                       type: "order",
@@ -1204,7 +1196,7 @@ class _OrderDetailsState extends State<OrderDetails>
                                 ],
                               )),
                               SizedBox(
-                                height: 35,
+                                height: 65,
                               )
                             ],
                           ),

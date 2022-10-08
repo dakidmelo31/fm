@@ -12,6 +12,7 @@ import 'package:merchants/models/restaurants.dart';
 import 'package:merchants/pages/all_messages.dart';
 import 'package:timeago/timeago.dart' as timeAgo;
 
+import '../global.dart';
 import '../providers/auth_provider.dart';
 
 class ChatHome extends StatefulWidget {

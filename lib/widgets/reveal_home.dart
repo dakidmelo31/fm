@@ -7,6 +7,7 @@ import 'package:merchants/global.dart';
 import 'package:merchants/pages/conversation_screen.dart';
 import 'package:merchants/pages/startup_screen.dart';
 import 'package:merchants/providers/auth_provider.dart';
+import 'package:merchants/providers/global_data.dart';
 import 'package:merchants/providers/notification_stream.dart';
 import 'package:merchants/widgets/main_screen.dart';
 import 'package:merchants/widgets/settings_screen.dart';
@@ -17,7 +18,8 @@ import 'package:sliding_clipped_nav_bar/sliding_clipped_nav_bar.dart';
 import '../models/restaurants.dart';
 
 class RevealWidget extends StatefulWidget {
-  const RevealWidget({Key? key}) : super(key: key);
+  RevealWidget({Key? key, required this.index}) : super(key: key);
+  int? index;
   static const routeName = "/load_restaurant";
 
   @override
@@ -47,14 +49,7 @@ class _RevealWidgetState extends State<RevealWidget> {
             .collection("restaurants")
             .doc(FirebaseAuth.instance.currentUser!.uid);
         if (deviceToken.isNotEmpty)
-          FirebaseFirestore.instance.runTransaction((transaction) async {
-            DocumentSnapshot snap = await transaction.get(documentReference);
-            if (!snap.exists) {
-              throw Exception("No user found");
-            }
-
-            transaction.update(documentReference, {"deviceToken": deviceToken});
-          });
+          await documentReference.update({"deviceToken": deviceToken});
       }
     } else {
       Future.delayed(Duration.zero, () {
@@ -68,12 +63,17 @@ class _RevealWidgetState extends State<RevealWidget> {
 
   late var messageOverviewStream;
   bool showNotificationIcon = false;
+
   @override
   void initState() {
+    if (widget.index != null) {
+      _index = widget.index!;
+    }
     _checkUser();
     _pageController = PageController(initialPage: _index);
 
     super.initState();
+
     messageOverviewStream = FirebaseFirestore.instance
         .collection("overviews")
         .doc(FirebaseAuth.instance.currentUser!.uid)

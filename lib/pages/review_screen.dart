@@ -2,22 +2,25 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:lottie/lottie.dart';
 import 'package:merchants/models/review_models.dart';
 import 'package:merchants/providers/auth_provider.dart';
-import 'package:merchants/providers/reviews.dart';
+
+import '../global.dart';
 
 class ReviewScreen extends StatefulWidget {
   const ReviewScreen(
       {Key? key,
       required this.name,
       required this.foodId,
-      this.isMeal,
+      required this.isMeal,
       required this.totalReviews})
       : super(key: key);
   final String foodId;
   final String name;
-  final bool? isMeal;
+  final bool isMeal;
   final int totalReviews;
 
   @override
@@ -176,7 +179,31 @@ class _ReviewScreenState extends State<ReviewScreen> {
                                         ],
                                       ),
                                       IconButton(
-                                        onPressed: () {},
+                                        onPressed: () {
+                                          HapticFeedback.heavyImpact();
+                                          firestore
+                                              .collection("reviews")
+                                              .doc(item.reviewId)
+                                              .delete()
+                                              .then(
+                                                (value) =>
+                                                    Fluttertoast.showToast(
+                                                  msg: "Review deleted",
+                                                  backgroundColor: Colors.black,
+                                                ),
+                                              )
+                                              .then((value) {
+                                            firestore
+                                                .collection(widget.isMeal
+                                                    ? "meals"
+                                                    : "services")
+                                                .doc(widget.foodId)
+                                                .update({
+                                              "comments":
+                                                  FieldValue.increment(-1)
+                                            });
+                                          });
+                                        },
                                         icon: Icon(Icons.delete_rounded,
                                             size: 15),
                                       ),

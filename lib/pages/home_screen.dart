@@ -3,8 +3,8 @@ import 'package:merchants/widgets/reveal_home.dart';
 
 class Home extends StatefulWidget {
   static const routeName = "/home";
-  const Home({Key? key}) : super(key: key);
-
+  Home({Key? key, this.index}) : super(key: key);
+  int? index;
   @override
   State<Home> createState() => _HomeState();
 }
@@ -16,6 +16,6 @@ class _HomeState extends State<Home> {
         onTap: () {
           FocusManager.instance.primaryFocus?.unfocus();
         },
-        child: RevealWidget());
+        child: RevealWidget(index: widget.index == null ? 0 : widget.index!));
   }
 }

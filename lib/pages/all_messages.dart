@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:concentric_transition/page_route.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
 import 'package:merchants/models/overview.dart';
@@ -11,12 +12,12 @@ import 'package:merchants/transitions/transitions.dart';
 import 'package:merchants/widgets/chat_bubble.dart';
 import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeAgo;
+import '../global.dart';
 import '../models/chats_model.dart';
 import '../models/order_model.dart';
 import '../models/restaurants.dart';
 import '../providers/auth_provider.dart';
 import '../providers/global_data.dart';
-import '../themes/light_theme.dart';
 import 'order_details.dart';
 
 class AllMessages extends StatefulWidget {
@@ -24,8 +25,9 @@ class AllMessages extends StatefulWidget {
       {Key? key,
       this.callUpdate,
       this.fromPush,
-      this.customerId,
+      // this.customerId,
       this.customer,
+      this.customerId,
       this.restaurant,
       required this.chatsStream,
       required this.ordersStream})
@@ -88,9 +90,11 @@ class _AllMessagesState extends State<AllMessages> {
         debugPrint("total information is: " + chat.toString());
         return chat;
       }).then((value) {
-        setState(() {
-          debugPrint("Customer Created");
-          customer = value;
+        SchedulerBinding.instance.addPostFrameCallback((timestamp) {
+          setState(() {
+            debugPrint("Customer Created");
+            customer = value;
+          });
         });
       });
 

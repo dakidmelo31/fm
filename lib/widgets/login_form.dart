@@ -12,9 +12,10 @@ import 'package:lottie/lottie.dart';
 import 'package:merchants/animations/opacity_tween.dart';
 import 'package:merchants/animations/slideup_tween.dart';
 import 'package:merchants/pages/home_screen.dart';
+import 'package:merchants/providers/global_data.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-FirebaseFirestore firestore = FirebaseFirestore.instance;
+import '../global.dart';
 
 class LoginForm extends StatefulWidget {
   const LoginForm(
@@ -58,12 +59,85 @@ class _LoginFormState extends State<LoginForm> with TickerProviderStateMixin {
       verificationCompleted: (PhoneAuthCredential credential) async {
         // ANDROID ONLY!
         // Sign the user in (or link) with the auto-generated credential
-        await auth
-            .signInWithCredential(credential)
-            .then((value) async =>
-                {if (value.user != null) print("user is NOT Logged In!!!!")})
-            .catchError((onError) =>
-                {debugPrint("error saving user: ${onError.toString()}")});
+        debugPrint("received token");
+        await auth.signInWithCredential(credential).then((value) async {
+          final prefs = await SharedPreferences.getInstance();
+
+          defaultSubscriptions();
+
+          if (prefs.containsKey("phone")) {
+            Navigator.pushReplacement(
+                context,
+                PageRouteBuilder(
+                    pageBuilder: (context, animation, secondaryAnimation) =>
+                        Home(index: 0),
+                    transitionDuration: Duration(milliseconds: 2200),
+                    transitionsBuilder:
+                        (_, animation, anotherAnimation, child) {
+                      animation = CurvedAnimation(
+                          parent: animation,
+                          curve: Curves.fastLinearToSlowEaseIn,
+                          reverseCurve: Curves.fastLinearToSlowEaseIn);
+                      return Align(
+                        alignment: Alignment.centerRight,
+                        heightFactor: 0.0,
+                        widthFactor: 0.0,
+                        child: SizeTransition(
+                          sizeFactor: animation,
+                          axis: Axis.horizontal,
+                          axisAlignment: 1.0,
+                          child: child,
+                        ),
+                      );
+                    }));
+          } else {
+            prefs.setString("phone", phoneNumber);
+            firestore
+                .collection("restaurants")
+                .doc(auth.currentUser!.uid)
+                .get()
+                .then((value) {
+              if (value.data() != null) {
+                prefs.setBool("account_created", true);
+
+                Navigator.push(
+                    context,
+                    PageRouteBuilder(
+                      transitionDuration: Duration(milliseconds: 2800),
+                      reverseTransitionDuration: Duration(milliseconds: 300),
+                      transitionsBuilder:
+                          (_, animation, anotherAnimation, child) {
+                        animation = CurvedAnimation(
+                            parent: animation,
+                            curve: Curves.fastLinearToSlowEaseIn);
+                        return SizeTransition(
+                          sizeFactor: animation,
+                          axis: Axis.horizontal,
+                          axisAlignment: 0.0,
+                          child: child,
+                        );
+                      },
+                      opaque: false,
+                      pageBuilder: (context, animation, secondaryAnimation) {
+                        animation = CurvedAnimation(
+                            parent: animation,
+                            curve: Curves.fastLinearToSlowEaseIn);
+                        return SizeTransition(
+                          sizeFactor: animation,
+                          axis: Axis.horizontal,
+                          axisAlignment: 1.0,
+                          child: Home(index: 0),
+                        );
+                      },
+                    ));
+              } else {
+                prefs.setString("tmpNumber", phoneNumber);
+                widget.switchFunction();
+              }
+            });
+          }
+        }).catchError((onError) =>
+            {debugPrint("error saving user: ${onError.toString()}")});
       },
       verificationFailed: (FirebaseAuthException e) {
         if (e.code == 'invalid-phone-number') {
@@ -76,6 +150,8 @@ class _LoginFormState extends State<LoginForm> with TickerProviderStateMixin {
       },
       codeSent: (String verificationId, int? resendToken) async {
         // Update the UI - wait for the user to enter the SMS code
+        _formState = OTP.sent;
+
         setState(() {
           verificationCode = verificationId;
         });
@@ -538,8 +614,6 @@ class _LoginFormState extends State<LoginForm> with TickerProviderStateMixin {
                                           );
 
                                           verifyPhoneNumber();
-                                          _formState = OTP.sent;
-                                          setState(() {});
                                         }
                                       },
                                       child: SizedBox(
@@ -570,6 +644,8 @@ class _LoginFormState extends State<LoginForm> with TickerProviderStateMixin {
                                       )
                                           .then(
                                         (value) async {
+                                          defaultSubscriptions();
+
                                           final prefs = await SharedPreferences
                                               .getInstance();
 

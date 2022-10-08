@@ -38,7 +38,7 @@ class _CompleteProfileState extends State<CompleteProfile> {
   String location = "";
   double lat = 0.0, lng = 0.0;
 
-  Future<void> getLocation() async {
+  Future<bool> getLocation() async {
     var locationStatus = await Permission.location.status;
     if (locationStatus.isGranted) {
       debugPrint("granted");
@@ -62,6 +62,7 @@ class _CompleteProfileState extends State<CompleteProfile> {
       lng = position.longitude;
     });
     debugPrint("latitude: $lat, and logitude: $lng");
+    return locationStatus.isGranted ? true : locationStatus.isLimited;
   }
 
   int currentStep = 0;
@@ -132,127 +133,131 @@ class _CompleteProfileState extends State<CompleteProfile> {
     String url = "";
 
     //check if user's data already exists
-    await getLocation();
+    bool outcome = await getLocation();
 
-    FirebaseStorage storage = FirebaseStorage.instance;
-    Reference ref = storage.ref().child("uploads/" + DateTime.now().toString());
-    UploadTask uploadTask = ref.putFile(File(image!.path));
-    await uploadTask.then((res) {
-      res.ref.getDownloadURL().then((value) async {
-        debugPrint(_openingTime);
+    if (outcome) {
+      FirebaseStorage storage = FirebaseStorage.instance;
+      Reference ref =
+          storage.ref().child("uploads/" + DateTime.now().toString());
+      UploadTask uploadTask = ref.putFile(File(image!.path));
+      await uploadTask.then((res) {
+        res.ref.getDownloadURL().then((value) async {
+          debugPrint(_openingTime);
 
-        debugPrint("now about to add users.");
+          debugPrint("now about to add users.");
 
-        String? phoneNumber;
-        var token = await getFirebaseToken();
-        String deviceToken = token.toString();
-        final prefs = await SharedPreferences.getInstance();
-        if (prefs.containsKey("tmpNumber")) {
-          phoneNumber = await prefs.getString("tmpNumber");
-        } else {
-          setState(() {
-            widget.reverseAnimation();
-          });
-        }
-
-        prefs.setBool("account_created", true);
-
-        await FirebaseFirestore.instance
-            .collection("restaurants")
-            .doc(FirebaseAuth.instance.currentUser!.uid)
-            .set({
-              "name": _nameController.text,
-              "username": _usernameController.text,
-              "avatar": value,
-              "email": _emailController.text,
-              "phone": phoneNumber,
-              "lat": lat,
-              "long": lng,
-              "totalOrders": 0,
-              "blockList": [],
-              "companyName": _companyNameController.text,
-              "categories": _selectedCategories,
-              "gallery": [],
-              "address": _companyAddressController.text,
-              "businessPhoto": value,
-              "openTime": _openingTime,
-              "closingTime": _closingTime,
-              "foodReservation": _foodReservation,
-              "homeDelivery": _homeDelivery,
-              "specialOrders": _specialOrders,
-              "cash": _cash,
-              "ghostKitchen": _ghostKitchen,
-              "momo": _momo,
-              "days": [],
-              "variants": ["general"],
-              'costs': [_deliveryCost.toInt()],
-              "tableReservation": _tableReservation,
-              "totalFollowers": 0,
-              "deliveryCost": _deliveryCost,
-              "comments": 0,
-              "verified": false,
-              "likes": 0,
-              "totalMeals": 0,
-              "followers": 0,
-              "deviceToken": deviceToken,
-              "created_at": FieldValue.serverTimestamp()
-            }, SetOptions(merge: true))
-            .then((value) async {
-              debugPrint("Done signing up user");
-              debugPrint("so move then");
-              firestore
-                  .collection("followers")
-                  .doc(auth.currentUser!.uid)
-                  .set({"myFollowers": [], "tokens": []}).then(
-                      (value) => debugPrint("followers now set"));
-              prefs.setString("phone", phoneNumber!);
-              FirebaseMessaging.instance
-                  .subscribeToTopic(auth.currentUser!.uid);
-
-              Navigator.pushReplacement(
-                // move on.
-                context,
-                PageRouteBuilder(
-                  transitionDuration: Duration(
-                    milliseconds: 1200,
-                  ),
-                  reverseTransitionDuration: Duration(
-                    milliseconds: 700,
-                  ),
-                  opaque: false,
-                  transitionsBuilder: (_, animation, anotherAnimation, child) {
-                    animation = CurvedAnimation(
-                        parent: animation,
-                        curve: Curves.fastLinearToSlowEaseIn,
-                        reverseCurve: Curves.fastOutSlowIn);
-                    return Align(
-                      alignment: Alignment.centerRight,
-                      child: child,
-                    );
-                  },
-                  pageBuilder: (_, animation, child) {
-                    animation = CurvedAnimation(
-                        parent: animation,
-                        curve: Curves.fastLinearToSlowEaseIn,
-                        reverseCurve: Curves.fastOutSlowIn);
-                    return SizeTransition(
-                      axis: Axis.horizontal,
-                      sizeFactor: animation,
-                      axisAlignment: 0,
-                      child: Home(),
-                    );
-                  },
-                ),
-              );
-            })
-            .whenComplete(() {})
-            .catchError((onError) {
-              debugPrint(
-                  "found error adding to firebase Firestore: ${onError}");
+          String? phoneNumber;
+          var token = await getFirebaseToken();
+          String deviceToken = token.toString();
+          final prefs = await SharedPreferences.getInstance();
+          if (prefs.containsKey("tmpNumber")) {
+            phoneNumber = await prefs.getString("tmpNumber");
+          } else {
+            setState(() {
+              widget.reverseAnimation();
             });
+          }
+
+          prefs.setBool("account_created", true);
+
+          await FirebaseFirestore.instance
+              .collection("restaurants")
+              .doc(FirebaseAuth.instance.currentUser!.uid)
+              .set({
+                "name": _nameController.text,
+                "username": _usernameController.text,
+                "avatar": value,
+                "email": _emailController.text,
+                "phone": phoneNumber,
+                "lat": lat,
+                "long": lng,
+                "totalOrders": 0,
+                "blockList": [],
+                "companyName": _companyNameController.text,
+                "categories": _selectedCategories,
+                "gallery": [],
+                "address": _companyAddressController.text,
+                "businessPhoto": value,
+                "openTime": _openingTime,
+                "closingTime": _closingTime,
+                "score": 0,
+                "foodReservation": _foodReservation,
+                "homeDelivery": _homeDelivery,
+                "specialOrders": _specialOrders,
+                "cash": _cash,
+                "ghostKitchen": _ghostKitchen,
+                "momo": _momo,
+                "days": [],
+                "variants": ["general"],
+                'costs': [_deliveryCost.toInt()],
+                "tableReservation": _tableReservation,
+                "totalFollowers": 0,
+                "deliveryCost": _deliveryCost,
+                "comments": 0,
+                "verified": false,
+                "likes": 0,
+                "totalMeals": 0,
+                "followers": 0,
+                "deviceToken": deviceToken,
+                "created_at": FieldValue.serverTimestamp()
+              }, SetOptions(merge: true))
+              .then((value) async {
+                debugPrint("Done signing up user");
+                debugPrint("so move then");
+                firestore
+                    .collection("followers")
+                    .doc(auth.currentUser!.uid)
+                    .set({"myFollowers": [], "tokens": []}).then(
+                        (value) => debugPrint("followers now set"));
+                prefs.setString("phone", phoneNumber!);
+                Navigator.pushReplacement(
+                  // move on.
+                  context,
+                  PageRouteBuilder(
+                    transitionDuration: Duration(
+                      milliseconds: 1200,
+                    ),
+                    reverseTransitionDuration: Duration(
+                      milliseconds: 700,
+                    ),
+                    opaque: false,
+                    transitionsBuilder:
+                        (_, animation, anotherAnimation, child) {
+                      animation = CurvedAnimation(
+                          parent: animation,
+                          curve: Curves.fastLinearToSlowEaseIn,
+                          reverseCurve: Curves.fastOutSlowIn);
+                      return Align(
+                        alignment: Alignment.centerRight,
+                        child: child,
+                      );
+                    },
+                    pageBuilder: (_, animation, child) {
+                      animation = CurvedAnimation(
+                          parent: animation,
+                          curve: Curves.fastLinearToSlowEaseIn,
+                          reverseCurve: Curves.fastOutSlowIn);
+                      return SizeTransition(
+                        axis: Axis.horizontal,
+                        sizeFactor: animation,
+                        axisAlignment: 0,
+                        child: Home(),
+                      );
+                    },
+                  ),
+                );
+              })
+              .whenComplete(() {})
+              .catchError((onError) {
+                debugPrint(
+                    "found error adding to firebase Firestore: ${onError}");
+              });
+        });
       });
-    });
-    return url;
+      return url;
+    } else {
+      Fluttertoast.showToast(msg: "Your customers need to know where you are.");
+    }
   }
 
   _imageFromGallery() async {

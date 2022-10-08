@@ -1,10 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/src/animation/animation_controller.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/src/widgets/ticker_provider.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:merchants/global.dart';
 import 'package:merchants/models/restaurants.dart';

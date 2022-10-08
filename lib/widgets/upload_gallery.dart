@@ -17,6 +17,7 @@ import 'package:merchants/providers/services.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 
+import '../global.dart';
 import '../models/restaurants.dart';
 import '../providers/auth_provider.dart';
 

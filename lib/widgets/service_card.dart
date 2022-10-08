@@ -71,20 +71,23 @@ class _ServiceCardState extends State<ServiceCard>
                         },
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(15.0),
-                          child: CachedNetworkImage(
-                            imageUrl: service.image,
-                            errorWidget: (_, __, ___) =>
-                                Lottie.asset("assets/no-connection.json"),
-                            placeholder: (
-                              _,
-                              __,
-                            ) =>
-                                Lottie.asset("assets/loading7.json"),
-                            fadeInCurve: Curves.fastLinearToSlowEaseIn,
-                            alignment: Alignment.center,
-                            fit: BoxFit.cover,
-                            width: 90,
-                            height: 120,
+                          child: Hero(
+                            tag: service.image,
+                            child: CachedNetworkImage(
+                              imageUrl: service.image,
+                              errorWidget: (_, __, ___) =>
+                                  Lottie.asset("assets/no-connection.json"),
+                              placeholder: (
+                                _,
+                                __,
+                              ) =>
+                                  Lottie.asset("assets/loading7.json"),
+                              fadeInCurve: Curves.fastLinearToSlowEaseIn,
+                              alignment: Alignment.center,
+                              fit: BoxFit.cover,
+                              width: 90,
+                              height: 120,
+                            ),
                           ),
                         ),
                       ),
@@ -99,13 +102,16 @@ class _ServiceCardState extends State<ServiceCard>
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         FittedBox(
-                          child: Text(
-                            service.name,
-                            style: TextStyle(
-                              color: service.negociable
-                                  ? Colors.black
-                                  : Colors.white,
-                              fontWeight: FontWeight.w700,
+                          child: Material(
+                            color: Colors.transparent,
+                            child: Text(
+                              service.name,
+                              style: TextStyle(
+                                color: service.negociable
+                                    ? Colors.black
+                                    : Colors.white,
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
                           ),
                         ),
@@ -139,7 +145,7 @@ class _ServiceCardState extends State<ServiceCard>
                                           opaque: false,
                                           barrierColor: Colors.transparent,
                                           transitionDuration: Duration(
-                                            milliseconds: 2200,
+                                            milliseconds: 1200,
                                           ),
                                           reverseTransitionDuration: Duration(
                                             milliseconds: 300,
@@ -159,6 +165,7 @@ class _ServiceCardState extends State<ServiceCard>
                                                   axis: Axis.vertical,
                                                   axisAlignment: 0.0,
                                                   child: ReviewScreen(
+                                                    isMeal: false,
                                                     name: service.name,
                                                     totalReviews:
                                                         service.comments,

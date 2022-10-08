@@ -112,11 +112,6 @@ class _MealDetailsState extends State<MealDetails> {
       _selectedCategories = localFood!.categories;
       _selectedCompliments = localFood!.compliments;
     });
-  }
-
-  @override
-  void initState() {
-    initiateLists();
 
     _descriptionController =
         TextEditingController(text: localFood!.description);
@@ -130,6 +125,12 @@ class _MealDetailsState extends State<MealDetails> {
     _productPrice.text = localFood!.price.toString();
     _ingredients = localFood!.ingredients;
     _productDuration.text = localFood!.duration;
+  }
+
+  @override
+  void initState() {
+    initiateLists();
+
     super.initState();
   }
 
@@ -169,6 +170,48 @@ class _MealDetailsState extends State<MealDetails> {
             )
           : SafeArea(
               child: Scaffold(
+                floatingActionButtonLocation:
+                    FloatingActionButtonLocation.endFloat,
+                floatingActionButton: Card(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20.0),
+                  ),
+                  color: Colors.white,
+                  elevation: 15,
+                  shadowColor: Colors.grey.withOpacity(.3),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(20.0),
+                    child: InkWell(
+                      onTap: () {
+                        HapticFeedback.heavyImpact();
+                        Fluttertoast.cancel();
+                        Fluttertoast.showToast(
+                            msg: "this post has gotten " +
+                                localFood!.likes.toString() +
+                                " likes 💫");
+                      },
+                      child: Row(mainAxisSize: MainAxisSize.min, children: [
+                        Icon(
+                          Icons.favorite_rounded,
+                          color: Colors.pink,
+                          size: 45.0,
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(
+                              NumberFormat.compactCurrency(
+                                decimalDigits: 2,
+                                symbol:
+                                    '', // if you want to add currency symbol then pass that in this else leave it empty.
+                              ).format(localFood!.likes),
+                              style: TextStyle(
+                                  fontSize: 20.0, color: Colors.pink)),
+                        ),
+                        Text("Likes", style: TextStyle(color: Colors.pink))
+                      ]),
+                    ),
+                  ),
+                ),
                 body: Stack(
                   children: [
                     Positioned(
@@ -184,7 +227,6 @@ class _MealDetailsState extends State<MealDetails> {
                                 },
                                 icon: Icon(Icons.arrow_back_rounded)),
                             expandedHeight: 215.0,
-                            title: Text("Details Page"),
                             flexibleSpace: FlexibleSpaceBar(
                               stretchModes: [
                                 StretchMode.blurBackground,
@@ -317,6 +359,7 @@ class _MealDetailsState extends State<MealDetails> {
                                             showCupertinoModalBottomSheet(
                                                 context: context,
                                                 builder: (_) => ReviewScreen(
+                                                      isMeal: true,
                                                       name: localFood!.name,
                                                       foodId: localFood!.foodId,
                                                       totalReviews:

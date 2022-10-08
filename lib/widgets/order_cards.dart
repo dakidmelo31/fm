@@ -1,6 +1,5 @@
 import 'package:animations/animations.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:merchants/pages/all_orders.dart';
@@ -9,9 +8,6 @@ import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeAgo;
 
 import '../models/restaurants.dart';
-
-FirebaseFirestore firestore = FirebaseFirestore.instance;
-FirebaseAuth auth = FirebaseAuth.instance;
 
 // ignore: must_be_immutable
 class OrderCards extends StatelessWidget {

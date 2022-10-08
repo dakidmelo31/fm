@@ -1,6 +1,4 @@
 import 'dart:math';
-
-import 'package:faker/faker.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
@@ -37,7 +35,6 @@ class _OrdersListState extends State<OrdersList> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
-    final faker = Faker();
     bool _showCancelled = true,
         _showPending = true,
         _showReady = true,
@@ -45,7 +42,7 @@ class _OrdersListState extends State<OrdersList> with TickerProviderStateMixin {
         _showComplete = true,
         _showProcessing = true;
 
-    List<String> list = List.generate(300, (index) => faker.lorem.sentence());
+    List<String> list = [];
     return Scaffold(
       body: SafeArea(
         child: Stack(alignment: Alignment.topCenter, children: [
@@ -474,10 +471,7 @@ class _OrdersListState extends State<OrdersList> with TickerProviderStateMixin {
                                                             .symmetric(
                                                         vertical: 4.0),
                                                     child: Text(
-                                                      faker.lorem
-                                                          .words(Random()
-                                                              .nextInt(12))
-                                                          .join(" "),
+                                                      "",
                                                       style: TextStyle(
                                                         color: Colors.black
                                                             .withOpacity(

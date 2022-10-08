@@ -252,10 +252,8 @@ class _AllOrdersState extends State<AllOrders> with TickerProviderStateMixin {
                                               "You changed the status back to ${order.status}. We'll Inform the user instantly."))
                                       .then((value) {
                                         sendOrderNotification(
-                                            orderId: order.orderId,
+                                            userId: order.userId,
                                             type: "order",
-                                            userToken: order.userToken,
-                                            deviceId: order.deviceId,
                                             message: message,
                                             title: title,
                                             restaurant: widget.restaurant,
@@ -350,10 +348,8 @@ class _AllOrdersState extends State<AllOrders> with TickerProviderStateMixin {
                                           }).then((value) {
                                             sendOrderNotification(
                                                 type: "order",
-                                                orderId: order.orderId,
-                                                userToken: order.userToken,
+                                                userId: order.userId,
                                                 restaurant: widget.restaurant,
-                                                deviceId: order.deviceId,
                                                 title: widget.restaurant
                                                         .companyName +
                                                     " updated your order status📝",
@@ -458,16 +454,15 @@ class _AllOrdersState extends State<AllOrders> with TickerProviderStateMixin {
                                           description:
                                               "Order status changed to ${order.status}. We'll Inform the user instantly.");
 
-                                              if(message.isNotEmpty && title.isNotEmpty)
-                                      sendOrderNotification(
-                                          orderId: order.orderId,
-                                          type: "order",
-                                          userToken: order.userToken,
-                                          deviceId: order.deviceId,
-                                          message: message,
-                                          title: title,
-                                          restaurant: widget.restaurant,
-                                          extra: widget.restaurant.phone);
+                                      if (message.isNotEmpty &&
+                                          title.isNotEmpty)
+                                        sendOrderNotification(
+                                            userId: order.userId,
+                                            type: "order",
+                                            message: message,
+                                            title: title,
+                                            restaurant: widget.restaurant,
+                                            extra: widget.restaurant.phone);
                                     }).catchError((onError) {
                                       debugPrint(
                                           "Error while changing: $onError");

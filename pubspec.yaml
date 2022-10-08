@@ -56,7 +56,6 @@ dependencies:
   screenshot:
   share_plus: 
   permission_handler:
-  google_nav_bar:
   carousel_grid:
   animations:
   firebase_auth:
@@ -73,11 +72,9 @@ dependencies:
   date_time_format:
   concentric_transition:
   fluttertoast: 
-  flutter_snake_navigationbar:
   avatar_glow:
   cached_network_image:
   fluid_bottom_nav_bar:
-  giffy_dialog:
   modal_bottom_sheet:
   font_awesome:
   duration_picker_dialog_box:
@@ -90,13 +87,9 @@ dependencies:
   flutter_native_splash: ^2.0.1+1
   in_app_notification:
   rxdart:
-  flutter_emoji:
-  emoji_picker_flutter:
   intl_phone_field:
   intl: 
   flutter_countdown_timer:
-  curved_drawer_fork:
-  faker:
   flutter_multi_formatter:
   ss_bottom_navbar:
   timezone:

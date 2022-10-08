@@ -3,17 +3,17 @@ import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:merchants/global.dart';
 import 'package:merchants/pages/all_messages.dart';
 import 'package:merchants/pages/complete_signup.dart';
+import 'package:merchants/pages/order_details.dart';
 import 'package:merchants/pages/product_details.dart';
+import 'package:merchants/transitions/transitions.dart';
 import 'package:merchants/widgets/choose_option.dart';
 import 'package:merchants/widgets/login_form.dart';
-import 'package:merchants/widgets/subscription_board.dart';
 import 'package:merchants/widgets/top_info.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -58,8 +58,61 @@ class _StartupScreenState extends State<StartupScreen>
       _switchController,
       _completedController;
   bool? pushNotif;
+
+  _handleMessage(RemoteMessage msg) {
+    var data = msg.data;
+    debugPrint(data.toString());
+    if (data.containsKey("type") &&
+        (data["type"] == 'message' || data["type"] == 'order') &&
+        data.containsKey('userId')) {
+      String userId = data['userId'];
+      navigatorKey.currentState!.pushReplacement(
+        HorizontalSizeTransition(
+          child: AllMessages(
+            customerId: userId,
+            chatsStream: firestore
+                .collection("messages")
+                .where("restaurantId", isEqualTo: auth.currentUser!.uid)
+                .where("userId", isEqualTo: userId)
+                .snapshots(),
+            ordersStream: firestore
+                .collection("orders")
+                .where("restaurantId", isEqualTo: auth.currentUser!.uid)
+                .where("userId", isEqualTo: userId)
+                .snapshots(),
+            fromPush: true,
+          ),
+        ),
+      );
+    } else if (data.containsKey("type") && data['type'] == 'like') {
+      String foodId = data['foodId'];
+
+      navigatorKey.currentState!.pushReplacement(
+        HorizontalSizeTransition(
+          child: MealDetails(
+            foodId: foodId,
+          ),
+        ),
+      );
+    } else if (data.containsKey("type") && data['type'] == 'comment') {
+      Navigator.pushReplacement(
+          context, VerticalSizeTransition(child: Home(index: 2)));
+    }
+    debugPrint("Data is: " + msg.data.toString());
+  }
+
   _checkUser() async {
     // FirebaseMessaging.instance.getInitialMessage().then((value) {});
+
+    RemoteMessage? initialMessage = await messaging.getInitialMessage();
+    if (initialMessage != null && auth.currentUser != null) {
+      debugPrint("Message From terminated State-_-_-_-_-_-_-_-_-_-_-");
+      debugPrint(initialMessage.messageId);
+      _handleMessage(initialMessage);
+      return false;
+    }
+    FirebaseMessaging.onMessageOpenedApp.listen(_handleMessage);
+
     final prefs = await SharedPreferences.getInstance();
 
     Future.delayed(Duration.zero, () {
@@ -139,145 +192,7 @@ class _StartupScreenState extends State<StartupScreen>
       curve: Curves.fastLinearToSlowEaseIn,
     );
     super.initState();
-
-    if (auth.currentUser == null) {
-      debugPrint("User not found");
-      _checkUser();
-    } else {
-      debugPrint("User is found");
-      WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-        FirebaseMessaging.instance.getInitialMessage().then((value) {
-          if (value != null) {
-            debugPrint("You just received a message");
-          }
-          if (value != null && auth.currentUser != null) {
-            pushNotif = true;
-            debugPrint("Push Notification from terminated app");
-            // debugPrint(value.data.toString());
-            String userId = value.data["userId"];
-
-            debugPrint("Chat Message recieved");
-            Navigator.pushReplacement(
-              context,
-              PageRouteBuilder(
-                  pageBuilder: (context, animation, secondaryAnimation) {
-                animation = CurvedAnimation(
-                  parent: animation,
-                  curve: Curves.fastLinearToSlowEaseIn,
-                );
-                return ScaleTransition(
-                    scale: animation,
-                    child: AllMessages(
-                        fromPush: true,
-                        customerId: value.data["userId"].toString(),
-                        chatsStream: FirebaseFirestore.instance
-                            .collection("messages")
-                            .where("userId", isEqualTo: userId)
-                            .where("restaurantId",
-                                isEqualTo:
-                                    FirebaseAuth.instance.currentUser!.uid)
-                            .orderBy("lastMessageTime", descending: false)
-                            .snapshots(),
-                        ordersStream: FirebaseFirestore.instance
-                            .collection("orders")
-                            .where("userId", isEqualTo: userId)
-                            .where("restaurantId",
-                                isEqualTo:
-                                    FirebaseAuth.instance.currentUser!.uid)
-                            .orderBy("time", descending: false)
-                            .snapshots()));
-              }),
-            );
-          } else {
-            pushNotif = null;
-            _checkUser();
-            debugPrint("App opened normally");
-          }
-          // From Terminated App
-
-          FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-            RemoteNotification? notification = message.notification;
-            AndroidNotification? android = message.notification?.android;
-            if (notification != null && android != null && !kIsWeb) {
-              flutterLocalNotificationsPlugin.show(
-                notification.hashCode,
-                notification.title,
-                notification.body,
-                NotificationDetails(
-                  android: AndroidNotificationDetails(
-                    channel.id,
-                    channel.name,
-                    channelDescription: channel.description,
-                    icon: 'ic_launcher',
-                  ),
-                ),
-              );
-            }
-          });
-
-          FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-            String userId = message.data.toString();
-            var _data = message.data as Map<String, dynamic>;
-            debugPrint("You just received a message");
-            if (_data.containsKey("order_type") &&
-                _data['order_type'] == "order") {
-              debugPrint("Order clicked");
-
-              navigatorKey.currentState?.push(
-                PageRouteBuilder(
-                    pageBuilder: (context, animation, secondaryAnimation) {
-                  animation = CurvedAnimation(
-                    parent: animation,
-                    curve: Curves.fastLinearToSlowEaseIn,
-                  );
-                  return ScaleTransition(
-                      scale: animation,
-                      child: AllMessages(
-                          fromPush: true,
-                          customerId: _data["userId"].toString(),
-                          chatsStream: FirebaseFirestore.instance
-                              .collection("messages")
-                              .where("userId", isEqualTo: userId)
-                              .where("restaurantId",
-                                  isEqualTo:
-                                      FirebaseAuth.instance.currentUser!.uid)
-                              .orderBy("lastMessageTime", descending: false)
-                              .snapshots(),
-                          ordersStream: FirebaseFirestore.instance
-                              .collection("orders")
-                              .where("userId", isEqualTo: userId)
-                              .where("restaurantId",
-                                  isEqualTo:
-                                      FirebaseAuth.instance.currentUser!.uid)
-                              .orderBy("time", descending: false)
-                              .snapshots()));
-                }),
-              );
-            }
-            if (_data.containsKey("type") && _data['type'] == "like") {
-              debugPrint("Order clicked");
-
-              navigatorKey.currentState?.push(
-                PageRouteBuilder(
-                    pageBuilder: (context, animation, secondaryAnimation) {
-                  animation = CurvedAnimation(
-                    parent: animation,
-                    curve: Curves.fastLinearToSlowEaseIn,
-                  );
-                  return ScaleTransition(
-                      scale: animation,
-                      child: MealDetails(
-                        foodId: _data['typeId'],
-                      ));
-                }),
-              );
-            }
-            debugPrint("work on this too $userId");
-            debugPrint(message.notification.toString());
-          });
-        });
-      });
-    }
+    _checkUser();
   }
 
   @override
