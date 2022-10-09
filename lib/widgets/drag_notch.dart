@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/physics.dart';
+import 'package:flutter/services.dart';
 
 class DragNotch extends StatefulWidget {
   const DragNotch({Key? key, required this.pullDown, required this.pullUp})
@@ -29,6 +30,7 @@ class _DragNotchState extends State<DragNotch> {
       pullDown: widget.pullDown,
       pullUp: widget.pullUp,
       switchText: () {
+        HapticFeedback.heavyImpact();
         setState(() {
           if (switchText) {
             text = "Pull Down to Close Menu";
@@ -37,6 +39,7 @@ class _DragNotchState extends State<DragNotch> {
         });
       },
       switchBack: () {
+        HapticFeedback.heavyImpact();
         setState(() {
           text = "Pull Up to Open Menu";
           switchText = !switchText;

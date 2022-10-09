@@ -38,15 +38,12 @@ class _CreateServiceState extends State<CreateService> {
   );
 
   final _serviceKey = GlobalKey<FormState>();
-  bool _available = false;
   Duration? duration;
   TextEditingController _serviceDescription = TextEditingController();
   TextEditingController _serviceName = TextEditingController();
-  TextEditingController _categoriesController = TextEditingController();
   TextEditingController _servicePrice = TextEditingController();
   TextEditingController _serviceDuration = TextEditingController();
   TextEditingController _serviceCoverage = TextEditingController();
-  TextEditingController _serviceCity = TextEditingController();
 
   @override
   void initState() {
@@ -100,7 +97,7 @@ class _CreateServiceState extends State<CreateService> {
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 25.0),
                       child: Lottie.asset(
-                        "assets/animation1.json",
+                        "assets/animation5.json",
                         width: size.width,
                         fit: BoxFit.contain,
                       ),

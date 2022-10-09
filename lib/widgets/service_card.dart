@@ -1,3 +1,5 @@
+// ignore_for_file: unused_local_variable, must_be_immutable
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
@@ -75,13 +77,12 @@ class _ServiceCardState extends State<ServiceCard>
                             tag: service.image,
                             child: CachedNetworkImage(
                               imageUrl: service.image,
-                              errorWidget: (_, __, ___) =>
-                                  Lottie.asset("assets/no-connection.json"),
+                              errorWidget: (_, __, ___) => errorWidget,
                               placeholder: (
                                 _,
                                 __,
                               ) =>
-                                  Lottie.asset("assets/loading7.json"),
+                                  Lottie.asset("assets/loading5.json"),
                               fadeInCurve: Curves.fastLinearToSlowEaseIn,
                               alignment: Alignment.center,
                               fit: BoxFit.cover,

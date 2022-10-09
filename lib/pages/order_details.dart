@@ -1,4 +1,4 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
+// ignore_for_file: public_member_api_docs, sort_constructors_first, must_be_immutable
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -456,15 +456,13 @@ class _OrderDetailsState extends State<OrderDetails>
                                                                       errorWidget: (_,
                                                                               __,
                                                                               ___) =>
-                                                                          Lottie.asset(
-                                                                              "assets/no-connection.json"),
+                                                                          errorWidget,
                                                                       placeholder:
                                                                           (
                                                                         _,
                                                                         __,
                                                                       ) =>
-                                                                              Lottie.asset(
-                                                                                  "assets/loading7.json"),
+                                                                              loadingWidget,
                                                                       fadeInCurve:
                                                                           Curves
                                                                               .fastLinearToSlowEaseIn,
@@ -483,16 +481,14 @@ class _OrderDetailsState extends State<OrderDetails>
                                                         width: size.width,
                                                         filterQuality:
                                                             FilterQuality.high,
-                                                        errorWidget: (_, __,
-                                                                ___) =>
-                                                            Lottie.asset(
-                                                                "assets/no-connection.json"),
+                                                        errorWidget:
+                                                            (_, __, ___) =>
+                                                                errorWidget,
                                                         placeholder: (
                                                           _,
                                                           __,
                                                         ) =>
-                                                            Lottie.asset(
-                                                                "assets/loading7.json"),
+                                                            loadingWidget,
                                                         fadeInCurve: Curves
                                                             .fastLinearToSlowEaseIn,
                                                         fit: BoxFit.cover),
@@ -731,7 +727,7 @@ class _OrderDetailsState extends State<OrderDetails>
                                                     debugPrint(
                                                         "Pending changed to Processing");
                                                     title =
-                                                        "Your rder status updated";
+                                                        "Your order status updated";
                                                     message =
                                                         "${widget.restaurant!.companyName} changed your back to PENDING🚨🚨🚨. try talking to them if their reason is unclear.";
                                                     ordersData.processingOrders
@@ -744,7 +740,7 @@ class _OrderDetailsState extends State<OrderDetails>
 
                                                   case "takeout":
                                                     title =
-                                                        "Your rder status updated";
+                                                        "Your order status updated";
                                                     String home = order
                                                             .homeDelivery
                                                         ? "We advise you to delay your visit to pickup your meal or call ahead to know what's up"

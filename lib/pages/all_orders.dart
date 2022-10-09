@@ -197,7 +197,7 @@ class _AllOrdersState extends State<AllOrders> with TickerProviderStateMixin {
                                     case "processing":
                                       debugPrint(
                                           "Pending changed to Processing");
-                                      title = "Your rder status updated";
+                                      title = "Your order status updated";
                                       message =
                                           "${widget.restaurant.companyName} changed your back to PENDING🚨🚨🚨. try talking to them if their reason is unclear.";
                                       ordersData.processingOrders.remove(order);
@@ -207,7 +207,7 @@ class _AllOrdersState extends State<AllOrders> with TickerProviderStateMixin {
                                       break;
 
                                     case "takeout":
-                                      title = "Your rder status updated";
+                                      title = "Your order status updated";
                                       String home = order.homeDelivery
                                           ? "We advise you to delay your visit to pickup your meal or call ahead to know what's up"
                                           : "This means your meal is likely not ready yet. Try calling them for more information.";

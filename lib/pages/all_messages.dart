@@ -1,3 +1,5 @@
+// ignore_for_file: must_be_immutable
+
 import 'package:date_time_format/date_time_format.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:concentric_transition/page_route.dart';
@@ -480,8 +482,6 @@ class _AllMessagesState extends State<AllMessages> {
                                   }
                                   List<DocumentSnapshot<Map<String, dynamic>>>
                                       chatMessages = snapshot.data!.docs;
-                                  DateTime? dateTracker;
-                                  List<int> daysMarked = [];
                                   return ListView.builder(
                                       physics: BouncingScrollPhysics(),
                                       itemCount: chatMessages
@@ -679,7 +679,7 @@ class _TextWidgetState extends State<TextWidget> {
                       sendMessage(
                           type: "message",
                           chat: chat,
-                          userToken: widget.userToken,
+                          userToken: widget.customerId,
                           restaurant: restaurant);
                       _editingController.text = "";
                     } else {

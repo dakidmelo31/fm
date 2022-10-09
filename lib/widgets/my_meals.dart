@@ -136,14 +136,13 @@ class _MyMealsState extends State<MyMeals> {
                                           child: CachedNetworkImage(
                                             imageUrl: food.image,
                                             errorWidget: (_, __, ___) =>
-                                                Lottie.asset(
-                                                    "assets/no-connection.json"),
+                                                errorWidget2,
                                             placeholder: (
                                               _,
                                               __,
                                             ) =>
                                                 Lottie.asset(
-                                                    "assets/loading7.json"),
+                                                    "assets/loading5.json"),
                                             fadeInCurve:
                                                 Curves.fastLinearToSlowEaseIn,
                                             fit: BoxFit.cover,
@@ -277,14 +276,13 @@ class _MyMealsState extends State<MyMeals> {
                                           child: CachedNetworkImage(
                                             imageUrl: service.image,
                                             errorWidget: (_, __, ___) =>
-                                                Lottie.asset(
-                                                    "assets/no-connection.json"),
+                                                errorWidget,
                                             placeholder: (
                                               _,
                                               __,
                                             ) =>
                                                 Lottie.asset(
-                                                    "assets/loading7.json"),
+                                                    "assets/loading5.json"),
                                             fadeInCurve:
                                                 Curves.fastLinearToSlowEaseIn,
                                             fit: BoxFit.cover,

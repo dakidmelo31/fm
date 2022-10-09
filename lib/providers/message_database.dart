@@ -163,8 +163,6 @@ class DatabaseHelper with ChangeNotifier {
       });
     }
 
-    var length = await _db.rawQuery("SELECT * FROM chats");
-    var total = length.length;
     // debugPrint("total chats are $total");
   }
 
@@ -184,11 +182,6 @@ class DatabaseHelper with ChangeNotifier {
         ? messages.map((e) => Chat.fromMap(e)).toList()
         : [];
     return messageList;
-  }
-
-  deleteBookmark({required String bookmarkId}) async {
-    Database _db = await instance.database;
-    // _db.rawDelete('DELETE FROM bookmarks WHERE foodId = ?', [bookmarkId]);
   }
 
   Future<List<Message>>? getMessageOverview() async {

@@ -5,12 +5,12 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:lottie/lottie.dart';
 import 'package:merchants/models/restaurants.dart';
 import 'package:merchants/pages/intro_page.dart';
 import 'package:merchants/pages/startup_screen.dart';
-import 'package:merchants/pages/verification_form.dart';
 import 'package:merchants/providers/global_data.dart';
 import 'package:merchants/providers/restaurant_provider.dart';
 import 'package:merchants/providers/services.dart';
@@ -23,6 +23,7 @@ import 'package:merchants/widgets/upload_gallery.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../global.dart';
 import '../models/food_model.dart';
 import '../providers/auth_provider.dart';
@@ -80,22 +81,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
           "Profile",
         ),
         actions: [
-          if (false)
-            IconButton(
-                onPressed: () {
-                  HapticFeedback.heavyImpact();
-                  Navigator.push(
-                    context,
-                    CustomFadeTransition(
-                      child: VerificationForm(),
-                    ),
-                  );
-                },
-                icon: Icon(Icons.security_update_good_rounded,
-                    color: Colors.lightGreen)),
+          // if (false)
+          // IconButton(
+          //     onPressed: () {
+          //       HapticFeedback.heavyImpact();
+          //       Navigator.push(
+          //         context,
+          //         CustomFadeTransition(
+          //           child: VerificationForm(),
+          //         ),
+          //       );
+          //     },
+          //     icon: Icon(Icons.security_update_good_rounded,
+          //         color: Colors.lightGreen)),
           IconButton(
             icon: const Icon(Icons.logout_rounded, color: Colors.pink),
             onPressed: () async {
+              unsubscribeToTopics();
               bool? outcome = await showCupertinoDialog(
                   context: context,
                   barrierDismissible: true,
@@ -222,13 +224,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             title: const Text("Picture"),
                             content: CachedNetworkImage(
                               imageUrl: restaurant.businessPhoto,
-                              errorWidget: (_, __, ___) =>
-                                  Lottie.asset("assets/no-connection2.json"),
+                              errorWidget: (_, __, ___) => errorWidget,
                               placeholder: (
                                 _,
                                 __,
                               ) =>
-                                  Lottie.asset("assets/loading7.json"),
+                                  loadingWidget,
                               fadeInCurve: Curves.fastLinearToSlowEaseIn,
                               fit: BoxFit.cover,
                               alignment: Alignment.center,
@@ -245,13 +246,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     child: ClipOval(
                       child: CachedNetworkImage(
                         imageUrl: restaurant.businessPhoto,
-                        errorWidget: (_, __, ___) =>
-                            Lottie.asset("assets/no-connection2.json"),
+                        errorWidget: (_, __, ___) => errorWidget,
                         placeholder: (
                           _,
                           __,
                         ) =>
-                            Lottie.asset("assets/loading7.json"),
+                            loadingWidget,
                         fadeInCurve: Curves.fastLinearToSlowEaseIn,
                         fit: BoxFit.cover,
                         alignment: Alignment.center,
@@ -269,41 +269,70 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     mainAxisSize: MainAxisSize.max,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Column(
-                        children: [
-                          Text(
-                            meals.length.toString(),
-                            style: caption,
-                          ),
-                          Text(
-                            "Meals",
-                            style: label,
-                          ),
-                        ],
+                      InkWell(
+                        onTap: () {
+                          HapticFeedback.heavyImpact();
+                          Fluttertoast.cancel();
+                          Fluttertoast.showToast(
+                              msg: "You have ${meals.length} Meal posts");
+                        },
+                        child: Column(
+                          children: [
+                            Text(
+                              meals.length.toString(),
+                              style: caption,
+                            ),
+                            Text(
+                              "Meals",
+                              style: label,
+                            ),
+                          ],
+                        ),
                       ),
-                      Column(
-                        children: [
-                          Text(
-                            restaurant.followers.toString(),
-                            style: caption,
-                          ),
-                          Text(
-                            "Followers",
-                            style: label,
-                          ),
-                        ],
+                      InkWell(
+                        onTap: () {
+                          HapticFeedback.heavyImpact();
+                          Fluttertoast.cancel();
+                          Fluttertoast.showToast(
+                              msg:
+                                  "You have ${restaurant.followers < 1 ? 0 : restaurant.followers} active followers 💖");
+                        },
+                        child: Column(
+                          children: [
+                            Text(
+                              (restaurant.followers < 1
+                                      ? 0
+                                      : restaurant.followers)
+                                  .toString(),
+                              style: caption,
+                            ),
+                            Text(
+                              "Followers",
+                              style: label,
+                            ),
+                          ],
+                        ),
                       ),
-                      Column(
-                        children: [
-                          Text(
-                            _restaurantData.allOrders.length.toString(),
-                            style: caption,
-                          ),
-                          Text(
-                            "Orders",
-                            style: label,
-                          ),
-                        ],
+                      InkWell(
+                        onTap: () {
+                          HapticFeedback.heavyImpact();
+                          Fluttertoast.cancel();
+                          Fluttertoast.showToast(
+                              msg:
+                                  "You have recieved ${meals.length} so far 🍽️");
+                        },
+                        child: Column(
+                          children: [
+                            Text(
+                              _restaurantData.allOrders.length.toString(),
+                              style: caption,
+                            ),
+                            Text(
+                              "Orders",
+                              style: label,
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
@@ -350,9 +379,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             context,
                             PageRouteBuilder(
                                 transitionDuration:
-                                    Duration(milliseconds: 1200),
+                                    Duration(milliseconds: 1600),
                                 reverseTransitionDuration:
-                                    Duration(milliseconds: 300),
+                                    Duration(milliseconds: 500),
                                 transitionsBuilder:
                                     (_, animation, anotherAnimation, child) {
                                   return SizeTransition(
@@ -386,6 +415,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         icon: Icon(Icons.add_a_photo))
                   ],
                 ),
+
                 MasonryGridView.count(
                   shrinkWrap: true,
                   crossAxisCount: 2,
@@ -432,7 +462,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                                   imageUrl: image,
                                                   placeholder: (_, __) =>
                                                       Lottie.asset(
-                                                          "assets/loading7.json"),
+                                                          "assets/loading5.json"),
                                                   alignment: Alignment.center,
                                                   fit: BoxFit.cover,
                                                   errorWidget: (_, __, ___) =>
@@ -523,14 +553,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           child: CachedNetworkImage(
                             imageUrl: image,
                             placeholder: (_, __) =>
-                                Lottie.asset("assets/loading7.json"),
+                                Lottie.asset("assets/loading5.json"),
                             alignment: Alignment.center,
                             fit: BoxFit.cover,
-                            errorWidget: (_, __, ___) => Lottie.asset(
-                              "assets/no-connection2.json",
-                              alignment: Alignment.center,
-                              fit: BoxFit.fitHeight,
-                            ),
+                            errorWidget: (_, __, ___) => errorWidget,
                           ),
                         ),
                       ),
@@ -997,9 +1023,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   icon: Icon(Icons.mobile_friendly_rounded),
                   aboutBoxChildren: [
                     Text(
-                        "Foodin Merchant is just one of the 2 major applications in the Foodin City Platform"),
+                        "Foodin Merchant is just one of the 2 major applications in the Foodin City Platform."),
                     Text(
-                        "It is built primarily to help connect food sellers to all kinds of consumers of their products.")
+                        "It is built primarily to help connect food sellers to all kinds of consumers of their products."),
+                    Text(
+                        "you can now fully manage your food business online immediately you signup."),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 18.0),
+                      child: InkWell(
+                          onTap: () async {
+                            Uri url = Uri.parse("https://foodincity.online");
+                            if (await launchUrl(url))
+                              throw "Could not launch $url";
+                          },
+                          child: Text("Visit Developers")),
+                    )
                   ],
                   applicationIcon: Image.asset("assets/logo.png",
                       fit: BoxFit.contain, height: 80),
@@ -1009,7 +1047,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   applicationVersion: "1.0",
                 ),
               ),
-            )
+            ),
           ],
         ),
       ),

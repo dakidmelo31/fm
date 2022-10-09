@@ -1,3 +1,5 @@
+// ignore_for_file: must_be_immutable
+
 import 'package:flutter/material.dart';
 import '../global.dart';
 import '../models/chats_model.dart';
@@ -93,8 +95,16 @@ class _BubbleState extends State<Bubble> {
                   ),
                 ],
               ),
-              if (state)
-                Align(
+              // if (state)
+              TweenAnimationBuilder(
+                duration: Duration(milliseconds: 500),
+                curve: Curves.fastLinearToSlowEaseIn,
+                tween:
+                    Tween<double>(begin: state ? 0 : 40, end: state ? 40 : 0),
+                builder: ((context, double value, child) {
+                  return SizedBox(height: value, child: child);
+                }),
+                child: Align(
                     alignment: Alignment.topLeft,
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
@@ -131,6 +141,7 @@ class _BubbleState extends State<Bubble> {
                         ],
                       ),
                     )),
+              ),
             ],
           )
         : Column(
@@ -193,36 +204,45 @@ class _BubbleState extends State<Bubble> {
                 ],
               ),
               if (state)
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        widget.moment,
-                        style: TextStyle(
-                            color: Color.fromARGB(255, 255, 255, 255),
-                            fontSize: 12),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(left: 5.0),
-                        child: ClipOval(
-                          child: Container(
-                            width: 8,
-                            height: 8,
-                            color: Colors.deepOrange,
+                TweenAnimationBuilder(
+                  duration: Duration(milliseconds: 500),
+                  curve: Curves.fastLinearToSlowEaseIn,
+                  tween:
+                      Tween<double>(begin: state ? 0 : 40, end: state ? 40 : 0),
+                  builder: ((context, double value, child) {
+                    return SizedBox(height: value, child: child);
+                  }),
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          widget.moment,
+                          style: TextStyle(
+                              color: Color.fromARGB(255, 255, 255, 255),
+                              fontSize: 12),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 5.0),
+                          child: ClipOval(
+                            child: Container(
+                              width: 8,
+                              height: 8,
+                              color: Colors.deepOrange,
+                            ),
                           ),
                         ),
-                      ),
-                      Text(
-                        "You",
-                        style: TextStyle(
-                          color: Color.fromARGB(255, 0, 247, 255),
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
+                        Text(
+                          "You",
+                          style: TextStyle(
+                            color: Color.fromARGB(255, 0, 247, 255),
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
             ],

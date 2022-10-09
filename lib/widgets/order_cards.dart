@@ -1,6 +1,8 @@
 import 'package:animations/animations.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:lottie/lottie.dart';
 import 'package:merchants/pages/all_orders.dart';
 import 'package:merchants/providers/restaurant_provider.dart';
@@ -73,7 +75,12 @@ class OrderCards extends StatelessWidget {
                 openBuilder: (context, action) =>
                     AllOrders(name: name, restaurant: restaurant),
                 closedBuilder: ((context, action) => InkWell(
-                      onTap: () {},
+                      onTap: () {
+                        HapticFeedback.heavyImpact();
+                        Fluttertoast.cancel();
+                        Fluttertoast.showToast(
+                            msg: "You don't have any $name Orders now");
+                      },
                       child: Center(
                         child: Column(
                           mainAxisSize: MainAxisSize.max,
@@ -133,7 +140,12 @@ class OrderCards extends StatelessWidget {
                   restaurant: restaurant,
                 ),
                 closedBuilder: ((context, action) => InkWell(
-                      onTap: action,
+                      enableFeedback: true,
+                      onTap: () {
+                        HapticFeedback.heavyImpact();
+
+                        action();
+                      },
                       child: Center(
                         child: Column(
                           mainAxisSize: MainAxisSize.max,
@@ -226,7 +238,7 @@ class OrderCards extends StatelessWidget {
           }
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Lottie.asset(
-              "assets/app/animations/shop_placeholder.json",
+              "assets/grocery2.json",
               fit: BoxFit.contain,
               alignment: Alignment.center,
             );

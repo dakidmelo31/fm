@@ -95,6 +95,45 @@ class _LocationUpdateState extends State<LocationUpdate>
               markers: {_marker},
             ),
           ),
+          Align(
+            alignment: Alignment.topCenter,
+            child: Padding(
+              padding: const EdgeInsets.only(top: 68.0),
+              child: AnimatedBuilder(
+                  animation: _animationController,
+                  builder: (context, child) {
+                    return AnimatedSwitcher(
+                      duration: Duration(milliseconds: 200),
+                      switchInCurve: Curves.fastLinearToSlowEaseIn,
+                      switchOutCurve: Curves.fastLinearToSlowEaseIn,
+                      transitionBuilder: (child, animation) => FadeTransition(
+                        opacity: animation,
+                        child: child,
+                      ),
+                      child: Card(
+                          elevation: 15,
+                          color:
+                              ColorTween(begin: Colors.black, end: Colors.white)
+                                  .animate(_animationController)
+                                  .value,
+                          shadowColor: Colors.grey.withOpacity(.2),
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(
+                                _animationController.isCompleted
+                                    ? "Tap to hide details"
+                                    : "Long press to select location",
+                                style: TextStyle(
+                                    color: ColorTween(
+                                            begin: Colors.white,
+                                            end: Colors.black)
+                                        .animate(_animationController)
+                                        .value)),
+                          )),
+                    );
+                  }),
+            ),
+          ),
           AnimatedBuilder(
               animation: _animationController,
               builder: (builder, child) {
@@ -110,7 +149,7 @@ class _LocationUpdateState extends State<LocationUpdate>
               animation: _animationController,
               builder: (context, child) {
                 return Positioned(
-                    height: size.height * .35,
+                    height: size.height * .42,
                     width: size.width,
                     left: 0,
                     bottom: -size.height *
@@ -159,8 +198,11 @@ class _LocationUpdateState extends State<LocationUpdate>
                                 color: Colors.lightGreen,
                                 elevation: 20.0,
                                 shadowColor: Colors.grey.withOpacity(.25),
-                                margin: EdgeInsets.symmetric(
-                                    horizontal: 15.0, vertical: 5.0),
+                                margin: EdgeInsets.only(
+                                    bottom: 35.0,
+                                    left: 5.0,
+                                    right: 5.0,
+                                    top: 15.0),
                                 child: InkWell(
                                   onTap: () {
                                     HapticFeedback.heavyImpact();

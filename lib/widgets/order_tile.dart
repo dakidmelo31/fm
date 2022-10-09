@@ -1,4 +1,7 @@
+// ignore_for_file: unused_local_variable, must_be_immutable
+
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
@@ -63,6 +66,8 @@ class OrderTile extends StatelessWidget {
                     children: [
                       InkWell(
                         onTap: () {
+                          HapticFeedback.heavyImpact();
+
                           Navigator.push(
                               context,
                               PageTransition(
@@ -170,6 +175,8 @@ class OrderTile extends StatelessWidget {
                     return false;
                   });
                 }
+                HapticFeedback.heavyImpact();
+
                 if (dismissDirection == DismissDirection.endToStart) {
                   direction = "left";
                   bool outcome = await showCupertinoDialog(
@@ -256,6 +263,8 @@ class OrderTile extends StatelessWidget {
                       children: [
                         InkWell(
                           onTap: () async {
+                            HapticFeedback.heavyImpact();
+
                             int? index = await Navigator.push(
                                 context,
                                 PageTransition(

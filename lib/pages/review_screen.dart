@@ -6,7 +6,6 @@ import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:lottie/lottie.dart';
 import 'package:merchants/models/review_models.dart';
-import 'package:merchants/providers/auth_provider.dart';
 
 import '../global.dart';
 
@@ -155,14 +154,13 @@ class _ReviewScreenState extends State<ReviewScreen> {
                                                 alignment: Alignment.center,
                                                 fit: BoxFit.cover,
                                                 errorWidget: (_, __, ___) =>
-                                                    Lottie.asset(
-                                                        "assets/no-connection.json"),
+                                                    errorWidget,
                                                 placeholder: (
                                                   _,
                                                   __,
                                                 ) =>
                                                     Lottie.asset(
-                                                        "assets/loading7.json"),
+                                                        "assets/loading5.json"),
                                                 fadeInCurve: Curves
                                                     .fastLinearToSlowEaseIn,
                                                 width: 45.0,

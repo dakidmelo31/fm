@@ -13,7 +13,6 @@ import 'package:merchants/pages/all_messages.dart';
 import 'package:timeago/timeago.dart' as timeAgo;
 
 import '../global.dart';
-import '../providers/auth_provider.dart';
 
 class ChatHome extends StatefulWidget {
   ChatHome({Key? key, required this.stream, required this.restaurant})
@@ -219,18 +218,16 @@ class _ChatHomeState extends State<ChatHome> with TickerProviderStateMixin {
                                           parent: animation,
                                           curve: Curves.fastLinearToSlowEaseIn,
                                           reverseCurve: Curves.fastOutSlowIn);
-                                      return FadeTransition(
-                                        opacity: animation,
-                                        child: ScaleTransition(
-                                          filterQuality: FilterQuality.high,
-                                          scale: animation,
-                                          alignment: Alignment.bottomCenter,
-                                          child: SizeTransition(
-                                            sizeFactor: animation,
-                                            axis: Axis.horizontal,
-                                            axisAlignment: 0.0,
-                                            child: child,
-                                          ),
+                                      return SlideTransition(
+                                        position: Tween<Offset>(
+                                                begin: Offset(0, -1),
+                                                end: Offset(0, 0))
+                                            .animate(animation),
+                                        child: SizeTransition(
+                                          sizeFactor: animation,
+                                          axis: Axis.horizontal,
+                                          axisAlignment: 0.0,
+                                          child: child,
                                         ),
                                       );
                                     },
@@ -265,8 +262,7 @@ class _ChatHomeState extends State<ChatHome> with TickerProviderStateMixin {
                                         child: CachedNetworkImage(
                                           imageUrl: item.photo,
                                           errorWidget: (_, __, ___) =>
-                                              Lottie.asset(
-                                                  "assets/no-connection2.json"),
+                                              errorWidget,
                                           fit: BoxFit.cover,
                                           alignment: Alignment.center,
                                           fadeInCurve:

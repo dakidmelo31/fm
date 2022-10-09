@@ -20,8 +20,6 @@ class OrdersData with ChangeNotifier {
   }
 
   updateOrder(String id, {required String status}) {
-    Order currentOrder = orders.firstWhere((element) => element.orderId == id);
-
     firestore.collection("orderHistory").doc(id).update(
       {
         "status": status,

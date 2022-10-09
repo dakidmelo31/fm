@@ -54,7 +54,7 @@
                                               child: CachedNetworkImage(
                                                 imageUrl: food.image,
                                                 fit: BoxFit.cover,
-                                                                                                                    errorWidget: (_, __, ___) => Lottie.asset("assets/no-connection.json"),
+                                                                                                                    errorWidget: (_, __, ___) => Lottie.asset("assets/no-connection2.json"),
                                                                     placeholder: (
                                                                       _,
                                                                       __,

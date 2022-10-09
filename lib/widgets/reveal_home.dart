@@ -1,14 +1,15 @@
+// ignore_for_file: must_be_immutable, unused_local_variable
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:lottie/lottie.dart';
 import 'package:merchants/global.dart';
 import 'package:merchants/pages/conversation_screen.dart';
 import 'package:merchants/pages/startup_screen.dart';
 import 'package:merchants/providers/auth_provider.dart';
-import 'package:merchants/providers/global_data.dart';
-import 'package:merchants/providers/notification_stream.dart';
 import 'package:merchants/widgets/main_screen.dart';
 import 'package:merchants/widgets/settings_screen.dart';
 import 'package:provider/provider.dart';
@@ -27,8 +28,6 @@ class RevealWidget extends StatefulWidget {
 }
 
 class _RevealWidgetState extends State<RevealWidget> {
-  FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  AnimationController? _animation;
   late PageController _pageController;
   int _index = 0;
 
@@ -194,65 +193,64 @@ class _RevealWidgetState extends State<RevealWidget> {
               SettingsScreen()
             ];
 
-            return NotificationStream(
-              child: SafeArea(
-                child: Scaffold(
-                  bottomNavigationBar: SlidingClippedNavBar(
-                    backgroundColor: Color.fromARGB(255, 238, 238, 238),
-                    inactiveColor: Colors.lightGreen,
-                    activeColor: Colors.black,
-                    barItems: [
-                      BarItem(title: "Home", icon: Icons.home_rounded),
-                      BarItem(
-                          title: "Messages",
-                          icon: FontAwesomeIcons.solidMessage),
-                      BarItem(title: "Settings", icon: FontAwesomeIcons.gears)
-                    ],
-                    selectedIndex: _index,
-                    fontSize: 14,
-                    iconSize: 20,
-                    onButtonPressed: (index) {
-                      setState(() {
-                        _index = index;
-                      });
-                      _pageController.animateToPage(_index,
-                          duration: Duration(seconds: 1),
-                          curve: Curves.fastLinearToSlowEaseIn);
-                    },
-                  ),
-                  body: PageView.builder(
-                    controller: _pageController,
-                    physics: NeverScrollableScrollPhysics(
-                        parent: BouncingScrollPhysics()),
-                    itemCount: pages.length,
-                    scrollDirection: Axis.horizontal,
-                    onPageChanged: (index) {
-                      setState(() {
-                        _index = index;
-                      });
-                    },
-                    allowImplicitScrolling: false,
-                    itemBuilder: (_, index) {
-                      return AnimatedSwitcher(
-                        duration: Duration(
-                          milliseconds: 2700,
-                        ),
-                        transitionBuilder: (child, animation) {
-                          return FadeTransition(
-                            opacity: CurvedAnimation(
-                                curve: Curves.fastLinearToSlowEaseIn,
-                                parent: animation,
-                                reverseCurve: Curves.fastOutSlowIn),
-                            child: child,
-                          );
-                        },
-                        reverseDuration: Duration(milliseconds: 300),
-                        switchInCurve: Curves.fastLinearToSlowEaseIn,
-                        switchOutCurve: Curves.fastOutSlowIn,
-                        child: pages[_index],
-                      );
-                    },
-                  ),
+            return SafeArea(
+              child: Scaffold(
+                bottomNavigationBar: SlidingClippedNavBar(
+                  backgroundColor: Color.fromARGB(255, 238, 238, 238),
+                  inactiveColor: Colors.lightGreen,
+                  activeColor: Colors.black,
+                  barItems: [
+                    BarItem(title: "Home", icon: Icons.home_rounded),
+                    BarItem(
+                        title: "Messages", icon: FontAwesomeIcons.solidMessage),
+                    BarItem(title: "Settings", icon: FontAwesomeIcons.gears)
+                  ],
+                  selectedIndex: _index,
+                  fontSize: 14,
+                  iconSize: 20,
+                  onButtonPressed: (index) {
+                    HapticFeedback.heavyImpact();
+
+                    setState(() {
+                      _index = index;
+                    });
+                    _pageController.animateToPage(_index,
+                        duration: Duration(seconds: 1),
+                        curve: Curves.fastLinearToSlowEaseIn);
+                  },
+                ),
+                body: PageView.builder(
+                  controller: _pageController,
+                  physics: NeverScrollableScrollPhysics(
+                      parent: BouncingScrollPhysics()),
+                  itemCount: pages.length,
+                  scrollDirection: Axis.horizontal,
+                  onPageChanged: (index) {
+                    setState(() {
+                      _index = index;
+                    });
+                  },
+                  allowImplicitScrolling: false,
+                  itemBuilder: (_, index) {
+                    return AnimatedSwitcher(
+                      duration: Duration(
+                        milliseconds: 2700,
+                      ),
+                      transitionBuilder: (child, animation) {
+                        return FadeTransition(
+                          opacity: CurvedAnimation(
+                              curve: Curves.fastLinearToSlowEaseIn,
+                              parent: animation,
+                              reverseCurve: Curves.fastOutSlowIn),
+                          child: child,
+                        );
+                      },
+                      reverseDuration: Duration(milliseconds: 300),
+                      switchInCurve: Curves.fastLinearToSlowEaseIn,
+                      switchOutCurve: Curves.fastOutSlowIn,
+                      child: pages[_index],
+                    );
+                  },
                 ),
               ),
             );

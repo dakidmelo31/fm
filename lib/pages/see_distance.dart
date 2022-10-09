@@ -20,20 +20,20 @@ class SeeLocation extends StatefulWidget {
 }
 
 class _SeeLocationState extends State<SeeLocation> {
-  late CameraPosition initialCameraPosition;
+  late CameraPosition myPosition;
   late GoogleMapController _mapController;
   @override
   void initState() {
     initPoints();
-    initialCameraPosition = CameraPosition(
-      target: LatLng(4.163, 9.2411677),
+    myPosition = CameraPosition(
+      target: LatLng(widget.restaurant.lat, widget.restaurant.lng),
       zoom: 14.0,
       tilt: 50,
     );
-    debugPrint("source: Lat " + source.latitude.toString());
-    debugPrint("source: Lng " + source.latitude.toString());
-    debugPrint("Destination: Lat " + destination.latitude.toString());
-    debugPrint("Destination: Lng " + destination.longitude.toString());
+    // debugPrint("source: Lat " + source.latitude.toString());
+    // debugPrint("source: Lng " + source.latitude.toString());
+    // debugPrint("Destination: Lat " + destination.latitude.toString());
+    // debugPrint("Destination: Lng " + destination.longitude.toString());
 
     super.initState();
   }
@@ -68,13 +68,13 @@ class _SeeLocationState extends State<SeeLocation> {
   initPoints() {
     source = LatLng(widget.restaurant.lat, widget.restaurant.lng);
 
-    destination = LatLng(widget.customer.lat, widget.customer.lng);
+    customerPosition = LatLng(widget.customer.lat, widget.customer.lng);
   }
 
   // static const String googleApiKey = "AIzaSyBW83ZgIKbFvy9Dzc6AkzQjd4ScIpXDrUM";
 
   late LatLng source;
-  late LatLng destination;
+  late LatLng customerPosition;
   List<LatLng> polylineCoordinates = [];
 
   @override
@@ -90,7 +90,8 @@ class _SeeLocationState extends State<SeeLocation> {
                 TextButton(
                   onPressed: () {
                     setState(() {
-                      _mapController.moveCamera(CameraUpdate.newLatLng(source));
+                      _mapController
+                          .moveCamera(CameraUpdate.newLatLng(customerPosition));
                     });
                   },
                   child: Text(
@@ -102,7 +103,7 @@ class _SeeLocationState extends State<SeeLocation> {
                   onPressed: () {
                     setState(() {
                       _mapController.moveCamera(
-                        CameraUpdate.newLatLng(destination),
+                        CameraUpdate.newLatLng(myPosition.target),
                       );
                     });
                   },
@@ -123,12 +124,12 @@ class _SeeLocationState extends State<SeeLocation> {
                   height: size.height,
                   child: GoogleMap(
                     buildingsEnabled: false,
-                    initialCameraPosition: initialCameraPosition,
+                    initialCameraPosition: myPosition,
                     mapType: MapType.normal,
                     myLocationButtonEnabled: true,
                     myLocationEnabled: true,
                     trafficEnabled: false,
-                    indoorViewEnabled: true,
+                    indoorViewEnabled: false,
                     onMapCreated: (controller) => _mapController = controller,
                     polylines: {
                       Polyline(
@@ -143,15 +144,16 @@ class _SeeLocationState extends State<SeeLocation> {
                       Marker(
                           infoWindow: InfoWindow(title: "You"),
                           icon: BitmapDescriptor.defaultMarkerWithHue(
-                              BitmapDescriptor.hueBlue),
+                              BitmapDescriptor.hueOrange),
                           markerId: MarkerId('markerId'),
-                          position: initialCameraPosition.target),
+                          position: myPosition.target),
                       Marker(
-                          infoWindow: InfoWindow(title: "Customer"),
+                          infoWindow: InfoWindow(
+                              title: widget.customer.name + " (Customer)"),
                           icon: BitmapDescriptor.defaultMarkerWithHue(
-                              BitmapDescriptor.hueGreen),
+                              BitmapDescriptor.hueRed),
                           markerId: MarkerId('markerId'),
-                          position: destination),
+                          position: customerPosition),
                     },
                   ),
                 ))

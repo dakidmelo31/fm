@@ -44,9 +44,10 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   print('Handling a background message ${message.messageId.toString()}');
-  FirebaseMessaging.instance
-      .getInitialMessage()
-      .then((RemoteMessage? message) {});
+  // FirebaseMessaging.instance
+  //     .getInitialMessage()
+  //     .then((RemoteMessage? message) {});
+  // groupNotications();
 }
 
 void main() async {
@@ -86,7 +87,7 @@ void main() async {
     );
   }
 
-  SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   NotificationService().initNotification();
 

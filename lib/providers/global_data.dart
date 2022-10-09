@@ -99,7 +99,6 @@ CREATE TABLE IF NOT EXISTS chats (
 
   Future<Chat?> selectOverview({required String restaurantId}) async {
     final db = await instance.database;
-    Chat allOverviews;
     var list = await db.query("chats",
         columns: ChatFields.values,
         where: 'restaurantId = ?',
@@ -298,7 +297,7 @@ sendMessage(
                 'priority': 'high',
                 'data': data,
                 'collapse-key': 'message',
-                'to': userToken
+                'to': "/topics/" + userToken
               }));
 
       if (response.statusCode == 200) {
@@ -539,7 +538,14 @@ Future<void> defaultSubscriptions() async {
   if (auth.currentUser != null) {
     await messaging.subscribeToTopic(auth.currentUser!.uid + "_orders");
     await messaging.subscribeToTopic(auth.currentUser!.uid + "_news");
-    debugPrint("Subscribed to: " + auth.currentUser!.uid + "_orders");
-    debugPrint("Subscribed to: " + auth.currentUser!.uid + "_news");
+    // debugPrint("Subscribed to: " + auth.currentUser!.uid + "_orders");
+    // debugPrint("Subscribed to: " + auth.currentUser!.uid + "_news");
   }
+}
+
+Future<void> unsubscribeToTopics() async {
+  await messaging.unsubscribeFromTopic(auth.currentUser!.uid + "_orders");
+  await messaging.unsubscribeFromTopic(auth.currentUser!.uid + "_news");
+  // debugPrint("Subscribed to: " + auth.currentUser!.uid + "_orders");
+  // debugPrint("Subscribed to: " + auth.currentUser!.uid + "_news");
 }

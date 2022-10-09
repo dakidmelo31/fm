@@ -1,8 +1,6 @@
 import 'package:avatar_glow/avatar_glow.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:date_picker_timeline/date_picker_widget.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
@@ -167,14 +165,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                           child: CachedNetworkImage(
                                             imageUrl: restaurant.businessPhoto,
                                             errorWidget: (_, __, ___) =>
-                                                Lottie.asset(
-                                                    "assets/no-connection2.json"),
+                                                errorWidget,
                                             placeholder: (
                                               _,
                                               __,
                                             ) =>
-                                                Lottie.asset(
-                                                    "assets/loading7.json"),
+                                                loadingWidget,
                                             fadeInCurve:
                                                 Curves.fastLinearToSlowEaseIn,
                                             fit: BoxFit.cover,

@@ -1,4 +1,4 @@
-// ignore_for_file: must_be_immutable
+// ignore_for_file: must_be_immutable, unused_local_variable
 
 import 'package:animations/animations.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -85,13 +85,12 @@ class _MealCardState extends State<MealCard>
                               imageUrl: food.image,
                               alignment: Alignment.center,
                               fit: BoxFit.cover,
-                              errorWidget: (_, __, ___) =>
-                                  Lottie.asset("assets/no-connection.json"),
+                              errorWidget: (_, __, ___) => errorWidget,
                               placeholder: (
                                 _,
                                 __,
                               ) =>
-                                  Lottie.asset("assets/loading7.json"),
+                                  Lottie.asset("assets/loading5.json"),
                               fadeInCurve: Curves.fastLinearToSlowEaseIn,
                               width: 90,
                               height: 120,

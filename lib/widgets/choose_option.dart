@@ -3,7 +3,6 @@ import "dart:math" as math;
 
 import 'package:merchants/animations/slideup_tween.dart';
 
-
 class ChooseOption extends StatelessWidget {
   const ChooseOption(
       {Key? key,
@@ -17,20 +16,9 @@ class ChooseOption extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
-    final bottomPosition = -150 * (1 - mainAnimation.value);
     return AnimatedBuilder(
         animation: Listenable.merge([mainAnimation, switchAnimation]),
         builder: (_, __) {
-          final h = 250 *
-              (CurvedAnimation(
-                              parent: mainAnimation,
-                              curve:
-                                  Interval(0.0, 1.0, curve: Curves.decelerate))
-                          .value -
-                      1)
-                  .abs();
-          final centerLeft = (size.width - 250) / 2;
-          final topExitPosition = size.height * switchAnimation.value;
           final exitHeight = size.height * switchAnimation.value;
           final circleSize = size.height * math.pow((switchAnimation.value), 2);
 

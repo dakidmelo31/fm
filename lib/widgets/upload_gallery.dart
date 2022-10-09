@@ -1,3 +1,5 @@
+// ignore_for_file: must_be_immutable
+
 import 'dart:io';
 import 'dart:math';
 
@@ -380,11 +382,11 @@ class _UploadGalleryState extends State<UploadGallery>
                                                                                 tag: image,
                                                                                 child: CachedNetworkImage(
                                                                                   imageUrl: image,
-                                                                                  placeholder: (_, __) => Lottie.asset("assets/loading7.json"),
+                                                                                  placeholder: (_, __) => Lottie.asset("assets/loadin5.json"),
                                                                                   alignment: Alignment.center,
                                                                                   fit: BoxFit.cover,
                                                                                   errorWidget: (_, __, ___) => Lottie.asset(
-                                                                                    "assets/no-connection.json",
+                                                                                    "assets/no-connection2.json",
                                                                                     alignment: Alignment.center,
                                                                                     fit: BoxFit.fitHeight,
                                                                                   ),
@@ -427,7 +429,7 @@ class _UploadGalleryState extends State<UploadGallery>
                                                                 placeholder: (_,
                                                                         __) =>
                                                                     Lottie.asset(
-                                                                        "assets/loading7.json"),
+                                                                        "assets/loading5.json"),
                                                                 alignment:
                                                                     Alignment
                                                                         .center,
@@ -653,7 +655,7 @@ class _UploadGalleryState extends State<UploadGallery>
                                         ]),
                                   )
                                 ],
-                              ))
+                              )),
                         ],
                       ),
                     ),

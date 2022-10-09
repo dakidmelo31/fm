@@ -1,4 +1,5 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+// ignore_for_file: invalid_return_type_for_catch_error
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -39,7 +40,7 @@ class _LoginFormState extends State<LoginForm> with TickerProviderStateMixin {
   OTP _formState = OTP.notSent;
   late PhoneAuthCredential credential;
   int seconds = 60;
-
+  bool loading = false;
   String verificationCode = "", phoneNumber = "";
   TextEditingController _editingController = TextEditingController();
 
@@ -226,8 +227,8 @@ class _LoginFormState extends State<LoginForm> with TickerProviderStateMixin {
                               child: _formState == OTP.notSent
                                   ? Lottie.asset(
                                       "assets/verify-id.json",
-                                      width: 250,
-                                      height: 250,
+                                      // width: 250,
+                                      height: size.height * .2,
                                       reverse: true,
                                       options:
                                           LottieOptions(enableMergePaths: true),
@@ -260,23 +261,30 @@ class _LoginFormState extends State<LoginForm> with TickerProviderStateMixin {
                             OpacityTween(
                               child: SlideUpTween(
                                 begin: Offset(120, 0),
-                                child: Material(
-                                  elevation: 15,
-                                  color: Colors.grey[100],
-                                  shadowColor: Colors.grey.withOpacity(.3),
-                                  child: IntlPhoneField(
-                                    controller: _editingController,
-                                    autofocus: true,
-                                    style: TextStyle(color: Colors.black),
-                                    decoration: InputDecoration(
-                                      labelText: 'Phone Number',
-                                      border: InputBorder.none,
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 5, horizontal: 35.0),
+                                  child: Material(
+                                    elevation: 15,
+                                    shadowColor: Colors.grey.withOpacity(.2),
+                                    child: IntlPhoneField(
+                                      keyboardType: TextInputType.phone,
+                                      textInputAction: TextInputAction.done,
+                                      controller: _editingController,
+                                      autofocus: true,
+                                      style: TextStyle(color: Colors.black),
+                                      decoration: InputDecoration(
+                                        contentPadding: EdgeInsets.symmetric(
+                                            vertical: 3, horizontal: 15),
+                                        labelText: 'Phone Number',
+                                        border: InputBorder.none,
+                                      ),
+                                      initialCountryCode: 'CM',
+                                      onChanged: (phone) {
+                                        phoneNumber = phone.completeNumber;
+                                        // print(phone.completeNumber);
+                                      },
                                     ),
-                                    initialCountryCode: 'CM',
-                                    onChanged: (phone) {
-                                      phoneNumber = phone.completeNumber;
-                                      print(phone.completeNumber);
-                                    },
                                   ),
                                 ),
                               ),
@@ -301,7 +309,7 @@ class _LoginFormState extends State<LoginForm> with TickerProviderStateMixin {
                                       boxShadow: [
                                         BoxShadow(
                                           blurRadius: 10,
-                                          color: Colors.grey.withOpacity(.5),
+                                          color: Colors.grey.withOpacity(.2),
                                           offset: Offset(
                                             5,
                                             15,
@@ -584,37 +592,25 @@ class _LoginFormState extends State<LoginForm> with TickerProviderStateMixin {
                           SlideUpTween(
                             begin: Offset(-50, 0),
                             child: _formState == OTP.notSent
-                                ? Container(
-                                    margin: const EdgeInsets.only(top: 12.0),
-                                    decoration: BoxDecoration(
-                                      color: Colors.transparent,
-                                      border: Border.all(
-                                        width: 3,
-                                        color: Colors.orange,
-                                      ),
-                                      borderRadius: BorderRadius.circular(
-                                        CurvedAnimation(
-                                              parent: widget.switchAnimation,
-                                              curve: Interval(.75, 1.0,
-                                                  curve: Curves.bounceInOut),
-                                            ).value *
-                                            25,
-                                      ),
-                                    ),
+                                ? Card(
+                                    color: Colors.lightGreen,
+                                    elevation: 15,
+                                    shadowColor: Colors.grey.withOpacity(.2),
                                     child: InkWell(
                                       onTap: () async {
-                                        if (true) {
-                                          Fluttertoast.showToast(
-                                            msg: "Sending OTP please wait...",
-                                            backgroundColor: Colors.lightGreen,
-                                            fontSize: 14.0,
-                                            textColor: Colors.white,
-                                            toastLength: Toast.LENGTH_LONG,
-                                            gravity: ToastGravity.BOTTOM,
-                                          );
+                                        HapticFeedback.heavyImpact();
+                                        Fluttertoast.showToast(
+                                          msg: "Sending OTP please wait...",
+                                          backgroundColor: Colors.lightGreen,
+                                          fontSize: 14.0,
+                                          textColor: Colors.white,
+                                          toastLength: Toast.LENGTH_LONG,
+                                          gravity: ToastGravity.BOTTOM,
+                                        );
 
-                                          verifyPhoneNumber();
-                                        }
+                                        countdownTimerController.start();
+
+                                        verifyPhoneNumber();
                                       },
                                       child: SizedBox(
                                         width: size.width - 80,
@@ -622,6 +618,8 @@ class _LoginFormState extends State<LoginForm> with TickerProviderStateMixin {
                                         child: Center(
                                           child: Text(
                                             "Signup Now",
+                                            style:
+                                                TextStyle(color: Colors.white),
                                           ),
                                         ),
                                       ),
