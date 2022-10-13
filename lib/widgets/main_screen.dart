@@ -15,7 +15,6 @@ import 'package:merchants/widgets/service_card.dart';
 import 'package:merchants/widgets/settings_screen.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:provider/provider.dart';
-import 'package:lottie/lottie.dart';
 import '../global.dart';
 import '../models/food_model.dart';
 import '../pages/new_meal.dart';
@@ -425,7 +424,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 return AnimatedPositioned(
                   duration: Duration(milliseconds: 1600),
                   curve: Curves.fastLinearToSlowEaseIn,
-                  top: size.height * .8 * (1 - _animationController.value),
+                  top: size.height * .8 * (1 - _animationController.value) +
+                      (_animationController.value > .9 ? 50 : 0),
                   // top: size.height * .8 -
                   //     (size.height * .75 * _animationController.value),
                   left: 0,

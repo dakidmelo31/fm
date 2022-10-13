@@ -26,7 +26,7 @@ class CloudMsgService {
       FirebaseMessaging.onMessageOpenedApp;
 
   static Future<void> initialize(
-    SelectNotificationCallback onSelectNotification,
+    void Function(NotificationResponse) onSelectNotification,
   ) async {
     print(await _messaging.getToken());
     await _requestPermission();
@@ -74,7 +74,7 @@ class CloudMsgService {
   }
 
   static Future<void> _openInitialScreenFromMessage(
-    SelectNotificationCallback onSelectNotification,
+    dynamic onSelectNotification,
   ) async {
     RemoteMessage? initialMessage = await _messaging.getInitialMessage();
     if (initialMessage?.data != null) {
@@ -84,15 +84,16 @@ class CloudMsgService {
   }
 
   static Future<void> _initializeLocalNotification(
-    SelectNotificationCallback onSelectNotification,
+    void Function(NotificationResponse) onSelectNotification,
   ) async {
     final android = AndroidInitializationSettings(
       "ic_launcher",
     );
-    final ios = IOSInitializationSettings();
+    final ios = DarwinInitializationSettings();
     final initSetting = InitializationSettings(android: android, iOS: ios);
 
     await _localNotification.initialize(initSetting,
-        onSelectNotification: onSelectNotification);
+        onDidReceiveBackgroundNotificationResponse: onSelectNotification,
+        onDidReceiveNotificationResponse: onSelectNotification);
   }
 }

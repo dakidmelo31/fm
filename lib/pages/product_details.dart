@@ -1426,12 +1426,10 @@ class _AddGalleryState extends State<AddGallery> with TickerProviderStateMixin {
   final picker = ImagePicker();
   pickImages() async {
     List<XFile>? _images = await picker.pickMultiImage(imageQuality: 90);
-    if (_images != null) {
-      _images.forEach((element) {
-        _localGallery.add(File(element.path));
-      });
-      setState(() {});
-    }
+    _images.forEach((element) {
+      _localGallery.add(File(element.path));
+    });
+    setState(() {});
   }
 
   @override

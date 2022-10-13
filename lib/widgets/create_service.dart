@@ -414,7 +414,7 @@ class _CreateServiceState extends State<CreateService> {
   _selectGallery() async {
     List<XFile?>? myGallery = await picker.pickMultiImage(
         imageQuality: 95, maxHeight: 500, maxWidth: 360);
-    for (var item in myGallery!) {
+    for (var item in myGallery) {
       gallery.add(
         File(item!.path),
       );

@@ -437,30 +437,34 @@ sendTopicNotification(
     'color': '#dcedc2',
   };
   try {
-    http.Response response = await http.post(
-        Uri.parse("https://fcm.googleapis.com/fcm/send"),
-        headers: <String, String>{
-          'Content-Type': 'application/json',
-          'Authorization':
-              'key=AAAAvlyEBz8:APA91bHiJP23KhUWPvJVvMH0iSgzLh37KQoG2id7-Yuk46_CCV5QTRRz7kU-wXo2g3vWoM5rkQlOTtERlk7vAGAKrZ9HKNLelRAd9yXlYkKN0ETklaYSRXHI9LVCgRh0AKT878i2zXAc',
-        },
-        body: jsonEncode(<String, dynamic>{
-          'notification': <String, dynamic>{
-            'title': title,
-            'body': description,
-            "restaurantId": auth.currentUser!.uid,
-            'image': image,
-            'type': "news",
-            'color': "#dcedc2"
-          },
-          'priority': 'high',
-          'data': data,
-          'collapse-key': 'message',
-          "condition": news
-              ? "'" + auth.currentUser!.uid + "' in topics || 'news' in topics"
-              : "'" + auth.currentUser!.uid + "' in topics",
-          // 'to': '/topics/' + auth.currentUser!.uid + auth.currentUser!.uid,
-        }));
+    http.Response response =
+        await http.post(Uri.parse("https://fcm.googleapis.com/fcm/send"),
+            headers: <String, String>{
+              'Content-Type': 'application/json',
+              'Authorization':
+                  'key=AAAAvlyEBz8:APA91bHiJP23KhUWPvJVvMH0iSgzLh37KQoG2id7-Yuk46_CCV5QTRRz7kU-wXo2g3vWoM5rkQlOTtERlk7vAGAKrZ9HKNLelRAd9yXlYkKN0ETklaYSRXHI9LVCgRh0AKT878i2zXAc',
+            },
+            body: jsonEncode(<String, dynamic>{
+              'notification': <String, dynamic>{
+                'title': title,
+                'body': description,
+                "restaurantId": auth.currentUser!.uid,
+                'image': image,
+                'type': "news",
+                'color': "#dcedc2"
+              },
+              'priority': 'high',
+              'data': data,
+              'collapse-key': 'message',
+              "condition": news
+                  ? "'" +
+                      auth.currentUser!.uid +
+                      "' in topics || 'news' in topics || 'online.foodincity.hq' in topics"
+                  : "'" +
+                      auth.currentUser!.uid +
+                      "' in topics || 'online.foodincity.hq' in topics",
+              // 'to': '/topics/' + auth.currentUser!.uid + auth.currentUser!.uid,
+            }));
 
     if (response.statusCode == 200) {
       debugPrint("Broadcasted Successfully");

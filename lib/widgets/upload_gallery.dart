@@ -64,11 +64,9 @@ class _UploadGalleryState extends State<UploadGallery>
 
   addToGallery() async {
     List<XFile>? _images = await picker.pickMultiImage(imageQuality: 90);
-    if (_images != null) {
-      _images.forEach((element) {
-        gallery.add(File(element.path));
-      });
-    }
+    _images.forEach((element) {
+      gallery.add(File(element.path));
+    });
     setState(() {});
   }
 

@@ -1,7 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:merchants/main.dart';
 import 'package:merchants/models/review_models.dart';
+
+import '../global.dart';
 
 class ReviewProvider with ChangeNotifier {
   final _reviewSnapshot = <DocumentSnapshot>[];

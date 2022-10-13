@@ -64,9 +64,7 @@ dependencies:
   uuid:
   cloud_firestore:
   shared_preferences:
-  connectivity_plus:
   geolocator:
-  video_player:
   font_awesome_flutter:
   date_picker_timeline:
   date_time_format:
@@ -84,6 +82,7 @@ dependencies:
   flutter_staggered_grid_view:
   firebase_messaging:
   flutter_local_notifications:
+  device_info_plus:
   flutter_native_splash: ^2.0.1+1
   in_app_notification:
   rxdart:

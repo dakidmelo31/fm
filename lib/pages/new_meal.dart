@@ -108,7 +108,7 @@ class _NewMealState extends State<NewMeal> with TickerProviderStateMixin {
     HapticFeedback.heavyImpact();
     List<XFile?>? myGallery = await picker.pickMultiImage(
         imageQuality: 95, maxHeight: 500, maxWidth: 360);
-    for (var item in myGallery!) {
+    for (var item in myGallery) {
       gallery.add(
         File(item!.path),
       );

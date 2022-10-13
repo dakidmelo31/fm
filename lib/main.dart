@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
@@ -33,6 +32,12 @@ late AndroidNotificationChannel channel = AndroidNotificationChannel(
 // flutter local notification
 late FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
+
+@pragma('vm:entry-point')
+void notificationTapBackground(NotificationResponse notificationResponse) {
+  // handle action
+  debugPrint("notification tap background");
+}
 
 /// Define a top-level named handler which background/terminated messages will
 /// call.
@@ -102,8 +107,6 @@ void main() async {
     ),
   );
 }
-
-FirebaseAuth auth = FirebaseAuth.instance;
 
 class AppHome extends StatelessWidget {
   const AppHome({Key? key}) : super(key: key);

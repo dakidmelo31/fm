@@ -199,7 +199,7 @@ class _StartupScreenState extends State<StartupScreen>
     _animationController.forward();
     return auth.currentUser != null
         ? Home(
-            index: 1,
+            index: 0,
           )
         : SafeArea(
             child: Stack(

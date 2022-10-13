@@ -22,8 +22,8 @@ class NotificationService {
     final AndroidInitializationSettings initializationSettingsAndroid =
         AndroidInitializationSettings("ic_launcher");
 
-    final IOSInitializationSettings iosInitializationSettings =
-        IOSInitializationSettings(
+    final DarwinInitializationSettings iosInitializationSettings =
+        DarwinInitializationSettings(
       requestAlertPermission: false,
       requestBadgePermission: false,
       requestSoundPermission: false,
@@ -36,10 +36,12 @@ class NotificationService {
             macOS: null);
 
     await flutterLocalNotificationsPlugin.initialize(initializationSettings,
-        onSelectNotification: selectNotification);
+        onDidReceiveNotificationResponse: selectNotification);
   }
 
-  Future selectNotification(String? payload) async {
+  void Function(NotificationResponse)? selectNotification(
+      NotificationResponse payload) {
     debugPrint("notification was clicked. Payload is: $payload");
+    return null;
   }
 }
