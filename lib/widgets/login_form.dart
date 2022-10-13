@@ -646,8 +646,12 @@ class _LoginFormState extends State<LoginForm> with TickerProviderStateMixin {
 
                                           final prefs = await SharedPreferences
                                               .getInstance();
+                                          var data = await firestore
+                                              .collection("restaurants")
+                                              .doc(auth.currentUser!.uid)
+                                              .get();
 
-                                          if (prefs.containsKey("phone")) {
+                                          if (data.exists) {
                                             Navigator.pushReplacement(
                                                 context,
                                                 PageRouteBuilder(
