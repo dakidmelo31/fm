@@ -103,7 +103,7 @@ class _SettingsCardState extends State<SettingsCard> {
                             await FirebaseFirestore.instance
                                 .collection("restaurants")
                                 .doc(restaurant.restaurantId)
-                                .set({
+                                .update({
                               _field.isNotEmpty
                                       ? _field
                                       : _cardName.toLowerCase():

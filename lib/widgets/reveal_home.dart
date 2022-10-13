@@ -8,12 +8,13 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:lottie/lottie.dart';
 import 'package:merchants/global.dart';
 import 'package:merchants/pages/conversation_screen.dart';
+import 'package:merchants/pages/home_screen.dart';
 import 'package:merchants/pages/startup_screen.dart';
 import 'package:merchants/providers/auth_provider.dart';
+import 'package:merchants/transitions/transitions.dart';
 import 'package:merchants/widgets/main_screen.dart';
 import 'package:merchants/widgets/settings_screen.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sliding_clipped_nav_bar/sliding_clipped_nav_bar.dart';
 
 import '../models/restaurants.dart';
@@ -32,27 +33,8 @@ class _RevealWidgetState extends State<RevealWidget> {
   int _index = 0;
 
   _checkUser() async {
-    final prefs = await SharedPreferences.getInstance();
-    if (FirebaseAuth.instance.currentUser != null) {
-      bool result = await isAccountCreated();
-      if (!result) {
-        prefs.clear();
-        FirebaseAuth.instance
-            .signOut()
-            .then((value) => debugPrint("signed Out User"));
-        Navigator.pushReplacementNamed(context, StartupScreen.routeName);
-      } else {
-        String deviceToken = await getFirebaseToken() ?? "";
-        debugPrint("device token is: --- $deviceToken");
-        DocumentReference documentReference = FirebaseFirestore.instance
-            .collection("restaurants")
-            .doc(FirebaseAuth.instance.currentUser!.uid);
-        if (deviceToken.isNotEmpty)
-          await documentReference.update({"deviceToken": deviceToken});
-      }
-    } else {
+    if (auth.currentUser == null) {
       Future.delayed(Duration.zero, () {
-        prefs.clear();
         Navigator.pushReplacementNamed(context, StartupScreen.routeName);
       });
 

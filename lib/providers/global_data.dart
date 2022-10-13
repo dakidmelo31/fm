@@ -6,6 +6,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:merchants/models/restaurants.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import '../global.dart';
@@ -539,6 +540,8 @@ updateOverview(
 }
 
 Future<void> defaultSubscriptions() async {
+  final prefs = await SharedPreferences.getInstance();
+  prefs.setBool("registered", true);
   if (auth.currentUser != null) {
     await messaging.subscribeToTopic(auth.currentUser!.uid + "_orders");
     await messaging.subscribeToTopic(auth.currentUser!.uid + "_news");
@@ -548,8 +551,38 @@ Future<void> defaultSubscriptions() async {
 }
 
 Future<void> unsubscribeToTopics() async {
-  await messaging.unsubscribeFromTopic(auth.currentUser!.uid + "_orders");
-  await messaging.unsubscribeFromTopic(auth.currentUser!.uid + "_news");
+  final prefs = await SharedPreferences.getInstance();
+  prefs.remove("registered");
+  if (auth.currentUser == null) {
+    await messaging.unsubscribeFromTopic(auth.currentUser!.uid + "_orders");
+    await messaging.unsubscribeFromTopic(auth.currentUser!.uid + "_news");
+  }
   // debugPrint("Subscribed to: " + auth.currentUser!.uid + "_orders");
   // debugPrint("Subscribed to: " + auth.currentUser!.uid + "_news");
+}
+
+Future<bool> onlineCheck() async {
+  if (auth.currentUser == null) {
+    return false;
+  }
+  var data = await firestore
+      .collection("restaurants")
+      .doc(auth.currentUser!.uid)
+      .get();
+
+  return data.exists;
+}
+
+setNumber(String number) async {
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.setString("phone", number);
+}
+
+checkNumber(String number) async {
+  final prefs = await SharedPreferences.getInstance();
+  if (prefs.containsKey("phone")) {
+    await prefs.setString("phone", number);
+    return true;
+  }
+  return false;
 }

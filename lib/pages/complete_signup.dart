@@ -130,7 +130,7 @@ class _CompleteProfileState extends State<CompleteProfile> {
       return;
     }
     String url = "";
-
+    Fluttertoast.showToast(msg: "Please wait while we create your account");
     //check if user's data already exists
     bool outcome = await getLocation();
 
@@ -149,19 +149,19 @@ class _CompleteProfileState extends State<CompleteProfile> {
           var token = await getFirebaseToken();
           String deviceToken = token.toString();
           final prefs = await SharedPreferences.getInstance();
-          if (prefs.containsKey("tmpNumber")) {
-            phoneNumber = await prefs.getString("tmpNumber");
+          if (prefs.containsKey("phone")) {
+            phoneNumber = await prefs.getString("phone");
           } else {
             setState(() {
               widget.reverseAnimation();
             });
           }
 
-          prefs.setBool("account_created", true);
+          await prefs.setBool("registered", true);
 
           await FirebaseFirestore.instance
               .collection("restaurants")
-              .doc(FirebaseAuth.instance.currentUser!.uid)
+              .doc(auth.currentUser!.uid)
               .set({
                 "name": _nameController.text,
                 "username": _usernameController.text,
@@ -203,12 +203,6 @@ class _CompleteProfileState extends State<CompleteProfile> {
               .then((value) async {
                 debugPrint("Done signing up user");
                 debugPrint("so move then");
-                firestore
-                    .collection("followers")
-                    .doc(auth.currentUser!.uid)
-                    .set({"myFollowers": [], "tokens": []}).then(
-                        (value) => debugPrint("followers now set"));
-                prefs.setString("phone", phoneNumber!);
                 Navigator.pushReplacement(
                   // move on.
                   context,
@@ -264,15 +258,17 @@ class _CompleteProfileState extends State<CompleteProfile> {
       source: ImageSource.gallery,
       imageQuality: 50,
     );
-    setState(() {
-      image = File(_image!.path);
-      _imageSet = true;
-    });
+    if (_image != null)
+      setState(() {
+        image = File(_image.path);
+        _imageSet = true;
+      });
   }
 
   TextStyle valueColor = TextStyle(color: Colors.orange);
   @override
   void initState() {
+    debugPrint("Now In Complete Signup Page");
     super.initState();
   }
 
@@ -337,7 +333,7 @@ class _CompleteProfileState extends State<CompleteProfile> {
                 },
                 child: uploading
                     ? Center(
-                        child: Lottie.asset("assets/uploading-animation1.json",
+                        child: Lottie.asset("assets/loading5.json",
                             width: size.width,
                             fit: BoxFit.contain,
                             alignment: Alignment.center),
@@ -943,8 +939,21 @@ class _CompleteProfileState extends State<CompleteProfile> {
                                                                 });
                                                               } else {
                                                                 setState(() {
-                                                                  _selectedCategories
-                                                                      .add(cat);
+                                                                  if (_selectedCategories
+                                                                          .length >=
+                                                                      3) {
+                                                                    Fluttertoast
+                                                                        .cancel();
+                                                                    Fluttertoast.showToast(
+                                                                        msg:
+                                                                            "3 categories max",
+                                                                        backgroundColor:
+                                                                            Colors.pink);
+                                                                  } else {
+                                                                    _selectedCategories
+                                                                        .add(
+                                                                            cat);
+                                                                  }
                                                                 });
                                                               }
                                                               HapticFeedback

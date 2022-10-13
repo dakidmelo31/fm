@@ -66,6 +66,7 @@ class MealsData with ChangeNotifier {
   List<Food> meals = [], searchList = [];
 
   loadMeals() async {
+    meals.clear();
     firestore
         .collection("meals")
         .where("restaurantId", isEqualTo: auth.currentUser!.uid)

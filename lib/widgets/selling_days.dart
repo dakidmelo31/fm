@@ -133,7 +133,7 @@ class _SellingDaysState extends State<SellingDays>
                                         typeId: widget.restaurant.restaurantId,
                                         image: widget.restaurant.businessPhoto,
                                         description:
-                                            "We now sell on" + _days.join(", "),
+                                            "We now sell on " + _days.join(", "),
                                         title: widget.restaurant.companyName +
                                             " changed selling days");
                                     Fluttertoast.cancel();

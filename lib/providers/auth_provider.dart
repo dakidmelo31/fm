@@ -90,7 +90,7 @@ class Auth with ChangeNotifier {
         likes: event['likes'],
         deliveryCost: event['deliveryCost'],
         followers: event['followers'],
-        phone: event['phone'],
+        phone: event['phone'] ?? '',
       );
       debugPrint("loaded the name: " + event['name']);
     });

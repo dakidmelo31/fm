@@ -7,6 +7,8 @@ import 'package:merchants/global.dart';
 import 'package:merchants/pages/all_messages.dart';
 import 'package:merchants/pages/complete_signup.dart';
 import 'package:merchants/pages/product_details.dart';
+import 'package:merchants/pages/splash_screen.dart';
+import 'package:merchants/providers/global_data.dart';
 import 'package:merchants/transitions/transitions.dart';
 import 'package:merchants/widgets/choose_option.dart';
 import 'package:merchants/widgets/login_form.dart';
@@ -57,7 +59,9 @@ class _StartupScreenState extends State<StartupScreen>
   _handleMessage(RemoteMessage msg) {
     var data = msg.data;
     debugPrint(data.toString());
-    if (data.containsKey("type") &&
+
+    if (auth.currentUser != null &&
+        data.containsKey("type") &&
         (data["type"] == 'message' || data["type"] == 'order') &&
         data.containsKey('userId')) {
       String userId = data['userId'];
@@ -79,7 +83,9 @@ class _StartupScreenState extends State<StartupScreen>
           ),
         ),
       );
-    } else if (data.containsKey("type") && data['type'] == 'like') {
+    } else if (auth.currentUser != null &&
+        data.containsKey("type") &&
+        data['type'] == 'like') {
       String foodId = data['foodId'];
 
       navigatorKey.currentState!.pushReplacement(
@@ -89,7 +95,9 @@ class _StartupScreenState extends State<StartupScreen>
           ),
         ),
       );
-    } else if (data.containsKey("type") && data['type'] == 'comment') {
+    } else if (auth.currentUser != null &&
+        data.containsKey("type") &&
+        data['type'] == 'comment') {
       Navigator.pushReplacement(
           context, VerticalSizeTransition(child: Home(index: 2)));
     }
@@ -98,45 +106,56 @@ class _StartupScreenState extends State<StartupScreen>
 
   _checkUser() async {
     // FirebaseMessaging.instance.getInitialMessage().then((value) {});
+    if (!await onlineCheck()) {
+      auth.signOut();
+      debugPrint("Happily signing out");
+    } else {
+      setState(() {
+        registered = true;
+      });
+    }
 
     RemoteMessage? initialMessage = await messaging.getInitialMessage();
-    if (initialMessage != null && auth.currentUser != null) {
+    if (initialMessage != null &&
+        auth.currentUser != null &&
+        await onlineCheck()) {
       debugPrint("Message From terminated State-_-_-_-_-_-_-_-_-_-_-");
       debugPrint(initialMessage.messageId);
       _handleMessage(initialMessage);
       FirebaseMessaging.onMessageOpenedApp.listen(_handleMessage);
 
       return false;
+    } else {
+      debugPrint("didn't pass this test");
     }
     FirebaseMessaging.onMessageOpenedApp.listen(_handleMessage);
 
     final prefs = await SharedPreferences.getInstance();
 
-    Future.delayed(Duration.zero, () {
-      if (auth.currentUser != null && pushNotif == null) {
-        debugPrint(pushNotif.toString());
-        debugPrint("current user is not null");
-        if (prefs.containsKey("phone")) {
-          Future.delayed(Duration.zero, () {
-            Navigator.pushReplacementNamed(context, Home.routeName);
-          });
-        } else {
-          debugPrint("Should signout now");
-          auth.signOut();
-          prefs.clear();
-          Navigator.pushReplacementNamed(context, StartupScreen.routeName);
+    if (await onlineCheck()) {
+      Future.delayed(Duration.zero, () {
+        if (auth.currentUser != null && pushNotif == null) {
+          debugPrint(pushNotif.toString());
+          debugPrint("current user is not null");
+          if (prefs.containsKey("registered")) {
+            Future.delayed(Duration.zero, () {
+              Navigator.pushReplacementNamed(context, Home.routeName);
+            });
+            return;
+          } else {
+            debugPrint("Should signout now");
+            auth.signOut();
+            prefs.clear();
+            Navigator.pushReplacementNamed(context, StartupScreen.routeName);
+            return;
+          }
         }
-      } else {
-        debugPrint("user is not logged in $pushNotif");
-        debugPrint("data is:  $_data");
-        Future.delayed(Duration(seconds: 2), (() {
-          _subscriptionController.forward();
-        }));
-      }
-    });
+      });
+    } else {
+      debugPrint("User not registered online");
+    }
+    // auth.signOut();
   }
-
-  late AnimationController _subscriptionController;
 
   var _data = null;
   @override
@@ -156,13 +175,6 @@ class _StartupScreenState extends State<StartupScreen>
         seconds: 2,
       ),
     );
-    _subscriptionController = AnimationController(
-        vsync: this,
-        duration: Duration(
-          milliseconds: 1600,
-        ),
-        reverseDuration: Duration(milliseconds: 700));
-
     _switchController = AnimationController(
       vsync: this,
       duration: Duration(
@@ -192,12 +204,17 @@ class _StartupScreenState extends State<StartupScreen>
     _checkUser();
   }
 
+  bool registered = false;
+
   @override
   Widget build(BuildContext context) {
     debugPrint(_formType.toString());
 
     _animationController.forward();
-    return auth.currentUser != null
+    if (auth.currentUser != null) {
+      return SplashScreen();
+    }
+    return registered && auth.currentUser != null
         ? Home(
             index: 0,
           )

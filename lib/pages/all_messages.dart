@@ -260,7 +260,7 @@ class _AllMessagesState extends State<AllMessages> {
 
                                 if (ordersnaps.connectionState ==
                                     ConnectionState.waiting) {
-                                  return Lottie.asset("assets/loading7.json",
+                                  return Lottie.asset("assets/loading5.json",
                                       width: size.width,
                                       height: 80,
                                       fit: BoxFit.contain,

@@ -331,7 +331,7 @@ class _MealDetailsState extends State<MealDetails> {
                                                   __,
                                                 ) =>
                                                     Lottie.asset(
-                                                        "assets/loading7.json"),
+                                                        "assets/loading5.json"),
                                                 fadeInCurve: Curves
                                                     .fastLinearToSlowEaseIn,
                                                 width: 200.0,
@@ -510,7 +510,7 @@ class _MealDetailsState extends State<MealDetails> {
                                                                             _,
                                                                             __,
                                                                           ) =>
-                                                                              Lottie.asset("assets/loading7.json"),
+                                                                              Lottie.asset("assets/loading5.json"),
                                                                           fadeInCurve:
                                                                               Curves.fastLinearToSlowEaseIn,
                                                                           width:

@@ -186,11 +186,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                         CrossAxisAlignment.center,
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      Text(
-                                        restaurant.companyName.toString(),
-                                        style: boldText,
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
+                                      SizedBox(
+                                        width: size.width * .6,
+                                        child: Text(
+                                          restaurant.companyName.toString(),
+                                          style: boldText,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
                                       ),
                                       Text(
                                         restaurant.address.toString(),
@@ -366,7 +369,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                         final data = Provider.of<MealsData>(
                                             context,
                                             listen: false);
-                                        data.meals = [];
+                                        data.meals.clear();
                                         await data.loadMeals();
                                         setState(() {});
                                       },
@@ -381,7 +384,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                               ),
                             ),
                             const Text(
-                              "Calendar Bookings",
+                              "Calendar",
                               style: boldText,
                             ),
                             DatePicker(

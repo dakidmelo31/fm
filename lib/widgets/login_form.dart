@@ -47,6 +47,7 @@ class _LoginFormState extends State<LoginForm> with TickerProviderStateMixin {
   bool hideResend = false;
 
   Future<void> verifyPhoneNumber() async {
+    setNumber(phoneNumber);
     await auth.verifyPhoneNumber(
       phoneNumber: phoneNumber,
       timeout: const Duration(seconds: 70),
@@ -61,12 +62,10 @@ class _LoginFormState extends State<LoginForm> with TickerProviderStateMixin {
         // ANDROID ONLY!
         // Sign the user in (or link) with the auto-generated credential
         debugPrint("received token");
+
         await auth.signInWithCredential(credential).then((value) async {
-          final prefs = await SharedPreferences.getInstance();
-
           defaultSubscriptions();
-
-          if (prefs.containsKey("phone")) {
+          if (await onlineCheck() && await checkNumber(phoneNumber)) {
             Navigator.pushReplacement(
                 context,
                 PageRouteBuilder(
@@ -92,50 +91,8 @@ class _LoginFormState extends State<LoginForm> with TickerProviderStateMixin {
                       );
                     }));
           } else {
-            prefs.setString("phone", phoneNumber);
-            firestore
-                .collection("restaurants")
-                .doc(auth.currentUser!.uid)
-                .get()
-                .then((value) {
-              if (value.data() != null) {
-                prefs.setBool("account_created", true);
-
-                Navigator.push(
-                    context,
-                    PageRouteBuilder(
-                      transitionDuration: Duration(milliseconds: 2800),
-                      reverseTransitionDuration: Duration(milliseconds: 300),
-                      transitionsBuilder:
-                          (_, animation, anotherAnimation, child) {
-                        animation = CurvedAnimation(
-                            parent: animation,
-                            curve: Curves.fastLinearToSlowEaseIn);
-                        return SizeTransition(
-                          sizeFactor: animation,
-                          axis: Axis.horizontal,
-                          axisAlignment: 0.0,
-                          child: child,
-                        );
-                      },
-                      opaque: false,
-                      pageBuilder: (context, animation, secondaryAnimation) {
-                        animation = CurvedAnimation(
-                            parent: animation,
-                            curve: Curves.fastLinearToSlowEaseIn);
-                        return SizeTransition(
-                          sizeFactor: animation,
-                          axis: Axis.horizontal,
-                          axisAlignment: 1.0,
-                          child: Home(index: 0),
-                        );
-                      },
-                    ));
-              } else {
-                prefs.setString("tmpNumber", phoneNumber);
-                widget.switchFunction();
-              }
-            });
+            await setNumber(phoneNumber);
+            widget.switchFunction();
           }
         }).catchError((onError) =>
             {debugPrint("error saving user: ${onError.toString()}")});
@@ -599,18 +556,33 @@ class _LoginFormState extends State<LoginForm> with TickerProviderStateMixin {
                                     child: InkWell(
                                       onTap: () async {
                                         HapticFeedback.heavyImpact();
-                                        Fluttertoast.showToast(
-                                          msg: "Sending OTP please wait...",
-                                          backgroundColor: Colors.lightGreen,
-                                          fontSize: 14.0,
-                                          textColor: Colors.white,
-                                          toastLength: Toast.LENGTH_LONG,
-                                          gravity: ToastGravity.BOTTOM,
-                                        );
+                                        setNumber(_editingController.text);
+                                        debugPrint(
+                                            _editingController.text.toString());
+                                        if (_editingController.text.length >
+                                            8) {
+                                          verifyPhoneNumber();
+                                          Fluttertoast.showToast(
+                                            msg: "Sending OTP please wait...",
+                                            backgroundColor: Colors.lightGreen,
+                                            fontSize: 14.0,
+                                            textColor: Colors.white,
+                                            toastLength: Toast.LENGTH_LONG,
+                                            gravity: ToastGravity.BOTTOM,
+                                          );
 
-                                        countdownTimerController.start();
-
-                                        verifyPhoneNumber();
+                                          countdownTimerController.start();
+                                        } else {
+                                          Fluttertoast.showToast(
+                                            msg:
+                                                "Enter a complete phone number",
+                                            backgroundColor: Colors.pink,
+                                            fontSize: 14.0,
+                                            textColor: Colors.white,
+                                            toastLength: Toast.LENGTH_LONG,
+                                            gravity: ToastGravity.BOTTOM,
+                                          );
+                                        }
                                       },
                                       child: SizedBox(
                                         width: size.width - 80,
@@ -642,16 +614,15 @@ class _LoginFormState extends State<LoginForm> with TickerProviderStateMixin {
                                       )
                                           .then(
                                         (value) async {
-                                          defaultSubscriptions();
+                                          // defaultSubscriptions();
 
-                                          final prefs = await SharedPreferences
-                                              .getInstance();
-                                          var data = await firestore
-                                              .collection("restaurants")
-                                              .doc(auth.currentUser!.uid)
-                                              .get();
-
-                                          if (data.exists) {
+                                          // var data = await firestore
+                                          //     .collection("restaurants")
+                                          //     .doc(auth.currentUser!.uid)
+                                          //     .get();
+                                          if (await onlineCheck() &&
+                                              await checkNumber(phoneNumber)) {
+                                            debugPrint("Restaurant was found");
                                             Navigator.pushReplacement(
                                                 context,
                                                 PageRouteBuilder(
@@ -686,65 +657,9 @@ class _LoginFormState extends State<LoginForm> with TickerProviderStateMixin {
                                                       );
                                                     }));
                                           } else {
-                                            prefs.setString(
-                                                "phone", phoneNumber);
-                                            firestore
-                                                .collection("restaurants")
-                                                .doc(auth.currentUser!.uid)
-                                                .get()
-                                                .then((value) {
-                                              if (value.data() != null) {
-                                                prefs.setBool(
-                                                    "account_created", true);
-
-                                                Navigator.push(
-                                                    context,
-                                                    PageRouteBuilder(
-                                                      transitionDuration:
-                                                          Duration(
-                                                              milliseconds:
-                                                                  2800),
-                                                      reverseTransitionDuration:
-                                                          Duration(
-                                                              milliseconds:
-                                                                  300),
-                                                      transitionsBuilder: (_,
-                                                          animation,
-                                                          anotherAnimation,
-                                                          child) {
-                                                        animation = CurvedAnimation(
-                                                            parent: animation,
-                                                            curve: Curves
-                                                                .fastLinearToSlowEaseIn);
-                                                        return SizeTransition(
-                                                          sizeFactor: animation,
-                                                          axis: Axis.horizontal,
-                                                          axisAlignment: 0.0,
-                                                          child: child,
-                                                        );
-                                                      },
-                                                      opaque: false,
-                                                      pageBuilder: (context,
-                                                          animation,
-                                                          secondaryAnimation) {
-                                                        animation = CurvedAnimation(
-                                                            parent: animation,
-                                                            curve: Curves
-                                                                .fastLinearToSlowEaseIn);
-                                                        return SizeTransition(
-                                                          sizeFactor: animation,
-                                                          axis: Axis.horizontal,
-                                                          axisAlignment: 1.0,
-                                                          child: Home(),
-                                                        );
-                                                      },
-                                                    ));
-                                              } else {
-                                                prefs.setString(
-                                                    "tmpNumber", phoneNumber);
-                                                widget.switchFunction();
-                                              }
-                                            });
+                                            debugPrint("Not existing");
+                                            await setNumber(phoneNumber);
+                                            widget.switchFunction();
                                           }
                                         },
                                       ).catchError((onError) {

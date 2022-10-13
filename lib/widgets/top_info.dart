@@ -58,7 +58,7 @@ class TopInfo extends StatelessWidget {
                           return Text(
                             "Merchants",
                             style: TextStyle(
-                                fontSize: 70 *
+                                fontSize: 60 *
                                     CurvedAnimation(
                                             parent: mainAnimation,
                                             curve: Interval(.39, .45,
