@@ -128,7 +128,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   top: 0,
                   // top: 0 - size.height * _animationController.value * .3,
                   width: size.width,
-                  height: size.height * .8,
+                  height: size.height * .9,
                   child: Center(
                     child: CustomScrollView(
                       physics: const BouncingScrollPhysics(),
@@ -270,6 +270,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                                 vertical: 2.0),
                                                         child: InkWell(
                                                           onTap: () {
+                                                            HapticFeedback
+                                                                .heavyImpact();
+
                                                             Navigator.pushReplacement(
                                                                 context,
                                                                 VerticalSizeTransition(
@@ -296,7 +299,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                                         .restaurant_rounded,
                                                                   ),
                                                                   Text(
-                                                                    "New Meal",
+                                                                    "Food Post",
                                                                   ),
                                                                 ],
                                                               ),
@@ -305,11 +308,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                         ),
                                                         elevation: 15.0,
                                                         shadowColor: Colors.grey
-                                                            .withOpacity(.5),
+                                                            .withOpacity(.25),
                                                       ),
                                                       Spacer(),
                                                       Card(
-                                                        color: Colors.blue,
+                                                        color:
+                                                            Colors.lightGreen,
                                                         elevation: 15.0,
                                                         shadowColor: Colors.grey
                                                             .withOpacity(.5),
@@ -320,6 +324,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                                 vertical: 2.0),
                                                         child: InkWell(
                                                           onTap: () {
+                                                            HapticFeedback
+                                                                .heavyImpact();
                                                             Navigator
                                                                 .pushReplacement(
                                                               context,
@@ -350,7 +356,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                                         .white,
                                                                   ),
                                                                   Text(
-                                                                      "New Service",
+                                                                      "Service Post",
                                                                       style: Primary
                                                                           .whiteText),
                                                                 ],
@@ -375,8 +381,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                       },
                                       icon: FaIcon(
                                         FontAwesomeIcons.plus,
-                                        size: 25,
-                                        color: Colors.blueAccent,
+                                        size: 35,
+                                        color: Colors.lightGreen,
                                       ),
                                     ),
                                   ),

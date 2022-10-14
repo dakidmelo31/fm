@@ -419,14 +419,14 @@ sendNewsNotification(
   }
 }
 
-sendTopicNotification(
-    {required String image,
-    required String description,
-    required String title,
-    required String type,
-    required String typeId,
-    bool news = false,
-    String restaurantId = ''}) async {
+sendTopicNotification({
+  required String image,
+  required String description,
+  required String title,
+  required String type,
+  required String typeId,
+  bool news = false,
+}) async {
   debugPrint("perfect broadcast");
   final data = {
     "click_action": "FLUTTER_NOTIFICATION_CLICK",
@@ -451,7 +451,7 @@ sendTopicNotification(
                 'body': description,
                 "restaurantId": auth.currentUser!.uid,
                 'image': image,
-                'type': "news",
+                'type': type,
                 'color': "#dcedc2"
               },
               'priority': 'high',
@@ -463,7 +463,7 @@ sendTopicNotification(
                       "' in topics || 'news' in topics || 'online.foodincity.hq' in topics"
                   : "'" +
                       auth.currentUser!.uid +
-                      "' in topics || 'online.foodincity.hq' in topics",
+                      "' in topics || 'foodincity_management' in topics || 'foodincity_consumer' in topics",
               // 'to': '/topics/' + auth.currentUser!.uid + auth.currentUser!.uid,
             }));
 
@@ -544,6 +544,7 @@ Future<void> defaultSubscriptions() async {
   prefs.setBool("registered", true);
   if (auth.currentUser != null) {
     await messaging.subscribeToTopic(auth.currentUser!.uid + "_orders");
+    await messaging.subscribeToTopic("foodin_merchants");
     await messaging.subscribeToTopic(auth.currentUser!.uid + "_news");
     // debugPrint("Subscribed to: " + auth.currentUser!.uid + "_orders");
     // debugPrint("Subscribed to: " + auth.currentUser!.uid + "_news");

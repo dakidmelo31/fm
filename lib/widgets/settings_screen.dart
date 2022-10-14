@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
 import 'package:merchants/models/restaurants.dart';
 import 'package:merchants/pages/intro_page.dart';
@@ -261,80 +262,83 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                   ),
                 ),
-                SizedBox(
-                  width: double.infinity,
-                  height: size.height * .15,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    mainAxisSize: MainAxisSize.max,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      InkWell(
-                        onTap: () {
-                          HapticFeedback.heavyImpact();
-                          Fluttertoast.cancel();
-                          Fluttertoast.showToast(
-                              msg: "You have ${meals.length} Meal posts");
-                        },
-                        child: Column(
-                          children: [
-                            Text(
-                              meals.length.toString(),
-                              style: caption,
-                            ),
-                            Text(
-                              "Meals",
-                              style: label,
-                            ),
-                          ],
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 15.0),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 70,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      mainAxisSize: MainAxisSize.max,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        InkWell(
+                          onTap: () {
+                            HapticFeedback.heavyImpact();
+                            Fluttertoast.cancel();
+                            Fluttertoast.showToast(
+                                msg: "You have ${meals.length} Meal posts");
+                          },
+                          child: Column(
+                            children: [
+                              Text(
+                                meals.length.toString(),
+                                style: caption,
+                              ),
+                              Text(
+                                "Meals",
+                                style: label,
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                      InkWell(
-                        onTap: () {
-                          HapticFeedback.heavyImpact();
-                          Fluttertoast.cancel();
-                          Fluttertoast.showToast(
-                              msg:
-                                  "You have ${restaurant.followers < 1 ? 0 : restaurant.followers} active followers 💖");
-                        },
-                        child: Column(
-                          children: [
-                            Text(
-                              (restaurant.followers < 1
-                                      ? 0
-                                      : restaurant.followers)
-                                  .toString(),
-                              style: caption,
-                            ),
-                            Text(
-                              "Followers",
-                              style: label,
-                            ),
-                          ],
+                        InkWell(
+                          onTap: () {
+                            HapticFeedback.heavyImpact();
+                            Fluttertoast.cancel();
+                            Fluttertoast.showToast(
+                                msg:
+                                    "You have ${restaurant.followers < 1 ? 0 : restaurant.followers} active followers 💖");
+                          },
+                          child: Column(
+                            children: [
+                              Text(
+                                (restaurant.followers < 1
+                                        ? 0
+                                        : restaurant.followers)
+                                    .toString(),
+                                style: caption,
+                              ),
+                              Text(
+                                "Followers",
+                                style: label,
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                      InkWell(
-                        onTap: () {
-                          HapticFeedback.heavyImpact();
-                          Fluttertoast.cancel();
-                          Fluttertoast.showToast(
-                              msg:
-                                  "You have recieved ${meals.length} so far 🍽️");
-                        },
-                        child: Column(
-                          children: [
-                            Text(
-                              _restaurantData.allOrders.length.toString(),
-                              style: caption,
-                            ),
-                            Text(
-                              "Orders",
-                              style: label,
-                            ),
-                          ],
+                        InkWell(
+                          onTap: () {
+                            HapticFeedback.heavyImpact();
+                            Fluttertoast.cancel();
+                            Fluttertoast.showToast(
+                                msg:
+                                    "You have recieved ${NumberFormat().format(_restaurantData.allOrders.length)} Orders so far 🍽️");
+                          },
+                          child: Column(
+                            children: [
+                              Text(
+                                _restaurantData.allOrders.length.toString(),
+                                style: caption,
+                              ),
+                              Text(
+                                "Orders",
+                                style: label,
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
 
@@ -1036,7 +1040,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             if (await launchUrl(url))
                               throw "Could not launch $url";
                           },
-                          child: Text("Visit Developers")),
+                          child: Text(
+                            "Visit Website for Updates",
+                            style: TextStyle(
+                                color: Theme.of(context).primaryColor),
+                          )),
                     )
                   ],
                   applicationIcon: Image.asset("assets/logo.png",

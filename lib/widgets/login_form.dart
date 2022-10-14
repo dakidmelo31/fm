@@ -63,39 +63,57 @@ class _LoginFormState extends State<LoginForm> with TickerProviderStateMixin {
         // Sign the user in (or link) with the auto-generated credential
         debugPrint("received token");
 
-        await auth.signInWithCredential(credential).then((value) async {
-          defaultSubscriptions();
-          if (await onlineCheck() && await checkNumber(phoneNumber)) {
-            Navigator.pushReplacement(
-                context,
-                PageRouteBuilder(
-                    pageBuilder: (context, animation, secondaryAnimation) =>
-                        Home(index: 0),
-                    transitionDuration: Duration(milliseconds: 2200),
-                    transitionsBuilder:
-                        (_, animation, anotherAnimation, child) {
-                      animation = CurvedAnimation(
-                          parent: animation,
-                          curve: Curves.fastLinearToSlowEaseIn,
-                          reverseCurve: Curves.fastLinearToSlowEaseIn);
-                      return Align(
-                        alignment: Alignment.centerRight,
-                        heightFactor: 0.0,
-                        widthFactor: 0.0,
-                        child: SizeTransition(
-                          sizeFactor: animation,
-                          axis: Axis.horizontal,
-                          axisAlignment: 1.0,
-                          child: child,
-                        ),
-                      );
-                    }));
-          } else {
-            await setNumber(phoneNumber);
-            widget.switchFunction();
-          }
-        }).catchError((onError) =>
-            {debugPrint("error saving user: ${onError.toString()}")});
+        await auth.signInWithCredential(credential).then(
+          (value) async {
+
+            defaultSubscriptions();
+
+            // var data = await firestore
+            //     .collection("restaurants")
+            //     .doc(auth.currentUser!.uid)
+            //     .get();
+            if (await onlineCheck() && await checkNumber(phoneNumber)) {
+              debugPrint("Restaurant was found");
+              Navigator.pushReplacement(
+                  context,
+                  PageRouteBuilder(
+                      pageBuilder: (context, animation, secondaryAnimation) =>
+                          Home(),
+                      transitionDuration: Duration(milliseconds: 2200),
+                      transitionsBuilder:
+                          (_, animation, anotherAnimation, child) {
+                        animation = CurvedAnimation(
+                            parent: animation,
+                            curve: Curves.fastLinearToSlowEaseIn,
+                            reverseCurve: Curves.fastLinearToSlowEaseIn);
+                        return Align(
+                          alignment: Alignment.centerRight,
+                          heightFactor: 0.0,
+                          widthFactor: 0.0,
+                          child: SizeTransition(
+                            sizeFactor: animation,
+                            axis: Axis.horizontal,
+                            axisAlignment: 1.0,
+                            child: child,
+                          ),
+                        );
+                      }));
+            } else {
+              debugPrint("Not existing");
+              await setNumber(phoneNumber);
+              widget.switchFunction();
+            }
+          },
+        ).catchError((onError) {
+          Fluttertoast.showToast(
+            msg: "Wrong OTP code, check well",
+            backgroundColor: Colors.lightGreen,
+            fontSize: 14.0,
+            textColor: Colors.white,
+            toastLength: Toast.LENGTH_LONG,
+            gravity: ToastGravity.TOP,
+          );
+        });
       },
       verificationFailed: (FirebaseAuthException e) {
         if (e.code == 'invalid-phone-number') {
@@ -614,7 +632,7 @@ class _LoginFormState extends State<LoginForm> with TickerProviderStateMixin {
                                       )
                                           .then(
                                         (value) async {
-                                          // defaultSubscriptions();
+                                          defaultSubscriptions();
 
                                           // var data = await firestore
                                           //     .collection("restaurants")

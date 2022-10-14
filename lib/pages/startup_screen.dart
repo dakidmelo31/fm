@@ -211,9 +211,6 @@ class _StartupScreenState extends State<StartupScreen>
     debugPrint(_formType.toString());
 
     _animationController.forward();
-    if (auth.currentUser != null) {
-      return SplashScreen();
-    }
     return registered && auth.currentUser != null
         ? Home(
             index: 0,

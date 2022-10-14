@@ -505,18 +505,14 @@ class _CreateServiceState extends State<CreateService> {
               .doc(auth.currentUser!.uid)
               .get()
               .then((value) {
-            var tokens = List<String>.from(value["tokens"]);
-            debugPrint("tokens: $tokens");
-            tokens.map((e) {
-              sendTopicNotification(
-                  type: "service",
-                  typeId: value.id,
-                  title: widget.restaurant.companyName + " just posted a dish",
-                  description: widget.restaurant.companyName.toUpperCase() +
-                      " just added a new product to their store".toUpperCase(),
-                  image: img);
-              ;
-            });
+            sendTopicNotification(
+                type: "service",
+                typeId: value.id,
+                news: true,
+                title: widget.restaurant.companyName + " posted a service",
+                description:
+                    name.toUpperCase() + " now available".toUpperCase(),
+                image: img);
           });
         }).catchError((onError) {
           debugPrint(onError.toString());
