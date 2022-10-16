@@ -208,8 +208,6 @@ class _StartupScreenState extends State<StartupScreen>
 
   @override
   Widget build(BuildContext context) {
-    debugPrint(_formType.toString());
-
     _animationController.forward();
     return registered && auth.currentUser != null
         ? Home(
